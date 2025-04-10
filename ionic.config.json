@@ -1,0 +1,7 @@
+{
+  "name": "1sari",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
