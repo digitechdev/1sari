@@ -1,0 +1,179 @@
+/* src/app/pages/borrowers/borrowers.page.scss */
+
+// Define sticky column widths as variables for consistency
+$sticky-col-checkbox-width: 50px;
+$sticky-col-avatar-width: 60px;
+$sticky-col-actions-width: 65px;
+
+:host {
+  display: flex; // Allow header/content/footer to stack vertically
+  flex-direction: column;
+  height: 100%; // Ensure host takes full height
+
+  ion-header,
+  ion-footer {
+    flex-shrink: 0; // Prevent header/footer from shrinking
+  }
+
+  ion-content {
+    flex-grow: 1; // Allow content to take remaining space
+    overflow-y: auto; // Explicitly enable vertical scroll on content
+    --padding-top: 0;
+    --padding-bottom: 0;
+    position: relative; // Needed for sticky header within content
+    // Ensure content has a clear boundary for the wrapper
+    display: flex; 
+    flex-direction: column;
+  }
+}
+
+// Wrapper for horizontal scrolling
+.table-scroll-wrapper {
+  width: 100%;
+  overflow-x: auto; // Enable horizontal scroll here
+  flex-grow: 1;
+  position: relative; // Context for sticky header within wrapper
+}
+
+// Controls Toolbar Styling
+.controls-toolbar {
+  --background: var(--ion-color-light, #f8f9fa);
+  --min-height: 60px;
+  border-bottom: 1px solid var(--ion-color-medium-tint, #dee2e6);
+
+  ion-searchbar {
+    --box-shadow: none;
+    --background: #ffffff;
+    --border-radius: 6px;
+  }
+
+  .filter-chip {
+    --background: #ffffff;
+    border: 1px solid var(--ion-color-medium-tint, #dee2e6);
+    margin-inline-end: 8px;
+    font-size: 0.9em;
+    height: 36px;
+  }
+
+  .actions-col ion-button {
+    font-size: 0.9em;
+    height: 36px;
+  }
+}
+
+// Table Grid Styling
+.users-table {
+  display: block; // Treat grid as a block element
+  min-width: 2500px; // !! Crucial: Set large enough width for all columns
+  width: 100%; // Use 100% to fill wrapper initially, min-width pushes it wider
+  border-collapse: collapse;
+
+  ion-row {
+    display: flex; // Use flex for rows
+    flex-wrap: nowrap; // Prevent columns wrapping within a row
+    width: 100%; // Ensure row takes full table width
+    border-bottom: 1px solid var(--ion-color-medium-tint, #dee2e6);
+    &:last-child { border-bottom: none; }
+    // Ensure header row background spans full width even if table content is narrow
+    width: max-content; // Expand header row width to fit content
+    min-width: 100%; // Ensure it's at least the width of the wrapper
+  }
+
+  ion-col {
+    padding: 10px 8px;
+    border-right: 1px solid var(--ion-color-medium-tint, #dee2e6);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    white-space: nowrap; // Prevent text wrapping
+    flex-shrink: 0; // Prevent columns from shrinking
+    // Let flex-basis be determined by size attribute or content
+    // flex-basis: auto; 
+    // flex-grow: 0; 
+
+    &:last-child { border-right: none; }
+  }
+
+  .table-header-row {
+    background-color: var(--ion-color-light, #f8f9fa);
+    font-weight: 500;
+    position: sticky;
+    top: 0; // Sticky relative to the scroll wrapper
+    z-index: 10;
+  }
+
+  .table-body-row {
+     background-color: var(--ion-color-step-50, #ffffff);
+    &:hover { background-color: var(--ion-color-light-tint, #f1f1f1); }
+    // Ensure body row background spans full width
+    width: max-content;
+    min-width: 100%;
+  }
+
+  // Specific column adjustments
+  .checkbox-col, .avatar-col, .action-col {
+     justify-content: center;
+     background-color: #fff;
+  }
+  .avatar-col ion-avatar {
+     width: 32px;
+     height: 32px;
+  }
+  .action-col ion-button {
+     --padding-start: 4px;
+     --padding-end: 4px;
+  }
+
+  // Sticky column styles with explicit widths
+  .sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 2; // Increase default z-index for body stickies
+
+    // Match background of the row they are in
+    .table-body-row & {
+        background-color: var(--ion-color-step-50, #ffffff);
+    }
+    .table-header-row & {
+        background-color: var(--ion-color-light, #f8f9fa);
+        z-index: 11; // Header stickies above body stickies
+    }
+
+    // Explicit widths
+    &.checkbox-col { width: $sticky-col-checkbox-width; left: 0; }
+    &.avatar-col   { width: $sticky-col-avatar-width; left: $sticky-col-checkbox-width; border-left: none; }
+    &.action-col   { width: $sticky-col-actions-width; left: $sticky-col-checkbox-width + $sticky-col-avatar-width; border-left: none; }
+
+    // Ensure border is correct
+    border-right: 1px solid var(--ion-color-medium-tint, #dee2e6);
+  }
+
+   // Ensure first non-sticky column has a left border only if it follows the last sticky col
+   .sticky-col.action-col + ion-col {
+      border-left: 1px solid var(--ion-color-medium-tint, #dee2e6);
+   }
+}
+
+// Footer Toolbar Styling
+.summary-toolbar {
+  --background: var(--ion-color-light, #f8f9fa);
+  --min-height: 44px;
+  border-top: 1px solid var(--ion-color-medium-tint, #dee2e6);
+  font-size: 0.9em;
+}
+
+// Styling for loading/error states within content
+.state-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  padding: 20px;
+  // Position it within the scroll wrapper if needed
+  width: 100%;
+}
+
+
+ion-content {
+    margin: -10px;
+}

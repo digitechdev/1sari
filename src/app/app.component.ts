@@ -39,7 +39,8 @@ import {
   filterOutline,
   ellipsisHorizontal,
   personCircleOutline,
-  logOutOutline
+  logOutOutline,
+  peopleOutline
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -100,11 +101,12 @@ export class AppComponent implements OnInit {
   // Define the menu structure using the interface
   private allMenuItems: MenuItem[] = [
     { title: 'Menu', isHeader: true },
-    { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
+    { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' },
+    { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' },
     { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
     { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
     { title: 'Card', url: '/card', icon: 'card-outline' },
-    { title: 'History', url: '/history', icon: 'time-outline' }, // Simple item for now, nesting can be added
+    { title: 'History', url: '/history', icon: 'time-outline' },
     { title: 'Notifications', url: '/notifications', icon: 'notifications-outline', badge: 12 },
     { title: 'Tools', isHeader: true },
     { title: 'Setting', url: '/settings', icon: 'settings-outline' },
@@ -140,7 +142,8 @@ export class AppComponent implements OnInit {
       filterOutline,
       ellipsisHorizontal,
       personCircleOutline,
-      logOutOutline
+      logOutOutline,
+      peopleOutline
     });
   }
 

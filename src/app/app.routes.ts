@@ -16,4 +16,10 @@ export const routes: Routes = [
       import('./pages/dashboard/dashboard.page').then((m) => m.DashboardPage),
     data: { title: 'Dashboard' }
   },
+  {
+    path: 'borrowers',
+    loadComponent: () =>
+      import('./pages/borrowers/borrowers.page').then((m) => m.BorrowersPage),
+    data: { title: 'Borrowers' },
+  },
 ];
