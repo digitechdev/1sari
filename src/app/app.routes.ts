@@ -7,7 +7,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
   {
@@ -21,5 +21,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/borrowers/borrowers.page').then((m) => m.BorrowersPage),
     data: { title: 'Borrowers' },
+  },
+  {
+    path: 'borrowers/new',
+    loadComponent: () =>
+      import('./pages/borrower-form/borrower-form.page').then(
+        (m) => m.BorrowerFormPage
+      ),
+    data: { title: 'Add Borrower' }
+  },
+  {
+    path: 'borrower-detail/:id',
+    loadComponent: () => import('./pages/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage)
   },
 ];

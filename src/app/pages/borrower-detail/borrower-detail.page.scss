@@ -1,0 +1,49 @@
+/* src/app/pages/borrower-detail/borrower-detail.page.scss */
+
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  height: calc(100% - 56px); // Adjust based on header height if needed
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.error-container {
+    ion-icon {
+        margin-bottom: 16px;
+    }
+    ion-button {
+        margin-top: 24px;
+    }
+}
+
+ion-card-content {
+  ion-list {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    h2 {
+      font-weight: 500;
+      font-size: 0.9em;
+      color: var(--ion-color-medium-shade);
+      margin-bottom: 2px;
+    }
+    p {
+      font-size: 1em;
+      color: var(--ion-color-dark-shade);
+    }
+  }
+}

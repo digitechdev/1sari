@@ -40,7 +40,9 @@ import {
   ellipsisHorizontal,
   personCircleOutline,
   logOutOutline,
-  peopleOutline
+  peopleOutline,
+  arrowBackOutline,
+  saveOutline
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -143,7 +145,9 @@ export class AppComponent implements OnInit {
       ellipsisHorizontal,
       personCircleOutline,
       logOutOutline,
-      peopleOutline
+      peopleOutline,
+      arrowBackOutline,
+      saveOutline
     });
   }
 

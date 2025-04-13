@@ -1,0 +1,210 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Use custom back button to use Location service -->
+      <ion-button (click)="goBack()">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      <!-- Or use ion-back-button if default behavior is fine -->
+      <!-- <ion-back-button defaultHref="/borrowers"></ion-back-button> -->
+    </ion-buttons>
+    <ion-title>{{ isEditMode() ? 'Edit Borrower' : 'Add New Borrower' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="borrowerForm" (ngSubmit)="saveBorrower()">
+
+    <!-- Personal Information Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Personal Information</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-input label="Borrower Name *" labelPlacement="stacked" formControlName="name_of_borrower" required placeholder="Enter full name" errorText="Name is required"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-input label="Provider Subject #" labelPlacement="stacked" formControlName="provider_subject_no" placeholder="Enter subject number"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-select label="Gender" labelPlacement="stacked" formControlName="gender" placeholder="Select Gender">
+                  <ion-select-option value="M">Male</ion-select-option>
+                  <ion-select-option value="F">Female</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-select label="Civil Status" labelPlacement="stacked" formControlName="civil_status" placeholder="Select Status">
+                  <ion-select-option value="Single">Single</ion-select-option>
+                  <ion-select-option value="Married">Married</ion-select-option>
+                  <ion-select-option value="Widowed">Widowed</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                 <ion-input label="Birthday" labelPlacement="stacked" formControlName="birthday_borrower" placeholder="YYYY-MM-DD or Text" type="text"></ion-input>
+                 <!-- Or use ion-datetime -->
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="4">
+              <ion-item>
+                <ion-input label="Age" labelPlacement="stacked" formControlName="age" placeholder="Enter age" type="number"></ion-input>
+              </ion-item>
+            </ion-col>
+             <ion-col size="12" size-md="8">
+              <ion-item>
+                 <ion-input label="Mother's Maiden Name" labelPlacement="stacked" formControlName="mothers_maiden_name_borrower" placeholder="Enter mother's full maiden name"></ion-input>
+              </ion-item>
+            </ion-col>
+             <ion-col size="12" size-md="6">
+              <ion-item>
+                 <ion-input label="Contact # *" labelPlacement="stacked" formControlName="contact_no_borrower" required placeholder="Enter phone number" errorText="Contact # is required"></ion-input>
+              </ion-item>
+            </ion-col>
+             <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-input label="Type of ID Presented" labelPlacement="stacked" formControlName="type_of_id" placeholder="e.g., Driver's License"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Co-Borrower / Collateral Card -->
+    <ion-card>
+       <ion-card-header>
+        <ion-card-title>Co-Borrower & Collateral</ion-card-title>
+      </ion-card-header>
+       <ion-card-content>
+         <ion-grid>
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-input label="Co-Borrower/Maker Name" labelPlacement="stacked" formControlName="name_of_co_borrower_maker" placeholder="Enter name or N/A"></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="6">
+              <ion-item>
+                <ion-input label="Security / Collateral" labelPlacement="stacked" formControlName="security_collateral" placeholder="e.g., Post Dated Checks, None"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+       </ion-card-content>
+    </ion-card>
+
+    <!-- Address & Store Information Card -->
+     <ion-card>
+       <ion-card-header>
+        <ion-card-title>Address & Store Information</ion-card-title>
+      </ion-card-header>
+       <ion-card-content>
+          <ion-grid>
+            <ion-row>
+                <ion-col size="12">
+                    <ion-item>
+                        <ion-input label="Residence Address" labelPlacement="stacked" formControlName="residence_address" placeholder="Enter residence address"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                    <ion-item>
+                        <ion-input label="Length of Stay" labelPlacement="stacked" formControlName="length_of_stay_in_residence" placeholder="e.g., 5 years"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                    <ion-item>
+                        <ion-input label="Area" labelPlacement="stacked" formControlName="area" placeholder="e.g., Cavite, Laguna"></ion-input>
+                    </ion-item>
+                </ion-col>
+                 <ion-col size="12">
+                    <ion-item>
+                        <ion-input label="Store Address" labelPlacement="stacked" formControlName="store_address" placeholder="Enter store address"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                    <ion-item>
+                        <ion-input label="Store Name" labelPlacement="stacked" formControlName="store_name" placeholder="Enter store name"></ion-input>
+                    </ion-item>
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                    <ion-item>
+                        <ion-input label="Store Category" labelPlacement="stacked" formControlName="store_category" placeholder="e.g., Wholesale Trade"></ion-input>
+                    </ion-item>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+       </ion-card-content>
+    </ion-card>
+
+    <!-- Other Information Card -->
+     <ion-card>
+       <ion-card-header>
+        <ion-card-title>Other Information</ion-card-title>
+      </ion-card-header>
+       <ion-card-content>
+        <ion-grid>
+            <ion-row>
+                 <ion-col size="12" size-md="4">
+                    <ion-item>
+                        <ion-input label="Mode of Payment" labelPlacement="stacked" formControlName="mode_of_payment" placeholder="e.g., Gcash"></ion-input>
+                    </ion-item>
+                </ion-col>
+                 <ion-col size="12" size-md="4">
+                    <ion-item>
+                        <ion-select label="Classification" labelPlacement="stacked" formControlName="classification" placeholder="Select Tier">
+                            <ion-select-option value="Tier 1">Tier 1</ion-select-option>
+                            <ion-select-option value="Tier 2">Tier 2</ion-select-option>
+                            <!-- Add more tiers if applicable -->
+                        </ion-select>
+                    </ion-item>
+                </ion-col>
+                 <ion-col size="12" size-md="4">
+                    <ion-item>
+                        <ion-input label="Retail Partner" labelPlacement="stacked" formControlName="retail_partner" placeholder="Enter partner or N/A"></ion-input>
+                    </ion-item>
+                </ion-col>
+                 <ion-col size="12">
+                    <ion-item>
+                        <ion-input label="Account Relationship Officer" labelPlacement="stacked" formControlName="account_relationship_officer" placeholder="Enter officer name or None"></ion-input>
+                    </ion-item>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+       </ion-card-content>
+    </ion-card>
+
+  </form>
+
+   <!-- Loading Indicator -->
+   <ion-loading [isOpen]="isSaving()" message="Saving borrower..."></ion-loading>
+
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+       <!-- Add primary styling if desired -->
+      <ion-button 
+         (click)="saveBorrower()" 
+         [disabled]="borrowerForm.invalid || isSaving()"
+         color="primary"
+         expand="block"
+         class="ion-margin"
+         >
+         <ion-icon name="save-outline" slot="start" *ngIf="!isSaving()"></ion-icon>
+         {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Update Borrower' : 'Save Borrower') }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

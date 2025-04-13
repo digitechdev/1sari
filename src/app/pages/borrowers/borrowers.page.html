@@ -8,47 +8,31 @@
 -->
 <ion-header class="ion-no-border">
   <!-- Controls Bar -->
-  <ion-toolbar class="controls-toolbar ion-padding-horizontal">
-    <ion-grid class="ion-no-padding">
-      <ion-row class="ion-align-items-center justify-content-between">
-        <!-- Search -->
-        <ion-col size="12" size-lg="4" size-md="5">
+  <ion-toolbar class="controls-toolbar">
+    <!-- Add padding to the grid itself if needed -->
+    <ion-grid class="ion-no-padding ion-padding-horizontal">
+      <!-- Use justify-content-between to push columns apart -->
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <!-- Column 1: Search Bar (Takes available space, limited max width) -->
+        <ion-col size="auto" size-md="6" size-lg="5" style="max-width: 400px;">
           <ion-searchbar
             class="controls-searchbar"
             (ionInput)="handleSearch($event)"
-            placeholder="Search email, phone or UID"
+            [value]="searchTerm()"
+            placeholder="Search borrowers..."
+            debounce="300"
           ></ion-searchbar>
         </ion-col>
 
-        <!-- Filters -->
-        <!-- <ion-col size="12" size-lg="5" size-md="7">
-          <ion-chip class="filter-chip" (click)="openFilter('all')">
-            <ion-label>All users</ion-label>
-            <ion-icon name="chevron-down-outline"></ion-icon>
-          </ion-chip>
-          <ion-chip class="filter-chip" (click)="openFilter('provider')">
-            <ion-label>Provider</ion-label>
-          </ion-chip>
-          <ion-chip class="filter-chip" (click)="openFilter('columns')">
-            <ion-label>All columns</ion-label>
-          </ion-chip>
-          <ion-chip class="filter-chip" (click)="openFilter('sort')">
-            <ion-label>Sorted by created at</ion-label>
-             <ion-icon name="chevron-down-outline"></ion-icon>
-          </ion-chip>
-        </ion-col> -->
-
-        <!-- Actions -->
-        <ion-col size="12" size-lg="3" class="ion-text-end actions-col">
-          <ion-button fill="clear" color="medium" (click)="refreshData()">
+        <!-- Column 2: Action Buttons (Takes needed space, content aligned end) -->
+        <ion-col size="auto" class="ion-text-end">
+          <ion-button fill="clear" color="medium" (click)="refreshData()" class="ion-margin-end">
             <ion-icon slot="start" name="refresh-outline"></ion-icon>
             Refresh
           </ion-button>
           <ion-button color="success" (click)="addUser()">
             <ion-icon slot="start" name="add-outline"></ion-icon>
-            Add user
-            <!-- Add dropdown arrow if needed -->
-            <!-- <ion-icon slot="end" name="chevron-down-outline"></ion-icon> -->
+            Add New
           </ion-button>
         </ion-col>
       </ion-row>
@@ -57,7 +41,7 @@
 </ion-header>
 
 <!-- Added class for horizontal scrolling -->
-<ion-content [scrollY]="true" class="table-content has-horizontal-scroll">
+<ion-content [scrollY]="true" class="datatable-content">
   <!-- Remove the condense header -->
   <!-- 
   <ion-header collapse="condense">
@@ -75,97 +59,58 @@
     <div class="state-message"><ion-text color="danger">{{ errorLoading() }}</ion-text></div>
   }
 
-  <!-- Users Table/Grid -->
+  <!-- ngx-datatable implementation -->
   @if (!isLoading() && !errorLoading()) {
-    <!-- Add wrapper for horizontal scrolling if ion-content doesn't suffice -->
-    <div class="table-scroll-wrapper">
-      <ion-grid class="users-table ion-no-padding">
-        <!-- Table Header -->
-        <ion-row class="table-header-row">
-          <!-- Sticky Columns (No size attribute) -->
-          <ion-col class="sticky-col checkbox-col">
-             <ion-checkbox
-               aria-label="Select all users"
-               [checked]="isAllSelected()"
-               (ionChange)="toggleSelectAll($event)"
-             ></ion-checkbox>
-          </ion-col>
-          <!-- Scrollable Data Columns (Keep size attribute) -->
-          <ion-col size="1.5">Name of Borrower</ion-col>
-          <ion-col size="2">Provider Subject #</ion-col>
-          <ion-col size="1">Gender</ion-col>
-          <ion-col size="1.5">Civil Status</ion-col>
-          <ion-col size="2">Type of ID</ion-col>
-          <ion-col size="2">Birthday</ion-col>
-          <ion-col size="1">Age</ion-col>
-          <ion-col size="3">Mother's Maiden Name</ion-col>
-          <ion-col size="3">Co-Borrower/Maker</ion-col>
-          <ion-col size="2">Security/Collateral</ion-col>
-          <ion-col size="2">Mode of Payment</ion-col>
-          <ion-col size="3">Store Name</ion-col>
-          <ion-col size="4">Residence Address</ion-col>
-          <ion-col size="2">Length of Stay</ion-col>
-          <ion-col size="4">Store Address</ion-col>
-          <ion-col size="2">Area</ion-col>
-          <ion-col size="2.5">Contact No</ion-col>
-          <ion-col size="2">Classification</ion-col>
-          <ion-col size="2.5">Store Category</ion-col>
-          <ion-col size="2.5">Acct Relationship Officer</ion-col>
-          <ion-col size="2">Retail Partner</ion-col>
-          <ion-col size="2.5">Created At</ion-col>
-        </ion-row>
+    <ngx-datatable
+      class="material expandable"
+      [rows]="displayableBorrowers()"
+      [columns]="tableColumns"
+      [columnMode]="ColumnMode.force"
+      [headerHeight]="50"
+      [footerHeight]="50"
+      [rowHeight]="50"
+      [scrollbarH]="true"
+      [limit]="10"
+    >
+      <!-- Columns are now entirely driven by the [columns] binding -->
+      <!-- Remove the explicit Actions column definition from here -->
+      <!-- 
+      <ngx-datatable-column
+        name="Actions"
+        prop="id" 
+        [sortable]="false"
+        [canAutoResize]="false"
+        [draggable]="false"
+        [resizeable]="false"
+        [width]="120"
+      >
+        <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+          ...
+        </ng-template>
+      </ngx-datatable-column> 
+      -->
+    </ngx-datatable>
 
-        <!-- Table Body -->
-        @if (borrowers().length > 0) {
-          @for (borrower of borrowers(); track borrower.id) {
-            <ion-row class="table-body-row">
-              <!-- Sticky Columns (No size attribute) -->
-              <ion-col class="sticky-col checkbox-col">
-                 <ion-checkbox
-                   ariaLabel="Select user {{ borrower.name_of_borrower || borrower.id }}"
-                   [checked]="selectedBorrowers().has(borrower.id)"
-                   (ionChange)="toggleSelectBorrower(borrower.id, $event)"
-                 ></ion-checkbox>
-              </ion-col>
-            
-              <ion-col size="1.5">{{ borrower.name_of_borrower || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.provider_subject_no || '-' }}</ion-col>
-              <ion-col size="1">{{ borrower.gender || '-' }}</ion-col>
-              <ion-col size="1.5">{{ borrower.civil_status || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.type_of_id || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.birthday_borrower || '-' }}</ion-col>
-              <ion-col size="1">{{ borrower.age || '-' }}</ion-col>
-              <ion-col size="3">{{ borrower.mothers_maiden_name_borrower || '-' }}</ion-col>
-              <ion-col size="3">{{ borrower.name_of_co_borrower_maker || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.security_collateral || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.mode_of_payment || '-' }}</ion-col>
-              <ion-col size="3">{{ borrower.store_name || '-' }}</ion-col>
-              <ion-col size="4">{{ borrower.residence_address || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.length_of_stay_in_residence || '-' }}</ion-col>
-              <ion-col size="4">{{ borrower.store_address || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.area || '-' }}</ion-col>
-              <ion-col size="2.5">{{ borrower.contact_no_borrower || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.classification || '-' }}</ion-col>
-              <ion-col size="2.5">{{ borrower.store_category || '-' }}</ion-col>
-              <ion-col size="2.5">{{ borrower.account_relationship_officer || '-' }}</ion-col>
-              <ion-col size="2">{{ borrower.retail_partner || '-' }}</ion-col>
-              <ion-col size="2.5">{{ borrower.created_at ? (borrower.created_at | date:'short') : '-' }}</ion-col>
-            </ion-row>
-          }
-        } @else {
-          <ion-row>
-            <ion-col class="state-message ion-padding">No users found.</ion-col>
-          </ion-row>
-        }
-      </ion-grid>
-    </div>
+    <!-- Define the template for the Actions cell outside the table -->
+    <ng-template #actionsTemplate let-row="row" let-value="value">
+      <!-- Add some spacing using utility classes or inline style -->
+      <ion-button fill="clear" size="small" (click)="viewBorrower(row)" title="View" class="action-button">
+        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" size="small" (click)="editBorrower(row)" title="Edit" class="action-button">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" size="small" color="danger" (click)="deleteBorrower(row)" title="Delete" class="action-button">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ng-template>
+
+    <ng-template #editTmpl let-row="row" let-value="value">
+      {{ value  }}
+    </ng-template>
+
   }
 </ion-content>
 
-<!-- Footer for Summary/Pagination -->
-<ion-footer class="ion-no-border">
-  <ion-toolbar class="summary-toolbar">
-    <ion-text class="ion-padding-start">Total: {{ borrowers().length }} users</ion-text>
-    <!-- Add pagination or selection summary here if needed -->
-  </ion-toolbar>
-</ion-footer>
+<!-- Footer -->
+<!-- ... -->

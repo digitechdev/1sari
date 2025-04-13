@@ -4,12 +4,14 @@ import { LoanStatus } from '../enums/loan-status.enum';
  * Represents the structure of a record in the public.loans table.
  */
 export interface Loan {
-  id: number; // SERIAL PRIMARY KEY
-  account_id: number; // INTEGER NOT NULL
-  loan_amount: number; // NUMERIC(15, 2) NOT NULL
-  loan_term_months: number; // INTEGER NOT NULL
-  interest_rate: number; // NUMERIC(5, 2) NOT NULL
-  start_date: string; // DATE NOT NULL (Supabase returns as string)
-  status?: LoanStatus; // TEXT DEFAULT 'Active' -> Mapped to LoanStatus enum
-  created_at?: string; // TIMESTAMPTZ DEFAULT NOW()
+  id?: number;
+  borrower_id: number; // Foreign key linking to account_information
+  loan_amount: number | null;
+  loan_term: number | null; // e.g., in months
+  interest_rate: number | null;
+  status: string | null; // e.g., 'Active', 'Paid Off', 'Defaulted'
+  disbursement_date: string | null; // Consider Date type
+  purpose: string | null;
+  // Add any other relevant columns from your 'loans' table
+  created_at?: string;
 } 

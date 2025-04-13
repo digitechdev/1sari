@@ -1,0 +1,24 @@
+/* Add any specific styles for the borrower form here */
+ion-item {
+  --padding-start: 0; // Align items closer if needed
+}
+
+ion-label[position="stacked"] {
+  margin-bottom: 4px; // Add a bit of space below stacked labels
+  font-weight: 500;
+}
+
+// Add some margin to the bottom of the list to separate from buttons
+ion-list {
+    margin-bottom: 16px;
+}
+
+// Ensure datetime modal appears correctly
+ion-modal {
+    --height: auto;
+    --width: auto;
+
+    ion-datetime {
+        min-width: 300px; // Ensure datetime has enough space
+    }
+} 

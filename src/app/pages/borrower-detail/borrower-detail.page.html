@@ -1,0 +1,127 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/borrowers"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle() }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="state-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading details...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorLoading() && !isLoading()) {
+    <div class="state-container error-container">
+        <ion-icon name="warning-outline" color="danger" size="large"></ion-icon>
+        <ion-text color="danger">
+            <h2>Error Loading Data</h2>
+            <p>{{ errorLoading() }}</p>
+        </ion-text>
+        <ion-button (click)="loadData()" fill="outline">
+            <ion-icon slot="start" name="refresh-outline"></ion-icon>
+            Retry
+        </ion-button>
+    </div>
+  }
+
+  <!-- Content Display -->
+  @if (borrower(); as b) {
+    <ion-grid>
+      <ion-row>
+        <!-- Borrower Details Column -->
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>{{ b.name_of_borrower }}</ion-card-title>
+              <ion-card-subtitle>Borrower Information</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="none">
+                <ion-item>
+                  <ion-label>
+                    <h2>Provider Subject No:</h2>
+                    <p>{{ b.provider_subject_no || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Gender:</h2>
+                    <p>{{ b.gender || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                 <ion-item>
+                  <ion-label>
+                    <h2>Birthday:</h2>
+                    <p>{{ b.birthday_borrower ? datePipe.transform(b.birthday_borrower, 'mediumDate') : 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Contact No:</h2>
+                    <p>{{ b.contact_no_borrower || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                <ion-item>
+                  <ion-label>
+                    <h2>Store Name:</h2>
+                    <p>{{ b.store_name || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                 <ion-item>
+                  <ion-label>
+                    <h2>Classification:</h2>
+                    <p>{{ b.classification || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                 <ion-item>
+                  <ion-label>
+                    <h2>Officer:</h2>
+                    <p>{{ b.account_relationship_officer || 'N/A' }}</p>
+                  </ion-label>
+                </ion-item>
+                <!-- Add other relevant borrower details here -->
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Loans Column -->
+        <ion-col size="12" size-md="6">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Associated Loans</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              @if (loans().length > 0) {
+                <ion-list lines="full">
+                  @for (loan of loans(); track loan.id) {
+                    <ion-item button (click)="viewLoanDetail(loan)" detail="true">
+                      <ion-label>
+                        <h2>Loan ID: {{ loan.id }}</h2>
+                        <p>Amount: {{ loan.loan_amount | currency:'PHP':'symbol' }} | Status: {{ loan.status }}</p>
+                        <p>Disbursed: {{ loan.disbursement_date ? datePipe.transform(loan.disbursement_date, 'mediumDate') : 'N/A' }}</p>
+                      </ion-label>
+                    </ion-item>
+                  }
+                </ion-list>
+              } @else {
+                <ion-text color="medium">
+                    <p class="ion-text-center ion-padding-top">No associated loans found for this borrower.</p>
+                </ion-text>
+              }
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  }
+
+</ion-content>
