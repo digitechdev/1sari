@@ -1,0 +1,87 @@
+<!-- No ion-header needed here as it's handled by app.component -->
+
+<ion-content>
+  <!-- Filter Button (Positioned top-right) -->
+  <ion-grid class="ion-no-padding">
+    <ion-row class="ion-justify-content-end">
+      <ion-col size="auto">
+        <ion-button fill="clear" class="filter-button">
+          <ion-icon slot="start" name="filter-outline"></ion-icon>
+          Filter
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Widget Cards -->
+  <ion-grid>
+    <ion-row>
+      <!-- Active Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+          <ion-card-header>
+            <ion-card-subtitle>Active Loans</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">0</div>
+            <div class="widget-label blue">
+              Active Loans
+              <ion-icon name="wallet-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Pending Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+          <ion-card-header>
+            <ion-card-subtitle>Pending Loans</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">0</div>
+            <div class="widget-label orange">
+              Pending Loans
+              <ion-icon name="hourglass-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Defaulted Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+          <ion-card-header>
+            <ion-card-subtitle>Defaulted Loans</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">0</div>
+            <div class="widget-label red">
+              Defaulted Loans
+              <ion-icon name="refresh-circle-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Fully Paid Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+          <ion-card-header>
+            <ion-card-subtitle>Fully Paid Loans</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">0</div>
+            <div class="widget-label green">
+              Fully Paid Loans
+              <ion-icon name="checkmark-circle-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Placeholder for other dashboard content (e.g., charts, tables) -->
+
+</ion-content>
