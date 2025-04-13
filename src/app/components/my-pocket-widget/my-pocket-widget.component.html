@@ -1,0 +1,43 @@
+<ion-card>
+  <ion-card-content>
+    <ion-grid>
+      <!-- Header -->
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <ion-col size="auto">
+          <ion-label><h3 style="margin: 0; font-weight: 500;">My Pocket</h3></ion-label>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button fill="clear" size="small" (click)="seeAll()">See all</ion-button>
+        </ion-col>
+      </ion-row>
+
+      <!-- Filters -->
+      <ion-row style="margin-top: 5px; margin-bottom: 15px;">
+        <ion-col>
+          @for (filter of filters; track filter) {
+            <ion-chip [outline]="selectedFilter() !== filter" (click)="selectFilter(filter)">
+              <ion-label>{{ filter }}</ion-label>
+            </ion-chip>
+          }
+        </ion-col>
+      </ion-row>
+
+      <!-- Pocket Grid -->
+      <ion-row>
+        @for (pocket of pockets(); track pocket.name) {
+          <ion-col size="6" class="ion-text-center">
+            <ion-card class="pocket-item-card">
+              <ion-card-content class="ion-text-center">
+                 <ion-icon [name]="pocket.icon" color="primary" size="large" style="margin-bottom: 5px;"></ion-icon>
+                 <ion-label>
+                   <p style="font-weight: 500; margin-bottom: 2px;">{{ pocket.name }}</p>
+                   <p style="font-size: 0.8em; color: var(--ion-color-medium);">${{ pocket.amount | number:'1.2-2' }}</p>
+                 </ion-label>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

@@ -1,0 +1,57 @@
+<ion-card>
+  <ion-card-content>
+    <ion-grid>
+      <!-- Total Balance -->
+      <ion-row>
+        <ion-col>
+          <ion-label color="medium">Total Balance</ion-label>
+          <h1 style="margin-top: 5px; margin-bottom: 15px; font-weight: 600;">${{ totalBalance() | number:'1.2-2' }}</h1>
+        </ion-col>
+      </ion-row>
+
+      <!-- Action Buttons -->
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" (click)="requestMoney()">Request</ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="block" (click)="transferMoney()">Transfer</ion-button>
+        </ion-col>
+      </ion-row>
+
+      <!-- Expenses Analysis Header -->
+      <ion-row class="ion-align-items-center ion-justify-content-between" style="margin-top: 20px;">
+        <ion-col size="auto">
+          <ion-label><h3 style="margin: 0; font-weight: 500;">Expenses Analysis</h3></ion-label>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-select [value]="selectedMonth()" interface="popover" (ionChange)="monthChanged($event)" style="font-size: 0.9em;">
+            <ion-select-option value="August">August</ion-select-option>
+            <ion-select-option value="July">July</ion-select-option>
+            <ion-select-option value="June">June</ion-select-option>
+             <!-- Add more months -->
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <!-- Expenses Analysis Categories -->
+      <ion-row style="margin-top: 10px;">
+         @for (category of expensesAnalysis(); track category.name) {
+          <ion-col class="ion-text-center">
+            <ion-label color="medium" style="font-size: 0.8em;">{{ category.name }}</ion-label>
+            <p style="margin-top: 2px; margin-bottom: 5px; font-weight: 500;">${{ category.amount | number:'1.2-2' }}</p>
+          </ion-col>
+        }
+      </ion-row>
+
+      <!-- Expenses Progress Bar -->
+      <ion-row>
+        <ion-col>
+          <!-- Simple progress bar - could be more complex with multiple segments -->
+           <ion-progress-bar [value]="0.6" color="primary"></ion-progress-bar> <!-- Placeholder value -->
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

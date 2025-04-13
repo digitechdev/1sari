@@ -1,0 +1,13 @@
+ion-list {
+  --background: transparent; // Remove list background if inside card
+}
+
+.list-header {
+  font-weight: 500;
+  font-size: 0.9em;
+  color: var(--ion-color-medium);
+}
+
+ion-item ion-label {
+  white-space: normal; // Allow wrapping if needed
+}

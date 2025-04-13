@@ -1,0 +1,72 @@
+<ion-card>
+  <ion-card-content>
+    <ion-grid>
+      <!-- Header Row -->
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <ion-col size="auto">
+          <ion-label color="medium">Income</ion-label>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-label color="medium" style="font-size: 0.8em;">1 Aug - 1 Apr</ion-label>
+        </ion-col>
+      </ion-row>
+
+      <!-- Amount Row -->
+      <ion-row class="ion-align-items-center">
+        <ion-col size="auto">
+          <h1 style="margin: 0; font-weight: 600;">${{ totalIncome() | number:'1.2-2' }}</h1>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-badge color="success">
+            {{ percentageChange() }}%
+            <ion-icon name="trending-up-outline" style="margin-left: 4px;"></ion-icon>
+          </ion-badge>
+        </ion-col>
+        <ion-col>
+          <!-- Placeholder for small graph -->
+        </ion-col>
+      </ion-row>
+
+      <!-- Summary Row -->
+      <ion-row>
+        <ion-col>
+          <p style="font-size: 0.9em;">You made an extra <span style="color: var(--ion-color-success); font-weight: 500;">${{ extraIncome() | number:'1.2-2' }}</span> this month</p>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Income List -->
+      <ion-row>
+        <ion-col>
+          <ion-label color="dark"><h3 style="margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Recent income</h3></ion-label>
+          <ion-list [inset]="true" lines="none">
+            @for (income of recentIncome(); track income.name) {
+              <ion-item>
+                <ion-avatar slot="start">
+                  <!-- Use placeholder if no avatarUrl -->
+                  <ion-icon name="person-circle-outline" size="large" color="medium"></ion-icon>
+                  <!-- <img [src]="income.avatarUrl" *ngIf="income.avatarUrl"/> -->
+                </ion-avatar>
+                <ion-label>
+                  <h2>{{ income.name }}</h2>
+                  <p>{{ income.description }}</p>
+                </ion-label>
+                <div slot="end" class="ion-text-end">
+                  <ion-badge [color]="income.status === 'Paid' ? 'success' : 'warning'">{{ income.status }}</ion-badge>
+                  <p style="color: var(--ion-color-success); margin-top: 5px; font-weight: 500;">+${{ income.amount | number:'1.2-2' }}</p>
+                </div>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-col>
+      </ion-row>
+
+      <!-- View All Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button fill="clear" size="small" (click)="viewAllTransactions()">View all transactions</ion-button>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

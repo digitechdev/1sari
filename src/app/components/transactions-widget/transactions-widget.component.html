@@ -1,0 +1,73 @@
+<p>
+  transactions-widget works!
+</p>
+
+<ion-card>
+  <ion-card-content>
+    <ion-grid>
+      <!-- Header Row -->
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <ion-col size="12" size-sm="auto">
+           <ion-label><h3 style="margin: 0; font-weight: 500;">Transactions</h3></ion-label>
+           <p style="font-size: 0.9em; color: var(--ion-color-medium);">You have {{ transactionCount() }} transactions this month</p>
+        </ion-col>
+        <ion-col size="12" size-sm="auto" class="ion-text-end">
+          <ion-select interface="popover" placeholder="Filter" (ionChange)="filterChanged($event)" style="margin-right: 10px; display: inline-block; max-width: 150px;">
+            <ion-select-option value="all">All</ion-select-option>
+            <ion-select-option value="income">Income</ion-select-option>
+            <ion-select-option value="expenses">Expenses</ion-select-option>
+            <!-- Add more filters -->
+          </ion-select>
+          <ion-searchbar
+            [debounce]="500" (ionInput)="handleInput($event)"
+            placeholder="Search"
+            style="display: inline-block; max-width: 200px; --box-shadow: none; border: 1px solid var(--ion-color-light-shade); border-radius: 8px; height: 38px;"> 
+          </ion-searchbar>
+        </ion-col>
+      </ion-row>
+
+      <!-- Transaction List -->
+      <ion-row style="margin-top: 15px;">
+        <ion-col>
+          <!-- Simplified List View -->
+          <ion-list lines="full"> 
+             <!-- Optional Header Row -->
+            <ion-item lines="none" color="light">
+                <ion-label class="list-header">Date</ion-label>
+                <ion-label class="list-header">Name</ion-label>
+                <ion-label class="list-header">Type</ion-label>
+                <ion-label class="list-header ion-text-center">Status</ion-label>
+                <ion-label class="list-header ion-text-end">Fees</ion-label>
+                <ion-label class="list-header ion-text-end">Amount</ion-label>
+            </ion-item>
+
+            @for (tx of transactions(); track tx.date + tx.name) {
+              <ion-item>
+                <ion-label>
+                   <p>{{ tx.date | date:'MMM d, yyyy' }}</p>
+                   <p style="font-size: 0.8em; color: var(--ion-color-medium);">{{ tx.time }}</p>
+                 </ion-label>
+                <ion-label>
+                  <ion-avatar slot="start" style="width: 30px; height: 30px; margin-right: 10px; vertical-align: middle;">
+                     <img [src]="tx.avatarUrl || 'assets/icon/default-avatar.png'" /> <!-- Use default if none -->
+                  </ion-avatar>
+                  <div style="display: inline-block; vertical-align: middle;">
+                    <h3 style="font-size: 1em; margin: 0;">{{ tx.name }}</h3>
+                    <p style="font-size: 0.8em; color: var(--ion-color-medium); margin: 0;">{{ tx.description }}</p>
+                  </div>
+                 </ion-label>
+                <ion-label>{{ tx.type }}</ion-label>
+                <ion-label class="ion-text-center">
+                  <ion-badge [color]="tx.status === 'Paid' ? 'success' : 'warning'">{{ tx.status }}</ion-badge>
+                </ion-label>
+                <ion-label class="ion-text-end">{{ tx.fees | currency:'$':'symbol':'1.2-2' }}</ion-label>
+                <ion-label class="ion-text-end" [color]="tx.amount > 0 ? 'success' : 'dark'">{{ tx.amount > 0 ? '+' : '' }}{{ tx.amount | currency:'$':'symbol':'1.2-2' }}</ion-label>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

@@ -1,0 +1,9 @@
+ion-chip {
+  margin-right: 5px; // Spacing between chips
+}
+
+.pocket-item-card {
+  margin: 5px; // Reset margin for nested cards
+  box-shadow: var(--ion-box-shadow, 0 2px 5px rgba(0,0,0,0.1)); // Add a subtle shadow maybe?
+  --background: var(--ion-color-light-tint); // Slightly different background
+}

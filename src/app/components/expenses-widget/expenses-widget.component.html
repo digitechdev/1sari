@@ -1,0 +1,73 @@
+<ion-card>
+  <ion-card-content>
+    <ion-grid>
+      <!-- Header Row -->
+      <ion-row class="ion-align-items-center ion-justify-content-between">
+        <ion-col size="auto">
+          <ion-label color="medium">Expenses</ion-label>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-label color="medium" style="font-size: 0.8em;">1 Aug - 1 Apr</ion-label>
+        </ion-col>
+      </ion-row>
+
+      <!-- Amount Row -->
+      <ion-row class="ion-align-items-center">
+        <ion-col size="auto">
+          <h1 style="margin: 0; font-weight: 600;">${{ totalExpenses() | number:'1.2-2' }}</h1>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-badge color="danger">
+            {{ percentageChange() }}%
+            <ion-icon name="trending-down-outline" style="margin-left: 4px;"></ion-icon>
+          </ion-badge>
+        </ion-col>
+        <ion-col>
+          <!-- Placeholder for small graph -->
+        </ion-col>
+      </ion-row>
+
+      <!-- Summary Row -->
+      <ion-row>
+        <ion-col>
+          <p style="font-size: 0.9em;">Expenses increased by <span style="color: var(--ion-color-danger); font-weight: 500;">${{ extraExpenses() | number:'1.2-2' }}</span> this month</p>
+        </ion-col>
+      </ion-row>
+
+      <!-- Recent Expenses List -->
+      <ion-row>
+        <ion-col>
+          <ion-label color="dark"><h3 style="margin-bottom: 5px; margin-top: 10px; font-weight: 500;">Recent transactions</h3></ion-label>
+          <ion-list [inset]="true" lines="none">
+            @for (expense of recentExpenses(); track expense.name) {
+              <ion-item>
+                <ion-avatar slot="start">
+                  <!-- Use icon instead of image -->
+                  <div class="icon-avatar" [style.background]="'var(--ion-color-' + expense.iconColor + '-tint)'">
+                     <ion-icon [name]="expense.icon || 'ellipse-outline'" [color]="expense.iconColor || 'medium'" size="small"></ion-icon>
+                  </div>
+                </ion-avatar>
+                <ion-label>
+                  <h2>{{ expense.name }}</h2>
+                  <p>{{ expense.description }}</p>
+                </ion-label>
+                <div slot="end" class="ion-text-end">
+                  <ion-badge [color]="expense.status === 'Paid' ? 'success' : 'warning'">{{ expense.status }}</ion-badge>
+                  <p style="color: var(--ion-color-dark); margin-top: 5px; font-weight: 500;">-${{ expense.amount | number:'1.2-2' }}</p>
+                </div>
+              </ion-item>
+            }
+          </ion-list>
+        </ion-col>
+      </ion-row>
+
+      <!-- View All Button -->
+      <ion-row>
+        <ion-col>
+          <ion-button fill="clear" size="small" (click)="viewAllTransactions()">View all transactions</ion-button>
+        </ion-col>
+      </ion-row>
+
+    </ion-grid>
+  </ion-card-content>
+</ion-card>

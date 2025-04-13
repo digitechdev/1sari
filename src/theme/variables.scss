@@ -1,2 +1,86 @@
 // For information on how to create your own theme, please see:
 // http://ionicframework.com/docs/theming/
+
+// Define base color variables
+:root {
+  --ion-color-primary: #2979ff; // Blue used for buttons and highlights
+  --ion-color-primary-rgb: 41,121,255;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  --ion-color-primary-shade: #246ae0;
+  --ion-color-primary-tint: #3e87ff;
+
+  --ion-color-secondary: #0d1117; // Dark background color for header (approx)
+  --ion-color-secondary-rgb: 13,17,23;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255,255,255;
+  --ion-color-secondary-shade: #0b0f15;
+  --ion-color-secondary-tint: #25292f;
+
+  --ion-color-tertiary: #6a6a6a; // Placeholder for text/icons if needed
+  --ion-color-tertiary-rgb: 106,106,106;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255,255,255;
+  --ion-color-tertiary-shade: #5d5d5d;
+  --ion-color-tertiary-tint: #797979;
+
+  --ion-color-success: #2dd36f;
+  --ion-color-success-rgb: 45,211,111;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255,255,255;
+  --ion-color-success-shade: #28ba62;
+  --ion-color-success-tint: #42d77d;
+
+  --ion-color-warning: #ffc409;
+  --ion-color-warning-rgb: 255,196,9;
+  --ion-color-warning-contrast: #000000;
+  --ion-color-warning-contrast-rgb: 0,0,0;
+  --ion-color-warning-shade: #e0ac08;
+  --ion-color-warning-tint: #ffca22;
+
+  --ion-color-danger: #eb445a;
+  --ion-color-danger-rgb: 235,68,90;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255,255,255;
+  --ion-color-danger-shade: #cf3c4f;
+  --ion-color-danger-tint: #ed576b;
+
+  --ion-color-light: #f4f5f8; // Light background for content/cards
+  --ion-color-light-rgb: 244,245,248;
+  --ion-color-light-contrast: #000000;
+  --ion-color-light-contrast-rgb: 0,0,0;
+  --ion-color-light-shade: #d7d8da;
+  --ion-color-light-tint: #f5f6f9;
+
+  --ion-color-medium: #92949c; // Medium gray for less prominent text
+  --ion-color-medium-rgb: 146,148,156;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255,255,255;
+  --ion-color-medium-shade: #808289;
+  --ion-color-medium-tint: #9d9fa6;
+
+  --ion-color-dark: #222428; // Dark text color
+  --ion-color-dark-rgb: 34,36,40;
+  --ion-color-dark-contrast: #ffffff;
+  --ion-color-dark-contrast-rgb: 255,255,255;
+  --ion-color-dark-shade: #1e2023;
+  --ion-color-dark-tint: #383a3e;
+
+  // App specific colors
+  --ion-background-color: #f0f2f5; // Overall background matching the image (light gray)
+  --ion-background-color-rgb: 240,242,245;
+
+  --ion-text-color: #0d1117; // Default text color
+  --ion-text-color-rgb: 13,17,23;
+
+  --ion-card-background: #ffffff; // Card background color
+}
+
+// Optional: Apply overrides for dark mode if needed
+// @media (prefers-color-scheme: dark) {
+//   body {
+//      --ion-background-color: #1e1e1e; 
+//      --ion-text-color: #ffffff;
+//      --ion-card-background: #2b2b2b;
+//   }
+// }
