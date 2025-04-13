@@ -1,0 +1,140 @@
+/* src/app/pages/borrowers/borrowers.page.scss */
+
+// Remove previous SCSS variables for sticky columns
+// $sticky-col-checkbox-width: 50px;
+
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  
+    ion-header,
+    ion-footer {
+      flex-shrink: 0;
+    }
+  
+    ion-content {
+      flex-grow: 1;
+      // --padding-top: 0; // Let ion-content manage padding unless needed
+      // --padding-bottom: 0;
+      position: relative; 
+      display: flex; 
+      flex-direction: column;
+       // Remove overflow-y, ngx-datatable handles internal scroll
+    }
+  }
+  
+  // Remove scroll wrapper styles
+  // .table-scroll-wrapper { ... }
+  
+  // Controls Toolbar Styling
+  .controls-toolbar {
+    --background: var(--ion-color-light, #f8f9fa);
+    --min-height: 60px;
+    border-bottom: 1px solid var(--ion-color-medium-tint, #dee2e6);
+  
+    ion-searchbar {
+      --box-shadow: none;
+      --background: #ffffff;
+      --border-radius: 6px;
+    }
+    .filter-chip {
+      --background: #ffffff;
+      border: 1px solid var(--ion-color-medium-tint, #dee2e6);
+      margin-inline-end: 8px;
+      font-size: 0.9em;
+      height: 36px;
+    }
+    .actions-col ion-button {
+      font-size: 0.9em;
+      height: 36px;
+    }
+  }
+  
+  // Remove ALL previous .users-table, ion-row, ion-col, sticky-col styles
+  // .users-table { ... }
+  // .table-header-row { ... }
+  // .table-body-row { ... }
+  // .sticky-col { ... }
+  // ion-col { ... }
+  
+  // Add styles for ngx-datatable container if needed
+  .datatable-content {
+     height: 100%; 
+     width: 100%;
+     display: flex;
+     flex-direction: column;
+  
+     ngx-datatable.material {
+        box-shadow: none; 
+        flex-grow: 1;
+        width: 100%;
+  
+        .datatable-body-cell {
+             ion-button {
+                margin-inline: -4px;
+                --padding-start: 4px;
+                --padding-end: 4px;
+                min-width: auto;
+             }
+         }
+         
+         .datatable-footer {
+             .datatable-pager {
+                 
+             }
+         }
+     }
+  }
+  
+  // Footer Toolbar Styling
+  .summary-toolbar {
+    --background: var(--ion-color-light, #f8f9fa);
+    --min-height: 44px;
+    border-top: 1px solid var(--ion-color-medium-tint, #dee2e6);
+    font-size: 0.9em;
+  }
+  
+  // State message styling
+  .state-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    padding: 20px;
+    width: 100%;
+  }
+  
+  /* Add button styling here */
+  .action-button {
+    margin-right: 4px; // Add some space between buttons
+  
+    // Optional: Ensure consistent size if needed
+    // --padding-start: 4px;
+    // --padding-end: 4px;
+  }
+  
+  // Last button doesn't need right margin
+  .action-button:last-child {
+    margin-right: 0;
+  }
+  
+  // Adjust icon size within small clear buttons if needed
+  .action-button ion-icon {
+    font-size: 1.2rem; // Example size adjustment
+  }
+  
+  // Make sure the datatable content takes precedence for scrolling
+  :host {
+    .datatable-content {
+      position: relative; 
+      z-index: 1; 
+    }
+  
+    // Ensure the table fills the content area
+    ngx-datatable {
+      display: block;
+      height: 100%; // Or adjust as needed based on layout
+      width: 100%;
+    }
+  }

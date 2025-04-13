@@ -1,0 +1,242 @@
+import { Component, OnInit, signal, computed, inject, ViewEncapsulation, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, effect } from '@angular/core';
+import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
+import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
+import { addIcons } from 'ionicons';
+import {
+  searchOutline,
+  addOutline,
+  refreshOutline,
+  eyeOutline,
+  createOutline,
+  trashOutline
+} from 'ionicons/icons';
+
+import { LoanService } from '../../services/loan.service';
+import { Loan, LoanWithBorrower } from '../../interfaces/loan.interfaces';
+
+@Component({
+  selector: 'app-loans',
+  templateUrl: './loans.page.html',
+  styleUrls: [
+    './loans.page.scss',
+    '../../../../node_modules/@swimlane/ngx-datatable/themes/material.scss'
+  ],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    NgxDatatableModule
+  ],
+  providers: [DatePipe, CurrencyPipe],
+  encapsulation: ViewEncapsulation.None
+})
+export class LoansPage implements OnInit, AfterViewInit {
+  @ViewChild('loanActionsTemplate', { static: false }) loanActionsTemplate!: TemplateRef<any>;
+  @ViewChild(DatatableComponent) table: DatatableComponent | undefined;
+
+  private loanService = inject(LoanService);
+  private datePipe = inject(DatePipe);
+  private currencyPipe = inject(CurrencyPipe);
+  private cdRef = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private modalCtrl = inject(ModalController);
+  private alertCtrl = inject(AlertController);
+  private toastCtrl = inject(ToastController);
+
+  allLoans = signal<LoanWithBorrower[]>([]);
+  isLoading = signal<boolean>(true);
+  errorLoading = signal<string | null>(null);
+  searchTerm = signal<string>('');
+  displayableLoans = signal<LoanWithBorrower[]>([]);
+  private actionsTemplateAssigned = false;
+
+  filteredLoans = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    if (!term) {
+      return this.allLoans();
+    }
+    return this.allLoans().filter(loan =>
+      loan.id?.toString().includes(term) ||
+      (loan.borrower?.name_of_borrower && loan.borrower.name_of_borrower.toLowerCase().includes(term)) ||
+      loan.status?.toLowerCase().includes(term) ||
+      loan.purpose?.toLowerCase().includes(term)
+    );
+  });
+
+  ColumnMode = ColumnMode;
+  tableColumns: any[] = [
+    { prop: 'id', name: 'Loan ID', width: 80 },
+    {
+      prop: 'borrower.name_of_borrower',
+      name: 'Borrower',
+      width: 150
+    },
+    { 
+      prop: 'loan_amount', 
+      name: 'Amount', 
+      width: 120,
+      pipe: { transform: (value: number) => this.currencyPipe.transform(value, 'PHP', 'symbol') } 
+    },
+    { prop: 'loan_term', name: 'Term (m)', width: 80 },
+    { prop: 'interest_rate', name: 'Rate (%)', width: 80 },
+    { prop: 'status', name: 'Status', width: 100 },
+    { 
+      prop: 'disbursement_date', 
+      name: 'Disbursed', 
+      width: 120,
+      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
+    },
+    { 
+      prop: 'created_at', 
+      name: 'Created', 
+      width: 120,
+      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
+    },
+    {
+      name: 'Actions',
+      prop: 'id',
+      sortable: false,
+      canAutoResize: false,
+      draggable: false,
+      resizable: false,
+      width: 120,
+      cellTemplate: undefined
+    }
+  ];
+
+  constructor() {
+    addIcons({ searchOutline, addOutline, refreshOutline, eyeOutline, createOutline, trashOutline });
+    effect(() => {
+      console.log('Loans list updated:', this.allLoans().length);
+      console.log('Filtered loan count:', this.filteredLoans().length);
+      if (this.actionsTemplateAssigned) {
+         this.displayableLoans.set(this.filteredLoans());
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.loadLoans();
+  }
+
+   ngAfterViewInit() {
+    this.cdRef.detectChanges();
+    this.tryAssignTemplateAndData();
+  }
+
+  async loadLoans(showLoading: boolean = true) {
+    if (showLoading) {
+      this.isLoading.set(true);
+    }
+    this.errorLoading.set(null);
+    this.displayableLoans.set([]);
+    this.actionsTemplateAssigned = false;
+    this.searchTerm.set('');
+
+    try {
+      const response = await this.loanService.getAllLoans();
+      if (response.error) {
+        console.error('Error fetching loans:', response.error);
+        this.errorLoading.set(`Failed to load loans: ${response.error.message}`);
+        this.allLoans.set([]);
+      } else {
+        this.allLoans.set(response.data || []);
+      }
+    } catch (err: any) {
+      console.error('Unexpected error loading loans:', err);
+      this.errorLoading.set('An unexpected error occurred while loading loan data.');
+      this.allLoans.set([]);
+    } finally {
+      this.isLoading.set(false);
+      this.cdRef.detectChanges();
+      this.tryAssignTemplateAndData();
+    }
+  }
+
+  tryAssignTemplateAndData() {
+    if (this.loanActionsTemplate && !this.actionsTemplateAssigned) {
+      const actionsCol = this.tableColumns.find(col => col.name === 'Actions');
+      if (actionsCol) { 
+        actionsCol.cellTemplate = this.loanActionsTemplate;
+        this.tableColumns = [...this.tableColumns];
+        this.actionsTemplateAssigned = true;
+        console.log('Loan actions template assigned.');
+        this.displayableLoans.set(this.filteredLoans());
+        this.cdRef.detectChanges();
+      } else {
+         console.warn('Could not find Actions column to assign template.');
+      }
+    } else if (this.actionsTemplateAssigned) {
+      this.displayableLoans.set(this.filteredLoans());
+      this.cdRef.detectChanges();
+    }
+     else {
+         console.log('Loan actions template not ready yet.');
+     }
+  }
+
+  handleSearch(event: any) {
+    const term = event.target.value || '';
+    this.searchTerm.set(term);
+  }
+
+  async refreshData() {
+    await this.loadLoans(true);
+    const toast = await this.toastCtrl.create({
+      message: 'Loan data refreshed.',
+      duration: 1500,
+      position: 'bottom',
+      color: 'medium'
+    });
+    await toast.present();
+  }
+
+  async addLoan() {
+    console.log('Add Loan clicked - Placeholder');
+    await this.presentToast('Add Loan functionality not yet implemented.', 'warning');
+  }
+
+  async editLoan(loan: LoanWithBorrower) {
+    console.log('Edit Loan clicked - Placeholder:', loan);
+    await this.presentToast('Edit Loan functionality not yet implemented.', 'warning');
+  }
+
+  async deleteLoan(loan: LoanWithBorrower) {
+    console.log('Delete Loan clicked - Placeholder:', loan);
+    const alert = await this.alertCtrl.create({
+        header: 'Confirm Deletion',
+        message: `Are you sure you want to delete Loan ID ${loan.id} for ${loan.borrower?.name_of_borrower || 'Borrower'}?`,
+        buttons: [
+            { text: 'Cancel', role: 'cancel' },
+            { 
+                text: 'Delete', 
+                role: 'destructive',
+                handler: async () => { 
+                    console.log('Delete confirmed for loan:', loan.id);
+                    await this.presentToast('Delete Loan functionality not yet implemented.', 'warning');
+                }
+            }
+        ]
+    });
+    await alert.present();
+  }
+
+  async viewLoan(loan: LoanWithBorrower) {
+    console.log('View Loan clicked - Placeholder:', loan);
+    await this.presentToast('View Loan Detail functionality not yet implemented.', 'warning');
+  }
+
+  async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 3000,
+      position: 'bottom',
+      color: color,
+    });
+    await toast.present();
+  }
+}
