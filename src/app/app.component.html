@@ -25,7 +25,14 @@
                 <ion-label class="ion-text-uppercase menu-header-label">{{ item.title }}</ion-label>
               </ion-item>
             } @else {
-              <ion-item button detail="false" [routerLink]="item.url" routerDirection="root" routerLinkActive="selected">
+              <ion-item
+                button
+                detail="false"
+                [routerLink]="item.url"
+                routerDirection="root"
+                [ngClass]="{ 'selected': router.url === item.url }"
+                lines="none"
+              >
                 @if (item.icon) {
                   <ion-icon [name]="item.icon" slot="start"></ion-icon>
                 }
@@ -59,11 +66,12 @@
 
           <ion-buttons slot="end">
             <!-- Search Bar -->
-            <ion-searchbar
+            <!-- <ion-searchbar
               class="ion-hide-md-down header-searchbar"
               placeholder="Search..."
               (click)="openSearch()"
-            ></ion-searchbar> <!-- Add keybinding display later if needed -->
+            ></ion-searchbar>  -->
+            <!-- Add keybinding display later if needed -->
 
             <!-- Action Buttons -->
             <ion-button fill="clear" (click)="openMessages()">

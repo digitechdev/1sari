@@ -1,5 +1,6 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { Router, NavigationEnd, ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import {
   IonApp,
@@ -60,6 +61,7 @@ interface MenuItem {
   styleUrls: ['app.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     RouterLink,
     RouterOutlet,
     IonApp,
@@ -85,7 +87,7 @@ interface MenuItem {
 })
 export class AppComponent implements OnInit {
   // Inject Router and ActivatedRoute
-  private router = inject(Router);
+  public router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private popoverCtrl = inject(PopoverController);
 
