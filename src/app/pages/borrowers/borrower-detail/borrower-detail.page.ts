@@ -3,9 +3,9 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
-import { BorrowerService } from '../../services/borrower.service';
-import { AccountInformation } from '../../interfaces/account-information.interfaces';
-import { Loan } from '../../interfaces/loan.interfaces';
+import { BorrowerService } from '../../../services/borrower.service';
+import { AccountInformation } from '../../../interfaces/account-information.interfaces';
+import { Loan } from '../../../interfaces/loan.interfaces';
 
 @Component({
   selector: 'app-borrower-detail',

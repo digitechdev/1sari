@@ -23,19 +23,17 @@ export const routes: Routes = [
     data: { title: 'Borrowers' },
   },
   {
-    path: 'borrowers/new',
-    loadComponent: () =>
-      import('./pages/borrower-form/borrower-form.page').then(
-        (m) => m.BorrowerFormPage
-      ),
-    data: { title: 'Add Borrower' }
-  },
-  {
     path: 'borrower-detail/:id',
-    loadComponent: () => import('./pages/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage)
+    loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage)
   },
   {
     path: 'loans',
-    loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage)
+    loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage),
+    data: { title: 'Loans' }
+  },
+  {
+    path: 'loans/new',
+    loadComponent: () => import('./pages/loan-form/loan-form.page').then( m => m.LoanFormPage),
+    data: { title: 'Add New Loan' }
   },
 ];

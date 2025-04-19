@@ -104,14 +104,12 @@ export class AppComponent implements OnInit {
   // Define the menu structure using the interface
   private allMenuItems: MenuItem[] = [
     { title: 'Menu', isHeader: true },
-    { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' },
-    { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' },
-    { title: 'Loans', url: '/loans', icon: 'cash-outline' },
-    // { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
-    // { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
-    // { title: 'Card', url: '/card', icon: 'card-outline' },
-    // { title: 'History', url: '/history', icon: 'time-outline' },
-    // { title: 'Notifications', url: '/notifications', icon: 'notifications-outline', badge: 12 },
+    { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
+    { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
+    { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
+    { title: 'Card', url: '/card', icon: 'card-outline' },
+    { title: 'History', url: '/history', icon: 'time-outline' }, // Simple item for now, nesting can be added
+    { title: 'Notifications', url: '/notifications', icon: 'notifications-outline', badge: 12 },
     { title: 'Tools', isHeader: true },
     { title: 'Setting', url: '/settings', icon: 'settings-outline' },
     { title: 'Help Center', url: '/help', icon: 'help-circle-outline' },

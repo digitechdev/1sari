@@ -28,8 +28,8 @@ import {
   IonLoading,
   ToastController
 } from '@ionic/angular/standalone';
-import { BorrowerService } from '../../services/borrower.service';
-import { AccountInformation } from '../../interfaces/account-information.interfaces';
+import { BorrowerService } from '../../../services/borrower.service';
+import { AccountInformation } from '../../../interfaces/account-information.interfaces';
 import { ChangeDetectorRef } from '@angular/core';
 
 @Component({

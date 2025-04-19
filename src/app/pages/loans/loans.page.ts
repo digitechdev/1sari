@@ -196,8 +196,8 @@ export class LoansPage implements OnInit, AfterViewInit {
   }
 
   async addLoan() {
-    console.log('Add Loan clicked - Placeholder');
-    await this.presentToast('Add Loan functionality not yet implemented.', 'warning');
+    console.log('Add Loan clicked - Navigating to form');
+    this.router.navigate(['/loans/new']);
   }
 
   async editLoan(loan: LoanWithBorrower) {

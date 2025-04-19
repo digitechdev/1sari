@@ -1,0 +1,122 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/loans"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Add New Loan</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="saveLoan()" [disabled]="isLoading() || loanForm.invalid">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="loanForm" (ngSubmit)="saveLoan()">
+    <ion-list lines="full">
+
+      <!-- Borrower Selection -->
+      <ion-item>
+        <ion-label position="stacked">Borrower <ion-text color="danger">*</ion-text></ion-label>
+        @if (isBorrowersLoading()) {
+          <ion-spinner name="dots" slot="end"></ion-spinner>
+        } @else {
+          <ion-select formControlName="borrower_id" placeholder="Select Borrower" interface="action-sheet">
+            @for (borrower of borrowers(); track borrower.id) {
+              <ion-select-option [value]="borrower.id">{{ borrower.name_of_borrower }} (ID: {{ borrower.id }})</ion-select-option>
+            }
+            @if (borrowers().length === 0 && !isBorrowersLoading()) {
+                 <ion-select-option disabled>No borrowers found</ion-select-option>
+            }
+          </ion-select>
+        }
+      </ion-item>
+      <!-- Validation Message -->
+      @if (loanForm.controls['borrower_id'].invalid && loanForm.controls['borrower_id'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">Borrower is required.</ion-note>
+      }
+
+      <!-- Loan Amount -->
+      <ion-item>
+        <ion-label position="stacked">Loan Amount <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input formControlName="loan_amount" type="number" placeholder="Enter amount" required></ion-input>
+      </ion-item>
+      @if (loanForm.controls['loan_amount'].invalid && loanForm.controls['loan_amount'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">
+           @if (loanForm.controls['loan_amount'].hasError('required')) { <p>Amount is required.</p> }
+           @if (loanForm.controls['loan_amount'].hasError('min')) { <p>Amount must be positive.</p> }
+        </ion-note>
+      }
+
+      <!-- Loan Term -->
+      <ion-item>
+        <ion-label position="stacked">Loan Term (Months) <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input formControlName="loan_term" type="number" placeholder="Enter term in months" required></ion-input>
+      </ion-item>
+       @if (loanForm.controls['loan_term'].invalid && loanForm.controls['loan_term'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">
+           @if (loanForm.controls['loan_term'].hasError('required')) { <p>Term is required.</p> }
+           @if (loanForm.controls['loan_term'].hasError('min')) { <p>Term must be at least 1 month.</p> }
+        </ion-note>
+      }
+
+      <!-- Interest Rate -->
+      <ion-item>
+        <ion-label position="stacked">Interest Rate (%) <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input formControlName="interest_rate" type="number" placeholder="Enter annual rate" required></ion-input>
+      </ion-item>
+       @if (loanForm.controls['interest_rate'].invalid && loanForm.controls['interest_rate'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">
+           @if (loanForm.controls['interest_rate'].hasError('required')) { <p>Interest rate is required.</p> }
+           @if (loanForm.controls['interest_rate'].hasError('min')) { <p>Rate must be positive.</p> }
+        </ion-note>
+      }
+
+      <!-- Status -->
+      <ion-item>
+        <ion-label position="stacked">Status <ion-text color="danger">*</ion-text></ion-label>
+        <ion-select formControlName="status" placeholder="Select Status" interface="action-sheet">
+          <ion-select-option value="Pending">Pending</ion-select-option>
+          <ion-select-option value="Active">Active</ion-select-option>
+          <ion-select-option value="Paid Off">Paid Off</ion-select-option>
+          <ion-select-option value="Defaulted">Defaulted</ion-select-option>
+           <ion-select-option value="Cancelled">Cancelled</ion-select-option>
+        </ion-select>
+      </ion-item>
+      @if (loanForm.controls['status'].invalid && loanForm.controls['status'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">Status is required.</ion-note>
+      }
+
+      <!-- Disbursement Date -->
+      <ion-item>
+          <ion-label position="stacked">Disbursement Date</ion-label>
+          <ion-datetime-button datetime="disbursementDate"></ion-datetime-button>
+      </ion-item>
+
+      <!-- Purpose -->
+      <ion-item>
+        <ion-label position="stacked">Purpose</ion-label>
+        <ion-textarea formControlName="purpose" placeholder="Enter loan purpose (optional)" autoGrow="true"></ion-textarea>
+      </ion-item>
+
+    </ion-list>
+
+     <!-- Hidden Datetime Modal -->
+    <ion-modal [keepContentsMounted]="true">
+        <ion-datetime id="disbursementDate" formControlName="disbursement_date" presentation="date"></ion-datetime>
+    </ion-modal>
+
+    <!-- Submit Button (alternative placement) -->
+    <!-- 
+    <ion-button type="submit" expand="block" [disabled]="isLoading() || loanForm.invalid" class="ion-margin-top">
+      @if (isLoading()) {
+        <ion-spinner name="dots"></ion-spinner>
+      } @else {
+        Add Loan
+      }
+    </ion-button> 
+    -->
+  </form>
+</ion-content>
