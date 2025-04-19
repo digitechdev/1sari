@@ -43,7 +43,7 @@ import {
   peopleOutline,
   arrowBackOutline,
   saveOutline,
-  cashOutline
+  cashOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -86,7 +86,7 @@ interface MenuItem {
     IonSearchbar,
     IonAvatar,
     IonButton,
-    LogoComponent
+    LogoComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -105,6 +105,7 @@ export class AppComponent implements OnInit {
   private allMenuItems: MenuItem[] = [
     { title: 'Menu', isHeader: true },
     { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
+    { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' }, // Example route
     { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
     { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
     { title: 'Card', url: '/card', icon: 'card-outline' },
@@ -148,7 +149,7 @@ export class AppComponent implements OnInit {
       peopleOutline,
       arrowBackOutline,
       saveOutline,
-      cashOutline
+      cashOutline,
     });
   }
 
