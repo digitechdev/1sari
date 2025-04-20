@@ -1,0 +1,182 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Use navigateBack to go to previous page in history -->
+      <ion-back-button defaultHref="/borrowers"></ion-back-button> 
+    </ion-buttons>
+    <ion-title>{{ pageTitle() }}</ion-title> 
+    <ion-buttons slot="end">
+      <!-- Trigger save method on click -->
+      <ion-button (click)="save()" [disabled]="isLoading() || borrowerForm.invalid">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        {{ isEditMode() ? 'Update' : 'Save' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Add spinner overlay while loading data in edit mode -->
+  @if (isLoading() && isEditMode()) {
+      <div class="loading-overlay">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>Loading Borrower Data...</p>
+      </div>
+  }
+
+  <!-- Form content copied from borrower-form.component.html -->
+  <form [formGroup]="borrowerForm" (ngSubmit)="save()">
+    <ion-list lines="full">
+      <!-- Name of Borrower -->
+      <ion-item>
+        <ion-label position="stacked">Name of Borrower <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input formControlName="name_of_borrower" type="text" required></ion-input>
+      </ion-item>
+      @if (borrowerForm.controls['name_of_borrower'].invalid && borrowerForm.controls['name_of_borrower'].touched) {
+        <ion-note slot="error" color="danger" class="ion-padding-start">Name is required.</ion-note>
+      }
+
+      <!-- Provider Subject No -->
+      <ion-item>
+        <ion-label position="stacked">Provider Subject No</ion-label>
+        <ion-input formControlName="provider_subject_no" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Gender -->
+      <ion-item>
+        <ion-label position="stacked">Gender</ion-label>
+        <ion-select formControlName="gender" placeholder="Select Gender" interface="action-sheet">
+          <ion-select-option value="Male">Male</ion-select-option>
+          <ion-select-option value="Female">Female</ion-select-option>
+          <ion-select-option value="Other">Other</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Civil Status -->
+      <ion-item>
+        <ion-label position="stacked">Civil Status</ion-label>
+        <ion-select formControlName="civil_status" placeholder="Select Status" interface="action-sheet">
+          <ion-select-option value="Single">Single</ion-select-option>
+          <ion-select-option value="Married">Married</ion-select-option>
+          <ion-select-option value="Divorced">Divorced</ion-select-option>
+          <ion-select-option value="Widowed">Widowed</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <!-- Type of ID -->
+      <ion-item>
+        <ion-label position="stacked">Type of ID</ion-label>
+        <ion-input formControlName="type_of_id" type="text"></ion-input>
+      </ion-item>
+      
+      <!-- Birthday -->
+      <ion-item>
+        <ion-label position="stacked">Birthday</ion-label>
+        <ion-datetime-button datetime="birthday"></ion-datetime-button>
+      </ion-item>
+
+       <!-- Age -->
+      <ion-item>
+        <ion-label position="stacked">Age</ion-label>
+        <ion-input formControlName="age" type="number"></ion-input>
+      </ion-item>
+
+       <!-- Mother's Maiden Name -->
+      <ion-item>
+        <ion-label position="stacked">Mother's Maiden Name</ion-label>
+        <ion-input formControlName="mothers_maiden_name_borrower" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Co-Borrower/Maker -->
+      <ion-item>
+        <ion-label position="stacked">Co-Borrower/Maker</ion-label>
+        <ion-input formControlName="name_of_co_borrower_maker" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Security/Collateral -->
+      <ion-item>
+        <ion-label position="stacked">Security/Collateral</ion-label>
+        <ion-input formControlName="security_collateral" type="text"></ion-input>
+      </ion-item>
+
+       <!-- Mode of Payment -->
+      <ion-item>
+        <ion-label position="stacked">Mode of Payment</ion-label>
+        <ion-input formControlName="mode_of_payment" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Store Name -->
+      <ion-item>
+        <ion-label position="stacked">Store Name</ion-label>
+        <ion-input formControlName="store_name" type="text"></ion-input>
+      </ion-item>
+
+       <!-- Residence Address -->
+       <ion-item>
+        <ion-label position="stacked">Residence Address</ion-label>
+        <ion-textarea formControlName="residence_address" autoGrow="true"></ion-textarea>
+      </ion-item>
+
+      <!-- Length of Stay (Residence) -->
+      <ion-item>
+        <ion-label position="stacked">Length of Stay (Residence)</ion-label>
+        <ion-input formControlName="length_of_stay_in_residence" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Store Address -->
+       <ion-item>
+        <ion-label position="stacked">Store Address</ion-label>
+        <ion-textarea formControlName="store_address" autoGrow="true"></ion-textarea>
+      </ion-item>
+
+      <!-- Area -->
+      <ion-item>
+        <ion-label position="stacked">Area</ion-label>
+        <ion-input formControlName="area" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Contact No -->
+      <ion-item>
+        <ion-label position="stacked">Contact No</ion-label>
+        <ion-input formControlName="contact_no_borrower" type="tel"></ion-input>
+      </ion-item>
+
+      <!-- Classification -->
+      <ion-item>
+        <ion-label position="stacked">Classification</ion-label>
+        <ion-input formControlName="classification" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Store Category -->
+      <ion-item>
+        <ion-label position="stacked">Store Category</ion-label>
+        <ion-input formControlName="store_category" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Relationship Officer -->
+      <ion-item>
+        <ion-label position="stacked">Relationship Officer</ion-label>
+        <ion-input formControlName="account_relationship_officer" type="text"></ion-input>
+      </ion-item>
+
+      <!-- Retail Partner -->
+      <ion-item>
+        <ion-label position="stacked">Retail Partner</ion-label>
+        <ion-input formControlName="retail_partner" type="text"></ion-input>
+      </ion-item>
+
+    </ion-list>
+
+    <!-- Hidden datetime modal -->
+    <ion-modal [keepContentsMounted]="true">
+      <ion-datetime id="birthday" formControlName="birthday_borrower" presentation="date"></ion-datetime>
+    </ion-modal>
+
+    <!-- Remove submit button from here as it's in the header -->
+    <!-- 
+    <ion-button type="submit" expand="block" [disabled]="isLoading() || borrowerForm.invalid">
+      ...
+    </ion-button> 
+    -->
+  </form>
+</ion-content>

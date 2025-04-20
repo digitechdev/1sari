@@ -1,74 +1,106 @@
-<ion-header class="ion-no-border">
-  <!-- Controls Bar -->
-  <ion-toolbar class="controls-toolbar">
-    <ion-grid class="ion-no-padding ion-padding-horizontal">
-      <ion-row class="ion-align-items-center ion-justify-content-between">
-        <!-- Column 1: Search Bar -->
-        <ion-col size="auto" size-md="6" size-lg="5" style="max-width: 400px;">
-          <ion-searchbar
-            class="controls-searchbar"
-            (ionInput)="handleSearch($event)"
-            [value]="searchTerm()"
-            placeholder="Search loans (ID, Borrower ID, Status...)"
-            debounce="300"
-          ></ion-searchbar>
-        </ion-col>
-
-        <!-- Column 2: Action Buttons -->
-        <ion-col size="auto" class="ion-text-end">
-          <ion-button fill="clear" color="medium" (click)="refreshData()" class="ion-margin-end">
-            <ion-icon slot="start" name="refresh-outline"></ion-icon>
-            Refresh
-          </ion-button>
-          <ion-button color="success" (click)="addLoan()">
-            <ion-icon slot="start" name="add-outline"></ion-icon>
-            Add New Loan
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-toolbar>
-</ion-header>
-
-<!-- Datatable Content Area -->
 <ion-content [scrollY]="true" class="datatable-content">
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="loans-card-list">
+          <ion-card-header class="loans-card-header">
+            <ion-card-title>
+              <ion-grid class="ion-no-padding ion-padding-horizontal">
+                <ion-row
+                  class="ion-align-items-center ion-justify-content-between"
+                >
+                  <ion-col
+                    size="auto"
+                    size-md="6"
+                    size-lg="5"
+                    style="max-width: 400px"
+                  >
+                    <ion-searchbar
+                      class="controls-searchbar"
+                      (ionInput)="handleSearch($event)"
+                      [value]="searchTerm()"
+                      placeholder="Search loans (ID, Borrower ID, Status...)"
+                      debounce="300"
+                    ></ion-searchbar>
+                  </ion-col>
 
-  <!-- Loading/Error States -->
-  @if (isLoading()) {
-    <div class="state-message"><ion-spinner name="crescent"></ion-spinner> Loading Loans...</div>
-  }
-  @if (errorLoading()) {
-    <div class="state-message"><ion-text color="danger">{{ errorLoading() }}</ion-text></div>
-  }
+                  <ion-col size="auto" class="ion-text-end">
+                    <ion-button
+                      fill="clear"
+                      color="medium"
+                      (click)="refreshData()"
+                      class="ion-margin-end"
+                    >
+                      <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                      Refresh
+                    </ion-button>
+                    <ion-button color="primary" (click)="addLoan()">
+                      <ion-icon slot="start" name="add-outline"></ion-icon>
+                      Add New Loan
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            @if (isLoading()) {
+              <div class="state-message"><ion-spinner name="crescent"></ion-spinner> Loading Loans...</div>
+            }
+            @if (errorLoading()) {
+              <div class="state-message"><ion-text color="danger">{{ errorLoading() }}</ion-text></div>
+            }
 
-  <!-- ngx-datatable for Loans -->
-  @if (!isLoading() && !errorLoading()) {
-    <ngx-datatable
-      class="material expandable"
-      [rows]="displayableLoans()" 
-      [columns]="tableColumns"
-      [columnMode]="ColumnMode.force"
-      [headerHeight]="50"
-      [footerHeight]="50"
-      [rowHeight]="50"
-      [scrollbarH]="true"
-      [limit]="10" 
-    >
-    </ngx-datatable>
-
-    <!-- Template for Loan Actions -->
-    <ng-template #loanActionsTemplate let-row="row" let-value="value">
-      <!-- Use loan-action-button class for specific styling if needed -->
-      <ion-button fill="clear" size="small" (click)="viewLoan(row)" title="View Loan Details" class="action-button">
-        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="clear" size="small" (click)="editLoan(row)" title="Edit Loan" class="action-button">
-        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="clear" size="small" color="danger" (click)="deleteLoan(row)" title="Delete Loan" class="action-button">
-        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-      </ion-button>
-    </ng-template>
-  }
-
+            @if (!isLoading() && !errorLoading()) {
+              <ngx-datatable
+                class="material expandable loans-datatable"
+                [rows]="displayableLoans()" 
+                [columns]="tableColumns"
+                [columnMode]="ColumnMode.force"
+                [headerHeight]="50"
+                [footerHeight]="50"
+                [rowHeight]="50"
+                [scrollbarH]="true"
+                [limit]="10" 
+              >
+              </ngx-datatable>
+              <ng-template #loanActionsTemplate let-row="row" let-value="value">
+                <div class="action-buttons-container">
+                  <ion-button
+                    fill="solid"
+                    size="small"
+                    (click)="viewLoan(row)"
+                    title="View"
+                    class="action-button"
+                  >
+                    <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                  </ion-button>
+                  <!-- <ion-button
+                    fill="solid"
+                    color="medium"
+                    size="small"
+                    (click)="editLoan(row)"
+                    title="Edit"
+                    class="action-button"
+                  >
+                    <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                  </ion-button> -->
+                  <ion-button
+                    fill="solid"
+                    size="small"
+                    color="danger"
+                    (click)="deleteLoan(row)"
+                    title="Delete"
+                    class="action-button"
+                  >
+                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              </ng-template>
+          }
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

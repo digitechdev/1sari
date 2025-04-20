@@ -1,10 +1,15 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
-import { Router, NavigationEnd, ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
+import {
+  Router,
+  NavigationEnd,
+  ActivatedRoute,
+  RouterLink,
+  RouterOutlet,
+} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import {
   IonApp,
-  IonRouterOutlet,
   IonSplitPane,
   IonMenu,
   IonHeader,
@@ -21,7 +26,7 @@ import {
   IonSearchbar,
   IonAvatar,
   IonButton,
-  PopoverController
+  PopoverController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -34,16 +39,27 @@ import {
   notificationsOutline,
   settingsOutline,
   helpCircleOutline,
-  searchOutline,
   mailOutline,
   filterOutline,
-  ellipsisHorizontal,
   personCircleOutline,
   logOutOutline,
   peopleOutline,
   arrowBackOutline,
   saveOutline,
-  cashOutline
+  cashOutline,
+  idCardOutline,
+  locationOutline,
+  storefrontOutline,
+  documentTextOutline,
+  searchOutline,
+  addOutline,
+  refreshOutline,
+  ellipsisHorizontal,
+  eyeOutline,
+  createOutline,
+  trashOutline,
+  calendarOutline,
+  downloadOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -69,7 +85,6 @@ interface MenuItem {
     RouterLink,
     RouterOutlet,
     IonApp,
-    IonRouterOutlet,
     IonSplitPane,
     IonMenu,
     IonHeader,
@@ -86,7 +101,7 @@ interface MenuItem {
     IonSearchbar,
     IonAvatar,
     IonButton,
-    LogoComponent
+    LogoComponent,
   ],
 })
 export class AppComponent implements OnInit {
@@ -105,14 +120,16 @@ export class AppComponent implements OnInit {
   private allMenuItems: MenuItem[] = [
     { title: 'Menu', isHeader: true },
     { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
-    { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
-    { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
-    { title: 'Card', url: '/card', icon: 'card-outline' },
-    { title: 'History', url: '/history', icon: 'time-outline' }, // Simple item for now, nesting can be added
-    { title: 'Notifications', url: '/notifications', icon: 'notifications-outline', badge: 12 },
-    { title: 'Tools', isHeader: true },
-    { title: 'Setting', url: '/settings', icon: 'settings-outline' },
-    { title: 'Help Center', url: '/help', icon: 'help-circle-outline' },
+    { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' }, // Example route
+    { title: 'Loans', url: '/loans', icon: 'cash-outline' }, // Example route
+    // { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
+    // { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
+    // { title: 'Card', url: '/card', icon: 'card-outline' },
+    // { title: 'History', url: '/history', icon: 'time-outline' }, // Simple item for now, nesting can be added
+    // { title: 'Notifications', url: '/notifications', icon: 'notifications-outline', badge: 12 },
+    // { title: 'Tools', isHeader: true },
+    // { title: 'Setting', url: '/settings', icon: 'settings-outline' },
+    // { title: 'Help Center', url: '/help', icon: 'help-circle-outline' },
   ];
 
   // Computed signal to filter menu items based on search term
@@ -122,8 +139,8 @@ export class AppComponent implements OnInit {
       return this.allMenuItems;
     }
     // Keep headers, filter regular items
-    return this.allMenuItems.filter(item =>
-        item.isHeader || item.title.toLowerCase().includes(term)
+    return this.allMenuItems.filter(
+      (item) => item.isHeader || item.title.toLowerCase().includes(term)
     );
   });
 
@@ -148,25 +165,38 @@ export class AppComponent implements OnInit {
       peopleOutline,
       arrowBackOutline,
       saveOutline,
-      cashOutline
+      cashOutline,
+      idCardOutline,
+      locationOutline,
+      storefrontOutline,
+      documentTextOutline,
+      addOutline,
+      refreshOutline,
+      eyeOutline,
+      createOutline,
+      trashOutline,
+      calendarOutline,
+      downloadOutline,
     });
   }
 
   ngOnInit() {
     // Subscribe to router events to update title
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      map(() => this.activatedRoute),
-      map(route => {
-        while (route.firstChild) route = route.firstChild;
-        return route;
-      }),
-      filter(route => route.outlet === 'primary'),
-      mergeMap(route => route.data),
-      map(data => data['title'] || 'Dashboard') // Get title from route data or default
-    ).subscribe(title => {
-      this.currentPageTitle.set(title); // Update the signal
-    });
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        map(() => this.activatedRoute),
+        map((route) => {
+          while (route.firstChild) route = route.firstChild;
+          return route;
+        }),
+        filter((route) => route.outlet === 'primary'),
+        mergeMap((route) => route.data),
+        map((data) => data['title'] || '') // Get title from route data or default
+      )
+      .subscribe((title) => {
+        this.currentPageTitle.set(title); // Update the signal
+      });
   }
 
   // Method to update the search term signal
@@ -196,7 +226,7 @@ export class AppComponent implements OnInit {
       event: ev,
       translucent: true,
       dismissOnSelect: false,
-      cssClass: 'profile-popover'
+      cssClass: 'profile-popover',
     });
     await popover.present();
   }

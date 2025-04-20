@@ -25,6 +25,11 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+@import "node_modules/@swimlane/ngx-datatable/index.css";
+@import "node_modules/@swimlane/ngx-datatable/themes/material.scss";
+@import "node_modules/@swimlane/ngx-datatable/themes/bootstrap.scss";
+@import "node_modules/@swimlane/ngx-datatable/assets/icons.css";
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -34,22 +39,36 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+@import "@ionic/angular/css/palettes/dark.system.css";
 
-// Set global background color
-body {
-  --background: var(--ion-background-color, #f0f2f5);
+ion-header {
+  --box-shadow: none;
+  border-bottom: 1px solid #ccc;
 }
 
-// Global card styling to match design
+.page-header {
+  box-shadow: none;
+  border-bottom: 1px solid #ccc;
+}
+
 ion-card {
-  --background: var(--ion-card-background, #ffffff);
-  box-shadow: none; // Remove default shadow if needed
-  border-radius: 12px; // Rounded corners like in the design
-  margin: 10px 0; // Consistent vertical margin
+  box-shadow: none;
+  ion-card-header {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
 }
 
-ion-item {
-  --border-width: 0;
-  --inner-border-width: 0;
+ion-searchbar {
+  --box-shadow: none !important;
+  .searchbar-input-container {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+}
+
+ion-button {
+  --box-shadow: none !important;
 }

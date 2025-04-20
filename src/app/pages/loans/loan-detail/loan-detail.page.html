@@ -1,0 +1,194 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/loans"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      @if (loanDetail()?.id) {
+        Loan Details #{{ loanDetail()?.id }}
+      } @else {
+        Loan Details
+      }
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading Loan Details...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <ion-item lines="none">
+      <ion-icon name="warning-outline" slot="start" color="danger"></ion-icon>
+      <ion-label color="danger">{{ errorMessage() }}</ion-label>
+    </ion-item>
+  } @else if (loanDetail()) {
+    <!-- Borrower Information Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="person-circle-outline" class="card-title-icon"></ion-icon>
+          Borrower Information
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label>
+              <h2>{{ loanDetail().borrower?.name_of_borrower || 'N/A' }}</h2>
+              <p>Borrower Name</p>
+            </ion-label>
+          </ion-item>
+           <ion-item>
+            <ion-label>
+              <h2>{{ loanDetail().borrower?.id || 'N/A' }}</h2>
+              <p>Borrower ID</p>
+            </ion-label>
+          </ion-item>
+          <!-- Add more borrower details if needed from loan.borrower -->
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Loan Terms Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+           <ion-icon name="document-text-outline" class="card-title-icon"></ion-icon>
+          Loan Terms
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid fixed>
+          <ion-row>
+            <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Principal</ion-label>
+                <p>{{ loanDetail().principal | currency:'PHP':'symbol' }}</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Status</ion-label>
+                <p><ion-badge [color]="loanDetail().status === 'Active' ? 'success' : (loanDetail().status === 'Paid Off' ? 'medium' : 'warning')">{{ loanDetail().status }}</ion-badge></p>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Interest Rate (Monthly)</ion-label>
+                 <p>{{ loanDetail().interest_rate }}%</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Interest Method</ion-label>
+                <p>{{ loanDetail().interest_method }}</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Loan Period</ion-label>
+                <p>{{ loanDetail().loan_period }}</p>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Repayment Period (No. Payments)</ion-label>
+                <p>{{ loanDetail().repayment_period }}</p>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Tenure (Months)</ion-label>
+                <p>{{ loanDetail().tenure_in_months }}</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="6">
+              <ion-item lines="none">
+                <ion-label position="stacked">Disbursement Method</ion-label>
+                <p>{{ loanDetail().disbursement_method }}</p>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12">
+              <ion-item lines="none">
+                <ion-label position="stacked">Loan Release Date</ion-label>
+                 <p>{{ loanDetail().loan_release_date | date:'mediumDate' }}</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="12">
+              <ion-item lines="none">
+                <ion-label position="stacked">Purpose</ion-label>
+                 <p>{{ loanDetail().purpose || 'N/A' }}</p>
+              </ion-item>
+            </ion-col>
+             <ion-col size="12">
+              <ion-item lines="none">
+                <ion-label position="stacked">Notes</ion-label>
+                 <p>{{ loanDetail().notes || 'N/A' }}</p>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Repayment Schedule Card -->
+    <ion-card>
+       <ion-card-header>
+        <ion-card-title>
+           <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
+          Repayment Schedule
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+         @if (loanSchedule(); as schedule) {
+            @if(schedule.length > 0) {
+              <ion-grid fixed id="repayment-schedule-grid"> <!-- Use same ID for styling -->
+                <ion-row class="header-row">
+                  <ion-col size="1">#</ion-col>
+                  <ion-col size="2">Due Date</ion-col>
+                  <ion-col size="2" class="ion-text-right">Payment</ion-col>
+                  <ion-col size="2" class="ion-text-right">Interest</ion-col>
+                  <ion-col size="2" class="ion-text-right">Principal</ion-col>
+                  <ion-col size="2" class="ion-text-right">Balance</ion-col>
+                  <ion-col size="1">Status</ion-col>
+                </ion-row>
+                @for (item of schedule; track item.period_number) {
+                  <ion-row>
+                    <ion-col size="1">{{ item.period_number }}</ion-col>
+                    <ion-col size="2">{{ item.due_date | date:'yyyy-MM-dd' }}</ion-col>
+                    <ion-col size="2" class="ion-text-right">{{ item.amount_due | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                    <ion-col size="2" class="ion-text-right">{{ item.interest_paid | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                    <ion-col size="2" class="ion-text-right">{{ item.principal_paid | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                    <ion-col size="2" class="ion-text-right">{{ item.outstanding_balance | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                    <ion-col size="1">
+                       <ion-badge [color]="item.status === 'Paid' ? 'success' : (item.status === 'Pending' ? 'warning' : 'danger')">{{ item.status }}</ion-badge>
+                    </ion-col>
+                  </ion-row>
+                }
+                <!-- Optional: Add totals row if needed -->
+              </ion-grid>
+            } @else {
+               <ion-item lines="none">
+                 <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+                 <ion-label>No repayment schedule found for this loan.</ion-label>
+               </ion-item>
+            }
+         } @else {
+           <ion-item lines="none">
+             <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+             <ion-label>No repayment schedule available.</ion-label>
+           </ion-item>
+         }
+      </ion-card-content>
+    </ion-card>
+
+  } @else if (!isLoading()) {
+     <ion-item lines="none">
+      <ion-icon name="alert-circle-outline" slot="start" color="warning"></ion-icon>
+      <ion-label color="warning">Loan data could not be loaded or loan not found.</ion-label>
+    </ion-item>
+  }
+</ion-content> 

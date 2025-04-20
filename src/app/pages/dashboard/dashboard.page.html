@@ -15,18 +15,45 @@
 
   <!-- Widget Cards -->
   <ion-grid>
+    <!-- Row 1: Principal & Loan Status -->
     <ion-row>
-      <!-- Active Loans Card -->
+      <!-- Total Principal Released Card -->
       <ion-col size="12" size-md="6" size-lg="3">
         <ion-card class="widget-card">
-          <ion-card-header>
-            <ion-card-subtitle>Active Loans</ion-card-subtitle>
+          <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Total Principal Released</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Total Principal')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <div class="widget-value">0</div>
+            <div class="widget-value">{{ totalPrincipalReleased() | currency:'PHP':'symbol':'1.0-0' }}</div>
+            <div class="widget-label purple">
+              Total Principal
+              <ion-icon name="cash-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+       <!-- Active Principal Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Active Principal</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Active Principal')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ activePrincipal() | currency:'PHP':'symbol':'1.0-0' }}</div>
             <div class="widget-label blue">
-              Active Loans
-              <ion-icon name="wallet-outline" class="widget-icon"></ion-icon>
+              Active Principal
+              <ion-icon name="wallet-outline" class="widget-icon"></ion-icon> 
             </div>
           </ion-card-content>
         </ion-card>
@@ -35,11 +62,16 @@
       <!-- Pending Loans Card -->
       <ion-col size="12" size-md="6" size-lg="3">
         <ion-card class="widget-card">
-          <ion-card-header>
-            <ion-card-subtitle>Pending Loans</ion-card-subtitle>
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Pending Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Pending Loans')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <div class="widget-value">0</div>
+            <div class="widget-value">{{ pendingLoanCount() }}</div>
             <div class="widget-label orange">
               Pending Loans
               <ion-icon name="hourglass-outline" class="widget-icon"></ion-icon>
@@ -48,17 +80,46 @@
         </ion-card>
       </ion-col>
 
-      <!-- Defaulted Loans Card -->
+      <!-- Due Today Loans Card -->
       <ion-col size="12" size-md="6" size-lg="3">
         <ion-card class="widget-card">
-          <ion-card-header>
-            <ion-card-subtitle>Defaulted Loans</ion-card-subtitle>
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Due Today Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Due Today')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <div class="widget-value">0</div>
-            <div class="widget-label red">
-              Defaulted Loans
-              <ion-icon name="refresh-circle-outline" class="widget-icon"></ion-icon>
+            <div class="widget-value">{{ dueTodayCount() }}</div> <!-- Placeholder -->
+            <div class="widget-label yellow">
+              Due Today
+              <ion-icon name="calendar-clear-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <!-- Row 2: Loan Status Counts -->
+     <ion-row>
+      <!-- Active Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Active Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Active Loans')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ activeLoanCount() }}</div>
+            <div class="widget-label green">
+              Active Loans
+              <ion-icon name="checkmark-circle-outline" class="widget-icon"></ion-icon> 
             </div>
           </ion-card-content>
         </ion-card>
@@ -67,21 +128,168 @@
       <!-- Fully Paid Loans Card -->
       <ion-col size="12" size-md="6" size-lg="3">
         <ion-card class="widget-card">
-          <ion-card-header>
-            <ion-card-subtitle>Fully Paid Loans</ion-card-subtitle>
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Fully Paid Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Fully Paid')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
           </ion-card-header>
           <ion-card-content>
-            <div class="widget-value">0</div>
-            <div class="widget-label green">
+            <div class="widget-value">{{ paidOffLoanCount() }}</div>
+            <div class="widget-label gray">
               Fully Paid Loans
-              <ion-icon name="checkmark-circle-outline" class="widget-icon"></ion-icon>
+              <ion-icon name="checkmark-done-circle-outline" class="widget-icon"></ion-icon> 
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+       <!-- Overdue Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Overdue Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Overdue Loans')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ overdueCount() }}</div> <!-- Placeholder -->
+            <div class="widget-label pink">
+              Overdue Loans
+              <ion-icon name="alert-circle-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+      <!-- Defaulted Loans Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Defaulted Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Defaulted Loans')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ defaultedLoanCount() }}</div>
+            <div class="widget-label red">
+              Defaulted Loans
+              <ion-icon name="close-circle-outline" class="widget-icon"></ion-icon> 
             </div>
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
+    
+     <!-- Row 3: Borrower Stats -->
+    <ion-row>
+        <!-- Requested Loans Card (Placeholder) -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Requested Loans</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Requested Loans')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ pendingLoanCount() }}</div> <!-- Assuming Requested == Pending -->
+            <div class="widget-label orange">
+              Requested Loans
+              <ion-icon name="document-attach-outline" class="widget-icon"></ion-icon> 
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      
+      <!-- Total Borrowers Card -->
+      <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Total Borrowers</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Total Borrowers')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ totalBorrowerCount() }}</div>
+            <div class="widget-label teal">
+              Total Borrowers
+              <ion-icon name="people-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+       <!-- Active Borrowers Card -->
+       <ion-col size="12" size-md="6" size-lg="3">
+        <ion-card class="widget-card">
+           <ion-card-header class="ion-no-padding widget-header">
+            <ion-item lines="none">
+                <ion-card-subtitle>Active Borrowers</ion-card-subtitle>
+                <ion-button fill="clear" slot="end" size="small" (click)="showInfo('Active Borrowers')">
+                    <ion-icon slot="icon-only" name="information-circle-outline" color="medium"></ion-icon>
+                </ion-button>
+            </ion-item>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="widget-value">{{ activeBorrowerCount() }}</div> <!-- Placeholder -->
+            <div class="widget-label green">
+              Active Borrowers
+              <ion-icon name="person-add-outline" class="widget-icon"></ion-icon>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+
+      <!-- Placeholder for 4th card in row 3 if needed -->
+      <ion-col size="12" size-md="6" size-lg="3">
+          <!-- Empty or add another widget -->
+      </ion-col>
+    </ion-row>
+
   </ion-grid>
 
-  <!-- Placeholder for other dashboard content (e.g., charts, tables) -->
+  <!-- Placeholder for Charts -->
+  <!-- <ion-grid>
+      <ion-row>
+          <ion-col size="12" size-lg="6">
+              <ion-card>
+                  <ion-card-header><ion-card-title>Expected Profit (Placeholder)</ion-card-title></ion-card-header>
+                  <ion-card-content>Chart goes here...</ion-card-content>
+              </ion-card>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+              <ion-card>
+                  <ion-card-header><ion-card-title>Realized Profit (Placeholder)</ion-card-title></ion-card-header>
+                  <ion-card-content>Chart goes here...</ion-card-content>
+              </ion-card>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+              <ion-card>
+                  <ion-card-header><ion-card-title>Principal Released (Placeholder)</ion-card-title></ion-card-header>
+                  <ion-card-content>Chart goes here...</ion-card-content>
+              </ion-card>
+          </ion-col>
+          <ion-col size="12" size-lg="6">
+              <ion-card>
+                  <ion-card-header><ion-card-title>Loans Released (Placeholder)</ion-card-title></ion-card-header>
+                  <ion-card-content>Chart goes here...</ion-card-content>
+              </ion-card>
+          </ion-col>
+      </ion-row>
+  </ion-grid> -->
 
 </ion-content>

@@ -1,0 +1,44 @@
+ion-grid {
+    margin-bottom: 15px;
+ }
+ 
+ ion-card-title {
+     display: flex;
+     align-items: center;
+     ion-icon {
+         margin-right: 10px;
+     }
+ }
+
+/* Add styles for the repayment schedule modal table */
+#repayment-schedule-grid {
+  font-size: 0.9em;
+
+  ion-row {
+    border-bottom: 1px solid var(--ion-color-light-shade);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  ion-col {
+    padding: 8px 5px;
+    border-right: 1px solid var(--ion-color-light-shade);
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  .header-row {
+    background-color: var(--ion-color-light-tint);
+    font-weight: bold;
+    border-bottom: 1px solid var(--ion-color-medium-shade); // Stronger border for header
+  }
+  
+  .total-row {
+    background-color: var(--ion-color-light-tint);
+    border-top: 1px solid var(--ion-color-medium-shade); // Stronger border for total
+  }
+}

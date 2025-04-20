@@ -1,0 +1,174 @@
+/* Existing styles (if any) ... */
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+// --- Dashboard Widget Styles (Dark Theme) ---
+.widget-card {
+  margin-bottom: 16px;
+  background: white; // Dark background
+  // --background: #1e1e1e; // Alternative specific dark color
+  box-shadow: none;
+  border: 1px solid var(--ion-color-step-100); // Slightly stronger shadow for dark
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  height: 100%; // Make cards in a row the same height
+
+  .widget-header {
+    --background: transparent; // Header background transparent
+    ion-item {
+      --background: transparent;
+      --inner-padding-end: 4px; // Reduce padding for button
+      --min-height: 40px; // Reduce header height
+      ion-card-subtitle {
+        font-size: 0.85em;
+        color: var(--ion-color-step-600); // Lighter subtitle color
+        margin: 0;
+      }
+      ion-button {
+        --padding-start: 4px;
+        --padding-end: 4px;
+        height: 24px;
+        width: 24px;
+        margin-left: auto; // Push button to the right
+        ion-icon {
+          // Make info icon lighter
+          color: var(--ion-color-step-600);
+        }
+      }
+      ion-icon {
+        font-size: 1.2em;
+      }
+    }
+  }
+
+  ion-card-content {
+    padding: 8px 16px 0px 16px; // Reduced padding bottom
+    flex-grow: 1; // Allow content to grow
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; // Push link to bottom
+
+    .widget-value {
+      font-size: 2.2em;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--ion-color-primary-tint); // Light text color
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .widget-label {
+      display: flex;
+      align-items: center;
+      font-size: 0.9em;
+      font-weight: 500;
+      margin-bottom: 8px; // Space before the link
+
+      .widget-icon {
+        font-size: 1.6em; // Make icon larger
+        margin-left: auto; // Push icon to the right
+        opacity: 0.9; // Slightly higher opacity may look better on dark
+        // Keep specific icon colors defined below
+      }
+
+      // Custom Label Colors (adjust icon colors if needed for contrast)
+      &.purple {
+        color: var(--ion-color-primary-tint);
+        .widget-icon {
+          color: var(--ion-color-primary);
+        }
+      }
+      &.blue {
+        color: var(--ion-color-secondary-tint);
+        .widget-icon {
+          color: var(--ion-color-secondary);
+        }
+      }
+      &.orange {
+        color: var(--ion-color-warning-tint);
+        .widget-icon {
+          color: var(--ion-color-warning);
+        }
+      }
+      &.yellow {
+        color: #ffeb3b;
+        .widget-icon {
+          color: #ffc107;
+        }
+      } // Brighter yellow
+      &.green {
+        color: var(--ion-color-success-tint);
+        .widget-icon {
+          color: var(--ion-color-success);
+        }
+      }
+      &.gray {
+        color: var(--ion-color-medium-tint);
+        .widget-icon {
+          color: var(--ion-color-medium);
+        }
+      }
+      &.pink {
+        color: #f48fb1;
+        .widget-icon {
+          color: #e91e63;
+        }
+      } // Brighter pink
+      &.red {
+        color: var(--ion-color-danger-tint);
+        .widget-icon {
+          color: var(--ion-color-danger);
+        }
+      }
+      &.teal {
+        color: #80cbc4;
+        .widget-icon {
+          color: #009688;
+        }
+      } // Brighter teal
+    }
+
+    .view-details-item {
+      --background: transparent;
+      --inner-padding-start: 0;
+      --inner-padding-end: 0;
+      --padding-start: 0;
+      --padding-end: 0;
+      --min-height: 30px;
+      margin-top: auto; // Push to bottom
+      border-top: 1px solid var(--ion-color-step-250); // Lighter border for dark bg
+      margin-left: -16px; // Align border with card padding
+      margin-right: -16px;
+      padding-left: 16px; // Restore padding for content
+      padding-right: 16px;
+
+      ion-label {
+        font-size: 0.85em;
+        margin: 0;
+        text-align: center; // Center text
+        color: var(--ion-color-primary-tint); // Lighter link color
+      }
+
+      &:hover {
+        --background: rgba(
+          var(--ion-color-light-rgb),
+          0.08
+        ); // Subtle light hover
+      }
+    }
+  }
+}
+
+// Filter Button Specific Style
+.filter-button {
+  margin-top: 8px;
+  margin-right: 8px;
+  // Ensure filter button is visible if page background is also dark
+  ion-icon {
+    color: var(--ion-color-medium);
+  }
+}

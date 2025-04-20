@@ -18,22 +18,48 @@ export const routes: Routes = [
   },
   {
     path: 'borrowers',
-    loadComponent: () =>
-      import('./pages/borrowers/borrowers.page').then((m) => m.BorrowersPage),
-    data: { title: 'Borrowers' },
-  },
-  {
-    path: 'borrower-detail/:id',
-    loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage)
+    children: [
+       {
+        path: '',
+        loadComponent: () => import('./pages/borrowers/borrowers.page').then( m => m.BorrowersPage),
+        data: { title: 'Borrowers' }
+       },
+       {
+          path: 'new',
+          loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
+          data: { title: 'Borrowers' }
+       },
+       {
+          path: 'edit/:id',
+          loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
+          data: { title: 'Borrowers' }
+       },
+       {
+          path: 'detail/:id',
+          loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage),
+          data: { title: 'Borrowers ' }
+       },
+    ]
   },
   {
     path: 'loans',
-    loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage),
-    data: { title: 'Loans' }
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage),
+        data: { title: 'Loans' }
+      },
+      {
+        path: 'new',
+        loadComponent: () => import('./pages/loans/loan-form/loan-form.page').then( m => m.LoanFormPage),
+        data: { title: 'Add New Loan' }
+      },
+      {
+        path: 'detail/:id',
+        loadComponent: () => import('./pages/loans/loan-detail/loan-detail.page').then( m => m.LoanDetailPage),
+        data: { title: 'Loan Details' }
+      }
+    ]
   },
-  {
-    path: 'loans/new',
-    loadComponent: () => import('./pages/loan-form/loan-form.page').then( m => m.LoanFormPage),
-    data: { title: 'Add New Loan' }
-  },
+ 
 ];

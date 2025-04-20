@@ -217,7 +217,7 @@ export class BorrowerService {
       const response = await this.supabase
         .from('loans') // Assuming your loans table is named 'loans'
         .select('*')
-        .eq('account_id', borrowerId) // Assuming the foreign key column is 'borrower_id'
+        .eq('borrower_id', borrowerId) // Assuming the foreign key column is 'borrower_id'
         .order('created_at', { ascending: false });
 
         console.log(`getLoansByBorrowerId (${borrowerId}) response:`, response);

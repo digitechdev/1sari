@@ -1,21 +1,11 @@
 import { Component, OnInit, signal, computed, inject, ViewEncapsulation, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
-import { addIcons } from 'ionicons';
-import {
-  searchOutline,
-  addOutline,
-  refreshOutline,
-  eyeOutline,
-  createOutline,
-  trashOutline
-} from 'ionicons/icons';
 
 import { LoanService } from '../../services/loan.service';
-import { Loan, LoanWithBorrower } from '../../interfaces/loan.interfaces';
 
 @Component({
   selector: 'app-loans',
@@ -29,7 +19,8 @@ import { Loan, LoanWithBorrower } from '../../interfaces/loan.interfaces';
     CommonModule,
     FormsModule,
     IonicModule,
-    NgxDatatableModule
+    NgxDatatableModule,
+    RouterLink
   ],
   providers: [DatePipe, CurrencyPipe],
   encapsulation: ViewEncapsulation.None
@@ -39,19 +30,17 @@ export class LoansPage implements OnInit, AfterViewInit {
   @ViewChild(DatatableComponent) table: DatatableComponent | undefined;
 
   private loanService = inject(LoanService);
-  private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
   private cdRef = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private modalCtrl = inject(ModalController);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
-  allLoans = signal<LoanWithBorrower[]>([]);
+  allLoans = signal<any[]>([]);
   isLoading = signal<boolean>(true);
   errorLoading = signal<string | null>(null);
   searchTerm = signal<string>('');
-  displayableLoans = signal<LoanWithBorrower[]>([]);
+  displayableLoans = signal<any[]>([]);
   private actionsTemplateAssigned = false;
 
   filteredLoans = computed(() => {
@@ -76,26 +65,12 @@ export class LoansPage implements OnInit, AfterViewInit {
       width: 150
     },
     { 
-      prop: 'loan_amount', 
-      name: 'Amount', 
+      prop: 'principal', 
+      name: 'Principal', 
       width: 120,
       pipe: { transform: (value: number) => this.currencyPipe.transform(value, 'PHP', 'symbol') } 
     },
-    { prop: 'loan_term', name: 'Term (m)', width: 80 },
-    { prop: 'interest_rate', name: 'Rate (%)', width: 80 },
     { prop: 'status', name: 'Status', width: 100 },
-    { 
-      prop: 'disbursement_date', 
-      name: 'Disbursed', 
-      width: 120,
-      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
-    },
-    { 
-      prop: 'created_at', 
-      name: 'Created', 
-      width: 120,
-      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
-    },
     {
       name: 'Actions',
       prop: 'id',
@@ -109,7 +84,6 @@ export class LoansPage implements OnInit, AfterViewInit {
   ];
 
   constructor() {
-    addIcons({ searchOutline, addOutline, refreshOutline, eyeOutline, createOutline, trashOutline });
     effect(() => {
       console.log('Loans list updated:', this.allLoans().length);
       console.log('Filtered loan count:', this.filteredLoans().length);
@@ -157,6 +131,16 @@ export class LoansPage implements OnInit, AfterViewInit {
     }
   }
 
+
+  viewLoan(row: any) {
+    if (!row || typeof row.id === 'undefined') {
+      console.error('Cannot view borrower without valid data/ID');
+      return;
+    }
+    console.log('View borrower request:', row);
+    this.router.navigate(['/loans/detail', row.id]);
+  }
+
   tryAssignTemplateAndData() {
     if (this.loanActionsTemplate && !this.actionsTemplateAssigned) {
       const actionsCol = this.tableColumns.find(col => col.name === 'Actions');
@@ -190,7 +174,7 @@ export class LoansPage implements OnInit, AfterViewInit {
       message: 'Loan data refreshed.',
       duration: 1500,
       position: 'bottom',
-      color: 'medium'
+      color: 'medium',
     });
     await toast.present();
   }
@@ -200,16 +184,22 @@ export class LoansPage implements OnInit, AfterViewInit {
     this.router.navigate(['/loans/new']);
   }
 
-  async editLoan(loan: LoanWithBorrower) {
+  async editLoan(loan: any) {
     console.log('Edit Loan clicked - Placeholder:', loan);
     await this.presentToast('Edit Loan functionality not yet implemented.', 'warning');
   }
 
-  async deleteLoan(loan: LoanWithBorrower) {
-    console.log('Delete Loan clicked - Placeholder:', loan);
+  async deleteLoan(loan: any) {
+    console.log('Attempting to delete loan:', loan);
+    if (!loan || typeof loan.id === 'undefined') {
+      console.error('Invalid loan data provided for deletion.');
+      await this.presentToast('Could not delete loan: Invalid data.', 'danger');
+      return;
+    }
+
     const alert = await this.alertCtrl.create({
         header: 'Confirm Deletion',
-        message: `Are you sure you want to delete Loan ID ${loan.id} for ${loan.borrower?.name_of_borrower || 'Borrower'}?`,
+        message: `Are you sure you want to delete Loan ID ${loan.id} for ${loan.borrower?.name_of_borrower || 'Borrower'}? This will also delete its payment schedule.`,
         buttons: [
             { text: 'Cancel', role: 'cancel' },
             { 
@@ -217,17 +207,21 @@ export class LoansPage implements OnInit, AfterViewInit {
                 role: 'destructive',
                 handler: async () => { 
                     console.log('Delete confirmed for loan:', loan.id);
-                    await this.presentToast('Delete Loan functionality not yet implemented.', 'warning');
+                    const result = await this.loanService.deleteLoan(loan.id);
+
+                    if (result.error) {
+                      console.error('Error deleting loan:', result.error);
+                      await this.presentToast(`Failed to delete loan: ${result.error.message}`, 'danger');
+                    } else {
+                      console.log('Loan deleted successfully');
+                      this.allLoans.update(loans => loans.filter(l => l.id !== loan.id));
+                      await this.presentToast('Loan deleted successfully.', 'success');
+                    }
                 }
             }
         ]
     });
     await alert.present();
-  }
-
-  async viewLoan(loan: LoanWithBorrower) {
-    console.log('View Loan clicked - Placeholder:', loan);
-    await this.presentToast('View Loan Detail functionality not yet implemented.', 'warning');
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {

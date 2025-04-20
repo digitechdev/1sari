@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header class="page-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/borrowers"></ion-back-button>
@@ -106,8 +106,8 @@
                     <ion-item button (click)="viewLoanDetail(loan)" detail="true">
                       <ion-label>
                         <h2>Loan ID: {{ loan.id }}</h2>
-                        <p>Amount: {{ loan.loan_amount | currency:'PHP':'symbol' }} | Status: {{ loan.status }}</p>
-                        <p>Disbursed: {{ loan.disbursement_date ? datePipe.transform(loan.disbursement_date, 'mediumDate') : 'N/A' }}</p>
+                        <p>Amount: {{ loan.principal | currency:'PHP':'symbol' }} | Status: {{ loan.status }}</p>
+                        <p>Disbursed: {{ loan.loan_release_date ? datePipe.transform(loan.loan_release_date, 'mediumDate') : 'N/A' }}</p>
                       </ion-label>
                     </ion-item>
                   }
