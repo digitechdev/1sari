@@ -13,6 +13,7 @@ import { BorrowerService } from '../../../services/borrower.service';
 import { AccountInformation } from '../../../interfaces/account-information.interfaces';
 import { LoanPaymentSchedule } from '../../../interfaces/loan-payment-schedule.interfaces';
 import { PaymentStatus } from 'src/app/enums/payment-status.enum';
+import { PostgrestResponse } from '@supabase/supabase-js';
 
 // --- Add ScheduleItem Interface ---
 interface ScheduleItem {
@@ -182,7 +183,8 @@ export class LoanFormPage implements OnInit {
         }));
 
         // Assume loanService has a method addLoanSchedule
-        const scheduleResponse = await this.loanService.addLoanSchedule(formattedSchedule);
+        const scheduleResponse: PostgrestResponse<LoanPaymentSchedule> = 
+          await this.loanService.addLoanSchedule(formattedSchedule);
 
         if (scheduleResponse.error) {
            console.error('Error saving loan schedule:', scheduleResponse.error);

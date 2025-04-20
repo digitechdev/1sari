@@ -125,30 +125,20 @@ export class LoanService {
   /**
    * Inserts multiple loan payment schedule records into the database.
    * @param scheduleItems Array of loan payment schedule items to insert
-   * @returns Promise resolving to the Supabase response containing the inserted records or an error
+   * @returns Promise resolving to the Supabase response indicating success or error
    */
   async addLoanSchedule(
     scheduleItems: LoanPaymentSchedule[]
-  ): Promise<PostgrestSingleResponse<LoanPaymentSchedule[]>> {
+  ): Promise<PostgrestResponse<LoanPaymentSchedule>> {
     this.isLoading.set(true);
     try {
-      // Use explicit table name and select to match getAllLoans pattern
+      // Remove the problematic .select() clause
       const response = await this.supabase
         .from('loan_payment_schedules')
-        .insert(scheduleItems)
-        .select(`
-          *,
-          loan:loans!inner (
-            id,
-            borrower:account_information!inner (
-              id, 
-              name_of_borrower
-            )
-          )
-        `);
+        .insert(scheduleItems);
 
-      console.log('addLoanSchedule response:', response);
-      return response;
+      console.log('addLoanSchedule insert response:', response);
+      return response as PostgrestResponse<LoanPaymentSchedule>;
 
     } catch (error: any) {
       console.error('Unexpected error in addLoanSchedule:', error);
@@ -159,9 +149,49 @@ export class LoanService {
         code: error?.code || 'CLIENT_SCHEDULE_ADD_ERR',
         name: 'ClientScheduleAddError'
       };
-      return { data: null, error: pgError, status: 0, statusText: 'Client Schedule Add Error', count: null };
+      // Return a structure that satisfies the error part of PostgrestResponse
+      return { 
+          error: pgError, 
+          data: null, 
+          count: null, 
+          status: 0, 
+          statusText: 'Client Error' 
+      } as PostgrestResponse<LoanPaymentSchedule>; // Cast to the expected type
     } finally {
       this.isLoading.set(false);
     }
   }
+
+  // --- Add getLoanById Method ---
+  async getLoanById(id: number): Promise<PostgrestSingleResponse<any>> { // Use any for now due to joins
+    this.isLoading.set(true);
+    try {
+      const response = await this.supabase
+        .from(this.tableName)
+        .select(`
+          *,
+          borrower:account_information!borrower_id(*),
+          schedule:loan_payment_schedules(*, status)
+        `)
+        .eq('id', id)
+        .single(); // Expecting one result
+
+      console.log('getLoanById response:', response);
+      return response;
+
+    } catch (error: any) {
+      console.error(`Unexpected error fetching loan with ID ${id}:`, error);
+      const pgError: PostgrestError = {
+        message: error?.message || 'Client Loan Fetch Error',
+        details: error?.details || '',
+        hint: error?.hint || '',
+        code: error?.code || 'CLIENT_LOAN_FETCH_BY_ID_ERR',
+        name: 'ClientLoanFetchByIdError'
+      };
+      return { data: null, error: pgError, status: 0, statusText: 'Client Loan Fetch Error', count: null };
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+  // --- End getLoanById Method ---
 } 

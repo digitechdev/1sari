@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, inject, ViewEncapsulation, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
 
@@ -19,7 +19,8 @@ import { LoanService } from '../../services/loan.service';
     CommonModule,
     FormsModule,
     IonicModule,
-    NgxDatatableModule
+    NgxDatatableModule,
+    RouterLink
   ],
   providers: [DatePipe, CurrencyPipe],
   encapsulation: ViewEncapsulation.None
@@ -130,6 +131,16 @@ export class LoansPage implements OnInit, AfterViewInit {
     }
   }
 
+
+  viewLoan(row: any) {
+    if (!row || typeof row.id === 'undefined') {
+      console.error('Cannot view borrower without valid data/ID');
+      return;
+    }
+    console.log('View borrower request:', row);
+    this.router.navigate(['/loans/detail', row.id]);
+  }
+
   tryAssignTemplateAndData() {
     if (this.loanActionsTemplate && !this.actionsTemplateAssigned) {
       const actionsCol = this.tableColumns.find(col => col.name === 'Actions');
@@ -196,11 +207,6 @@ export class LoansPage implements OnInit, AfterViewInit {
         ]
     });
     await alert.present();
-  }
-
-  async viewLoan(loan: any) {
-    console.log('View Loan clicked - Placeholder:', loan);
-    await this.presentToast('View Loan Detail functionality not yet implemented.', 'warning');
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {
