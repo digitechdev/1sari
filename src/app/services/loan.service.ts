@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
-import { Loan, LoanWithBorrower } from '../interfaces/loan.interfaces';
+import { Loan } from '../interfaces/loan.interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +24,7 @@ export class LoanService {
    * Ordered by creation date descending.
    * @returns Promise resolving to the Supabase response containing an array of LoanWithBorrower or an error.
    */
-  async getAllLoans(): Promise<PostgrestSingleResponse<LoanWithBorrower[]>> {
+  async getAllLoans(): Promise<PostgrestSingleResponse<any[]>> {
     this.isLoading.set(true);
     try {
       const response = await this.supabase
@@ -42,7 +42,7 @@ export class LoanService {
         return response as PostgrestSingleResponse<any>;
       }
 
-      const dataWithBorrower = response.data as unknown as LoanWithBorrower[];
+      const dataWithBorrower = response.data as unknown as any[];
 
       return {
         ...response,

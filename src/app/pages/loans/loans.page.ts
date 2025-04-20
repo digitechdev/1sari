@@ -6,7 +6,6 @@ import { IonicModule, ModalController, ToastController, AlertController } from '
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
 
 import { LoanService } from '../../services/loan.service';
-import { LoanWithBorrower } from '../../interfaces/loan.interfaces';
 
 @Component({
   selector: 'app-loans',
@@ -36,11 +35,11 @@ export class LoansPage implements OnInit, AfterViewInit {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
-  allLoans = signal<LoanWithBorrower[]>([]);
+  allLoans = signal<any[]>([]);
   isLoading = signal<boolean>(true);
   errorLoading = signal<string | null>(null);
   searchTerm = signal<string>('');
-  displayableLoans = signal<LoanWithBorrower[]>([]);
+  displayableLoans = signal<any[]>([]);
   private actionsTemplateAssigned = false;
 
   filteredLoans = computed(() => {
@@ -65,8 +64,8 @@ export class LoansPage implements OnInit, AfterViewInit {
       width: 150
     },
     { 
-      prop: 'loan_amount', 
-      name: 'Amount', 
+      prop: 'principal', 
+      name: 'Principal', 
       width: 120,
       pipe: { transform: (value: number) => this.currencyPipe.transform(value, 'PHP', 'symbol') } 
     },
@@ -174,12 +173,12 @@ export class LoansPage implements OnInit, AfterViewInit {
     this.router.navigate(['/loans/new']);
   }
 
-  async editLoan(loan: LoanWithBorrower) {
+  async editLoan(loan: any) {
     console.log('Edit Loan clicked - Placeholder:', loan);
     await this.presentToast('Edit Loan functionality not yet implemented.', 'warning');
   }
 
-  async deleteLoan(loan: LoanWithBorrower) {
+  async deleteLoan(loan: any) {
     console.log('Delete Loan clicked - Placeholder:', loan);
     const alert = await this.alertCtrl.create({
         header: 'Confirm Deletion',
@@ -199,7 +198,7 @@ export class LoansPage implements OnInit, AfterViewInit {
     await alert.present();
   }
 
-  async viewLoan(loan: LoanWithBorrower) {
+  async viewLoan(loan: any) {
     console.log('View Loan clicked - Placeholder:', loan);
     await this.presentToast('View Loan Detail functionality not yet implemented.', 'warning');
   }

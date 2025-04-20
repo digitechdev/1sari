@@ -1,7 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { IonicModule, ToastController, NavController } from '@ionic/angular';
 import { LoanService } from '../../../services/loan.service';
 import { Loan } from '../../../interfaces/loan.interfaces';
@@ -13,14 +17,10 @@ import { AccountInformation } from '../../../interfaces/account-information.inte
   templateUrl: './loan-form.page.html',
   styleUrls: ['./loan-form.page.scss'],
   standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule
-  ]
+  imports: [IonicModule, CommonModule, ReactiveFormsModule],
 })
-export class LoanFormPage implements OnInit {
 
+export class LoanFormPage implements OnInit {
   private fb = inject(FormBuilder);
   private loanService = inject(LoanService);
   private borrowerService = inject(BorrowerService);
@@ -40,12 +40,12 @@ export class LoanFormPage implements OnInit {
   initForm() {
     this.loanForm = this.fb.group({
       borrower_id: [null, Validators.required],
-      loan_amount: [null, [Validators.required, Validators.min(0)]],
+      principal: [null, [Validators.required, Validators.min(0)]],
       loan_term: [null, [Validators.required, Validators.min(1)]],
       interest_rate: [null, [Validators.required, Validators.min(0)]],
       status: ['Pending', Validators.required],
-      disbursement_date: [null],
-      purpose: ['']
+      loan_release_date: [null, Validators.required],
+      purpose: [''],
     });
   }
 
@@ -72,7 +72,10 @@ export class LoanFormPage implements OnInit {
   async saveLoan() {
     if (this.loanForm.invalid) {
       this.loanForm.markAllAsTouched();
-      this.presentToast('Please fill all required fields correctly.', 'warning');
+      this.presentToast(
+        'Please fill all required fields correctly.',
+        'warning'
+      );
       return;
     }
 
@@ -81,8 +84,10 @@ export class LoanFormPage implements OnInit {
     console.log('Attempting to save loan:', formData);
 
     try {
-      const response = await this.loanService.addLoan(formData as Omit<Loan, 'id' | 'created_at'>);
-      
+      const response = await this.loanService.addLoan(
+        formData as Omit<Loan, 'id' | 'created_at'>
+      );
+
       if (response.error) {
         console.error('Error saving loan:', response.error);
         await this.presentToast(`Error: ${response.error.message}`, 'danger');
@@ -93,7 +98,10 @@ export class LoanFormPage implements OnInit {
       }
     } catch (error: any) {
       console.error('Unexpected error during save:', error);
-      await this.presentToast(`Error: ${error.message || 'An unexpected error occurred.'}`, 'danger');
+      await this.presentToast(
+        `Error: ${error.message || 'An unexpected error occurred.'}`,
+        'danger'
+      );
     } finally {
       this.isLoading.set(false);
     }
