@@ -118,7 +118,7 @@
             <ion-card-content>
               <ion-grid fixed>
                 <ion-row>
-                  <ion-col size="6">
+                  <ion-col size="12">
                     <!-- Principal Amount -->
                     <ion-input
                       class="ion-margin-bottom"
@@ -131,42 +131,27 @@
             loanForm.controls['principal'].touched ? 'Principal Amount is required.' : ''"
                     ></ion-input>
                   </ion-col>
-                  <ion-col size="6">
-                    <!-- Loan Release Date -->
-                    <ion-item class="ion-margin-bottom">
-                      <ion-label slot="start">Loan Release Date</ion-label>
-                      
-                      <ion-datetime-button
-                        slot="end"
-                        datetime="datetime"
-                      ></ion-datetime-button>
-
-                      <ion-modal [keepContentsMounted]="true">
-                        <ng-template>
-                          <ion-datetime
-                            formControlName="loan_release_date"
-                            id="datetime"
-                            presentation="date"
-                          ></ion-datetime>
-                        </ng-template>
-                      </ion-modal>
-                    </ion-item>
-                  </ion-col>
                 </ion-row>
                 <ion-row>
                   <ion-col size="6">
-                    <!-- Loan Duration -->
-                    <ion-input
+                    <!-- Interest Method -->
+                    <ion-select
                       class="ion-margin-bottom"
-                      type="number"
+                      justify="space-between"
+                      label="Interest Method"
+                      placeholder="Select Interest Method"
                       fill="solid"
-                      label="Loan Duration *"
-                      labelPlacement="floating"
-                      [errorText]="loanForm.controls['loan_duration'].invalid &&
-           loanForm.controls['loan_duration'].touched ? 'Loan Duration is required.' : ''"
-                      formControlName="loan_duration"
-                      placeholder="Enter Loan Duration"
-                    ></ion-input>
+                      formControlName="interest_method"
+                      [errorText]="loanForm.controls['interest_method'].invalid &&
+       loanForm.controls['interest_method'].touched ? 'Interest Method is required.' : ''"
+                    >
+                      <ion-select-option value="dimishing"
+                        >Diminishing</ion-select-option
+                      >
+                      <ion-select-option value="straight"
+                        >Straight</ion-select-option
+                      >
+                    </ion-select>
                   </ion-col>
                   <ion-col size="6">
                     <!-- Loan Period -->
@@ -195,26 +180,6 @@
                 </ion-row>
                 <ion-row>
                   <ion-col size="4">
-                    <!-- Interest Method -->
-                    <ion-select
-                      class="ion-margin-bottom"
-                      justify="space-between"
-                      label="Interest Method"
-                      placeholder="Select Interest Method"
-                      fill="solid"
-                      formControlName="interest_method"
-                      [errorText]="loanForm.controls['interest_method'].invalid &&
-          loanForm.controls['interest_method'].touched ? 'Interest Method is required.' : ''"
-                    >
-                      <ion-select-option value="dimishing"
-                        >Diminishing</ion-select-option
-                      >
-                      <ion-select-option value="straight"
-                        >Straight</ion-select-option
-                      >
-                    </ion-select>
-                  </ion-col>
-                  <ion-col size="4">
                     <!-- Interest Rate -->
                     <ion-input
                       class="ion-margin-bottom"
@@ -241,6 +206,44 @@
                       formControlName="tenure_in_months"
                       placeholder="Enter Tenure In Months"
                     ></ion-input>
+                   
+                  </ion-col>
+                  <ion-col size="4">
+                    <!-- Loan Duration -->
+                    <ion-input
+                      class="ion-margin-bottom"
+                      type="number"
+                      fill="solid"
+                      label="Repayment Period *"
+                      labelPlacement="floating"
+                      [errorText]="loanForm.controls['repayment_period'].invalid &&
+        loanForm.controls['repayment_period'].touched ? 'Repayment Period is required.' : ''"
+                      formControlName="repayment_period"
+                      placeholder="Enter Repayment Period"
+                    ></ion-input>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="12">
+                    <!-- Loan Release Date -->
+                    <ion-item class="ion-margin-bottom">
+                      <ion-label slot="start">Loan Release Date</ion-label>
+
+                      <ion-datetime-button
+                        slot="end"
+                        datetime="datetime"
+                      ></ion-datetime-button>
+
+                      <ion-modal [keepContentsMounted]="true">
+                        <ng-template>
+                          <ion-datetime
+                            formControlName="loan_release_date"
+                            id="datetime"
+                            presentation="date"
+                          ></ion-datetime>
+                        </ng-template>
+                      </ion-modal>
+                    </ion-item>
                   </ion-col>
                 </ion-row>
               </ion-grid>

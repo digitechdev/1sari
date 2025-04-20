@@ -41,11 +41,15 @@ export class LoanFormPage implements OnInit {
     this.loanForm = this.fb.group({
       borrower_id: [null, Validators.required],
       principal: [null, [Validators.required, Validators.min(0)]],
-      loan_term: [null, [Validators.required, Validators.min(1)]],
       interest_rate: [null, [Validators.required, Validators.min(0)]],
       status: ['Pending', Validators.required],
       loan_release_date: [null, Validators.required],
       purpose: [''],
+      disbursement_method: [null, Validators.required],
+      repayment_period: [null, [Validators.required, Validators.min(1)]],
+      loan_period: [null, Validators.required],
+      interest_method: [null, Validators.required],
+      tenure_in_months: [null, [Validators.required, Validators.min(1)]],
     });
   }
 
@@ -83,28 +87,28 @@ export class LoanFormPage implements OnInit {
     const formData = this.loanForm.value;
     console.log('Attempting to save loan:', formData);
 
-    try {
-      const response = await this.loanService.addLoan(
-        formData as Omit<Loan, 'id' | 'created_at'>
-      );
+    // try {
+    //   const response = await this.loanService.addLoan(
+    //     formData as Omit<Loan, 'id' | 'created_at'>
+    //   );
 
-      if (response.error) {
-        console.error('Error saving loan:', response.error);
-        await this.presentToast(`Error: ${response.error.message}`, 'danger');
-      } else {
-        console.log('Loan saved successfully:', response.data);
-        await this.presentToast('Loan added successfully!', 'success');
-        this.navCtrl.back();
-      }
-    } catch (error: any) {
-      console.error('Unexpected error during save:', error);
-      await this.presentToast(
-        `Error: ${error.message || 'An unexpected error occurred.'}`,
-        'danger'
-      );
-    } finally {
-      this.isLoading.set(false);
-    }
+    //   if (response.error) {
+    //     console.error('Error saving loan:', response.error);
+    //     await this.presentToast(`Error: ${response.error.message}`, 'danger');
+    //   } else {
+    //     console.log('Loan saved successfully:', response.data);
+    //     await this.presentToast('Loan added successfully!', 'success');
+    //     this.navCtrl.back();
+    //   }
+    // } catch (error: any) {
+    //   console.error('Unexpected error during save:', error);
+    //   await this.presentToast(
+    //     `Error: ${error.message || 'An unexpected error occurred.'}`,
+    //     'danger'
+    //   );
+    // } finally {
+    //   this.isLoading.set(false);
+    // }
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
