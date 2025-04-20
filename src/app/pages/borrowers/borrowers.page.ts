@@ -196,7 +196,8 @@ export class BorrowersPage implements OnInit, AfterViewInit {
   }
 
   async addUser() {
-    await this.presentBorrowerModal(null);
+    this.router.navigate(['/borrowers/new']);
+    console.log('Add borrower request:');
   }
 
   async editBorrower(borrower: AccountInformation) {
@@ -205,7 +206,7 @@ export class BorrowersPage implements OnInit, AfterViewInit {
       return;
     }
     console.log('Edit borrower request:', borrower);
-    await this.presentBorrowerModal(borrower);
+    this.router.navigate(['/borrowers/edit', borrower.id]);
   }
 
   async presentBorrowerModal(borrowerData: AccountInformation | null) {
@@ -291,7 +292,7 @@ export class BorrowersPage implements OnInit, AfterViewInit {
       return;
     }
     console.log('View borrower request:', row);
-    this.router.navigate(['/borrower-detail', row.id]);
+    this.router.navigate(['/borrowers/detail', row.id]);
   }
 
   toggleExpandRow(row: any) {

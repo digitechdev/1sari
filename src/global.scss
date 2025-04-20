@@ -37,19 +37,33 @@
 @import '@ionic/angular/css/palettes/dark.system.css';
 
 // Set global background color
-body {
-  --background: var(--ion-background-color, #f0f2f5);
+// body {
+//   --background: var(--ion-background-color, #f0f2f5);
+// }
+
+// // Global card styling to match design
+// ion-card {
+//   --background: var(--ion-card-background, #ffffff);
+//   box-shadow: none; // Remove default shadow if needed
+//   border-radius: 12px; // Rounded corners like in the design
+//   margin: 10px 0; // Consistent vertical margin
+// }
+
+// ion-item {
+//   --border-width: 0;
+//   --inner-border-width: 0;
+// }
+
+ion-header {
+    box-shadow: none;
 }
 
-// Global card styling to match design
 ion-card {
-  --background: var(--ion-card-background, #ffffff);
-  box-shadow: none; // Remove default shadow if needed
-  border-radius: 12px; // Rounded corners like in the design
-  margin: 10px 0; // Consistent vertical margin
-}
-
-ion-item {
-  --border-width: 0;
-  --inner-border-width: 0;
+    box-shadow: none;
+    ion-card-header { 
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
 }

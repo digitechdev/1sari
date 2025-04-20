@@ -1,0 +1,378 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Use navigateBack to go to previous page in history -->
+      <ion-back-button defaultHref="/borrowers"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle() }}</ion-title>
+    <ion-buttons slot="end">
+      <!-- Trigger save method on click -->
+      <ion-button
+        (click)="save()"
+        [disabled]="isLoading() || borrowerForm.invalid"
+      >
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        {{ isEditMode() ? 'Update' : 'Save' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- Add spinner overlay while loading data in edit mode -->
+  @if (isLoading() && isEditMode()) {
+  <div class="loading-overlay">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading Borrower Data...</p>
+  </div>
+  }
+
+  <form [formGroup]="borrowerForm" (ngSubmit)="save()">
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="6">
+          <!-- Personal Information Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="person-circle-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Personal Information
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Provider Subject No -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Provider Subject No. *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['name_of_borrower'].invalid &&
+                  borrowerForm.controls['name_of_borrower'].touched ? 'Provider subject no is required.' : ''"
+                formControlName="provider_subject_no"
+                placeholder="Enter Provider Subject No."
+              ></ion-input>
+
+              <!-- Name of Borrower -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Borrower Name *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['name_of_borrower'].invalid &&
+              borrowerForm.controls['name_of_borrower'].touched ? 'Borrower name is required.' : ''"
+                formControlName="name_of_borrower"
+                placeholder="Enter Borrower Name"
+              ></ion-input>
+
+              <!-- Contact No -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="tel"
+                fill="solid"
+                label="Contact No *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['contact_no_borrower'].invalid &&
+    borrowerForm.controls['contact_no_borrower'].touched ? 'Contact No is required.' : ''"
+                formControlName="contact_no_borrower"
+                placeholder="Enter Contact No"
+              ></ion-input>
+
+              <!-- Gender -->
+              <ion-select
+                class="ion-margin-bottom"
+                justify="space-between"
+                label="Gender"
+                placeholder="Select Gender"
+                fill="solid"
+                formControlName="gender"
+              >
+                <ion-select-option value="Male">Male</ion-select-option>
+                <ion-select-option value="Female">Female</ion-select-option>
+                <ion-select-option value="Other">Other</ion-select-option>
+              </ion-select>
+
+              <!-- Civil Status -->
+              <ion-select
+                class="ion-margin-bottom"
+                justify="space-between"
+                label="Civil Status"
+                placeholder="Select Status"
+                fill="solid"
+                formControlName="civil_status"
+              >
+                <ion-select-option value="Single">Single</ion-select-option>
+                <ion-select-option value="Married">Married</ion-select-option>
+                <ion-select-option value="Divorced">Divorced</ion-select-option>
+                <ion-select-option value="Widowed">Widowed</ion-select-option>
+              </ion-select>
+              <ion-item class="ion-margin-bottom">
+                <ion-label slot="start">Birthdate</ion-label>
+                <ion-datetime-button
+                  slot="end"
+                  datetime="datetime"
+                ></ion-datetime-button>
+                <ion-modal [keepContentsMounted]="true">
+                  <ng-template>
+                    <ion-datetime
+                      id="datetime"
+                      presentation="date"
+                    ></ion-datetime>
+                  </ng-template>
+                </ion-modal>
+              </ion-item>
+
+              <!-- Age -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="number"
+                fill="solid"
+                label="Age *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['age'].invalid &&
+            borrowerForm.controls['age'].touched ? 'Age is required.' : ''"
+                formControlName="age"
+                placeholder="Enter Age"
+              ></ion-input>
+
+              <!-- Mother's Maiden Name -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Mother's Maiden Name *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['mothers_maiden_name_borrower'].invalid &&
+          borrowerForm.controls['mothers_maiden_name_borrower'].touched ? 'Mother\'s maiden name is required.' : ''"
+                formControlName="mothers_maiden_name_borrower"
+                placeholder="Enter Mother's Maiden Name"
+              ></ion-input>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Address Information Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="location-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Residence & Store Information
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Residence Address -->
+              <ion-textarea
+                class="ion-margin-bottom"
+                label="Residence Address"
+                labelPlacement="floating"
+                fill="solid"
+                placeholder="Enter Residence Address"
+                formControlName="residence_address"
+              ></ion-textarea>
+
+              <!-- Area -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Area"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['area'].invalid &&
+         borrowerForm.controls['area'].touched ? 'Area is required.' : ''"
+                formControlName="area"
+                placeholder="Enter Area"
+              ></ion-input>
+
+              <!-- Length of Stay (Residence) -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="number"
+                fill="solid"
+                label="Length of Stay (Residence) *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['length_of_stay_in_residence'].invalid &&
+          borrowerForm.controls['length_of_stay_in_residence'].touched ? 'Length of stay in residence is required.' : ''"
+                formControlName="length_of_stay_in_residence"
+                placeholder="Enter Length of Stay (Residence)"
+              ></ion-input>
+
+              <!-- Store Name -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Store Name *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['store_name'].invalid &&
+        borrowerForm.controls['store_name'].touched ? 'Store name is required.' : ''"
+                formControlName="store_name"
+                placeholder="Enter Store Name"
+              ></ion-input>
+
+              <!-- Store Category -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Store Category *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['store_category'].invalid &&
+        borrowerForm.controls['store_category'].touched ? 'Store category is required.' : ''"
+                formControlName="store_category"
+                placeholder="Enter Store Category"
+              ></ion-input>
+
+              <!-- Store Address -->
+              <ion-textarea
+                class="ion-margin-bottom"
+                label="Store Address"
+                labelPlacement="floating"
+                fill="solid"
+                placeholder="Enter Store Address"
+                formControlName="store_address"
+              ></ion-textarea>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="6">
+          <!-- Identification & Contact Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="id-card-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Identification
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list lines="full">
+                <!-- Type of ID -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  type="text"
+                  fill="solid"
+                  label="Type of ID *"
+                  labelPlacement="floating"
+                  [errorText]="borrowerForm.controls['type_of_id'].invalid &&
+          borrowerForm.controls['type_of_id'].touched ? 'Type of ID is required.' : ''"
+                  formControlName="type_of_id"
+                  placeholder="Enter Type of ID"
+                ></ion-input>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Co-Borrower Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="people-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Co-Borrower
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Co-Borrower/Maker -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Co-Borrower/Maker *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['name_of_co_borrower_maker'].invalid &&
+    borrowerForm.controls['name_of_co_borrower_maker'].touched ? 'Co-Borrower/Maker is required.' : ''"
+                formControlName="name_of_co_borrower_maker"
+                placeholder="Enter Co-Borrower/Maker"
+              ></ion-input>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Loan & Payment Details Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="card-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Loan & Payment Details
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Security/Collateral -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Security/Collateral *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['security_collateral'].invalid &&
+        borrowerForm.controls['security_collateral'].touched ? 'Security/Collateral is required.' : ''"
+                formControlName="security_collateral"
+                placeholder="Enter Security/Collateral"
+              ></ion-input>
+
+              <!-- Mode of Payment -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Mode of Payment *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['mode_of_payment'].invalid && borrowerForm.controls['mode_of_payment'].touched ? 'Mode of Payment is required.' : ''"
+                formControlName="mode_of_payment"
+                placeholder="Enter Mode of Payment"
+              ></ion-input>
+
+              <!-- Classification -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Classification *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['classification'].invalid && borrowerForm.controls['classification'].touched ? 'Classification is required.' : ''"
+                formControlName="classification"
+                placeholder="Enter Classification"
+              ></ion-input>
+
+              <!-- Relationship Officer -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Relationship Officer *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['account_relationship_officer'].invalid && borrowerForm.controls['account_relationship_officer'].touched ? 'Relationship Officer is required.' : ''"
+                formControlName="account_relationship_officer"
+                placeholder="Enter Relationship Officer"
+              ></ion-input>
+
+              <!-- Retail Partner -->
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Retail Partner *"
+                labelPlacement="floating"
+                [errorText]="borrowerForm.controls['retail_partner'].invalid && borrowerForm.controls['retail_partner'].touched ? 'Retail Partner is required.' : ''"
+                formControlName="retail_partner"
+                placeholder="Enter Retail Partner"
+              ></ion-input>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>

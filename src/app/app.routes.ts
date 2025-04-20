@@ -18,13 +18,28 @@ export const routes: Routes = [
   },
   {
     path: 'borrowers',
-    loadComponent: () =>
-      import('./pages/borrowers/borrowers.page').then((m) => m.BorrowersPage),
-    data: { title: 'Borrowers' },
-  },
-  {
-    path: 'borrower-detail/:id',
-    loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage)
+    children: [
+       {
+        path: '',
+        loadComponent: () => import('./pages/borrowers/borrowers.page').then( m => m.BorrowersPage),
+        data: { title: 'Borrowers' }
+       },
+       {
+          path: 'new',
+          loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
+          data: { title: 'Add Borrower' }
+       },
+       {
+          path: 'edit/:id',
+          loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
+          data: { title: 'Edit Borrower' }
+       },
+       {
+          path: 'detail/:id',
+          loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage),
+          data: { title: 'Borrower Details' }
+       },
+    ]
   },
   {
     path: 'loans',
