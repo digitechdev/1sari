@@ -194,4 +194,68 @@ export class LoanService {
     }
   }
   // --- End getLoanById Method ---
+
+  // --- Add Delete Loan Method ---
+  async deleteLoan(id: number): Promise<{ error: PostgrestError | null }> {
+    this.isLoading.set(true);
+    let scheduleError: PostgrestError | null = null;
+    let loanError: PostgrestError | null = null;
+
+    try {
+      // 1. Delete related schedule records first
+      const scheduleResponse = await this.supabase
+        .from('loan_payment_schedules')
+        .delete()
+        .eq('loan_id', id);
+      
+      scheduleError = scheduleResponse.error;
+      if (scheduleError) {
+        console.error(`Error deleting schedule for loan ${id}:`, scheduleError);
+        // Decide if we should proceed to delete the loan even if schedule deletion fails
+        // For now, we proceed but will report the combined errors.
+      }
+
+      // 2. Delete the loan record
+      const loanResponse = await this.supabase
+        .from(this.tableName)
+        .delete()
+        .eq('id', id);
+      
+      loanError = loanResponse.error;
+      if (loanError) {
+        console.error(`Error deleting loan ${id}:`, loanError);
+      }
+
+      // Combine errors if any occurred
+      const combinedError = scheduleError || loanError;
+      if (combinedError) {
+         // Construct a meaningful combined error message if needed
+         const finalError : PostgrestError = {
+            message: `Loan deletion issues: ${scheduleError?.message || 'OK'}; ${loanError?.message || 'OK'}`,
+            details: `Schedule: ${scheduleError?.details || '-'}; Loan: ${loanError?.details || '-'}`,            
+            hint: '',
+            code: scheduleError?.code || loanError?.code || 'DELETE_ERR',
+            name: 'CombinedDeleteError'
+         };
+         return { error: finalError };
+      }
+
+      // Success
+      return { error: null };
+
+    } catch (error: any) {
+      console.error(`Unexpected error during delete operation for loan ${id}:`, error);
+      const pgError: PostgrestError = {
+        message: error?.message || 'Client Loan Delete Error',
+        details: error?.details || '',
+        hint: error?.hint || '',
+        code: error?.code || 'CLIENT_LOAN_DELETE_ERR',
+        name: 'ClientLoanDeleteError'
+      };
+      return { error: pgError };
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+  // --- End Delete Loan Method ---
 } 

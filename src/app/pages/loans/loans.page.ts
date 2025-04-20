@@ -190,10 +190,16 @@ export class LoansPage implements OnInit, AfterViewInit {
   }
 
   async deleteLoan(loan: any) {
-    console.log('Delete Loan clicked - Placeholder:', loan);
+    console.log('Attempting to delete loan:', loan);
+    if (!loan || typeof loan.id === 'undefined') {
+      console.error('Invalid loan data provided for deletion.');
+      await this.presentToast('Could not delete loan: Invalid data.', 'danger');
+      return;
+    }
+
     const alert = await this.alertCtrl.create({
         header: 'Confirm Deletion',
-        message: `Are you sure you want to delete Loan ID ${loan.id} for ${loan.borrower?.name_of_borrower || 'Borrower'}?`,
+        message: `Are you sure you want to delete Loan ID ${loan.id} for ${loan.borrower?.name_of_borrower || 'Borrower'}? This will also delete its payment schedule.`,
         buttons: [
             { text: 'Cancel', role: 'cancel' },
             { 
@@ -201,7 +207,16 @@ export class LoansPage implements OnInit, AfterViewInit {
                 role: 'destructive',
                 handler: async () => { 
                     console.log('Delete confirmed for loan:', loan.id);
-                    await this.presentToast('Delete Loan functionality not yet implemented.', 'warning');
+                    const result = await this.loanService.deleteLoan(loan.id);
+
+                    if (result.error) {
+                      console.error('Error deleting loan:', result.error);
+                      await this.presentToast(`Failed to delete loan: ${result.error.message}`, 'danger');
+                    } else {
+                      console.log('Loan deleted successfully');
+                      this.allLoans.update(loans => loans.filter(l => l.id !== loan.id));
+                      await this.presentToast('Loan deleted successfully.', 'success');
+                    }
                 }
             }
         ]
