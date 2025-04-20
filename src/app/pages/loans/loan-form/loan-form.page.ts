@@ -226,15 +226,41 @@ export class LoanFormPage implements OnInit {
 
   // --- Add Schedule Calculation and Modal Logic ---
   openScheduleModal() {
-    this.generateSchedule();
-    this.isModalOpen.set(true);
+    // Regenerate and set the schedule for the modal
+    this.generateSchedule(); // This now updates the signal internally
+    
+    // Check if generation succeeded (it sets the signal internally)
+    if (this.repaymentSchedule().length > 0) { 
+       this.isModalOpen.set(true);
+    } else {
+       // Show error only if calculation failed for valid inputs
+       if(this.canCalculateSchedule()) { // Check if inputs were valid
+          this.presentToast('Could not generate schedule. Check inputs.', 'danger');
+       } else {
+          this.presentToast('Please fill required fields to view schedule.', 'warning');
+       }
+    }
   }
 
-  generateSchedule() {
-    if (!this.canCalculateSchedule()) {
-      this.repaymentSchedule.set([]);
+  generateSchedule(): ScheduleItem[] { // Return the calculated schedule
+    // Reset the signal used by the modal initially
+    this.repaymentSchedule.set([]);
+
+    // Use a computed signal or local check for required fields
+    const canCalc = (
+      this.loanForm.controls['principal']?.valid &&
+      this.loanForm.controls['interest_rate']?.valid &&
+      this.loanForm.controls['repayment_period']?.valid &&
+      this.loanForm.controls['loan_release_date']?.valid &&
+      this.loanForm.controls['interest_method']?.valid && // Check interest method validity
+      this.loanForm.controls['loan_period']?.valid && // Check loan period validity
+      this.loanForm.controls['principal']?.value > 0 && 
+      this.loanForm.controls['repayment_period']?.value > 0
+    );
+
+    if (!canCalc) {
       console.warn('Cannot generate schedule, form requirements not met.');
-      return;
+      return []; // Return empty schedule
     }
 
     const { 
@@ -242,47 +268,54 @@ export class LoanFormPage implements OnInit {
       interest_rate, 
       repayment_period, 
       loan_release_date,
-      loan_period // Get the loan period from the form
+      loan_period,
+      interest_method // Get interest method
     } = this.loanForm.value;
 
     let periodicInterestRate = 0;
-    const monthlyRateDecimal = interest_rate / 100; // Monthly rate as decimal
+    const monthlyRateDecimal = interest_rate / 100; 
 
-    // --- Calculate Periodic Interest Rate based on Loan Period ---
-    // TODO: Implement other cases (daily, weekly, bi-monthly)
     switch (loan_period.toLowerCase()) { 
-      case 'monthly':
-        periodicInterestRate = monthlyRateDecimal;
-        break;
-      case 'daily':
-        // Example: Approximate daily rate (adjust as needed)
-        periodicInterestRate = monthlyRateDecimal / 30; 
-        break;
-      case 'weekly':
-        // Example: Approximate weekly rate (adjust as needed)
-        periodicInterestRate = (monthlyRateDecimal * 12) / 52; 
-        break;
-      case 'bi-monthly': 
-         // Example: Approximate rate per half-month (adjust as needed)
-        periodicInterestRate = monthlyRateDecimal / 2;
-        break;
-      default:
-        console.error('Unsupported loan period:', loan_period);
-        this.repaymentSchedule.set([]);
-        return; // Or handle error appropriately
+      case 'monthly': periodicInterestRate = monthlyRateDecimal; break;
+      case 'daily': periodicInterestRate = monthlyRateDecimal / 30; break; // Approx
+      case 'weekly': periodicInterestRate = (monthlyRateDecimal * 12) / 52; break; // Approx
+      case 'bi-monthly': periodicInterestRate = monthlyRateDecimal / 2; break; // Approx
+      default: console.error('Unsupported loan period:', loan_period); return [];
     }
-    // --- End Rate Calculation ---
-    
+        
     const startDate = new Date(loan_release_date);
-    
-    const schedule = this.calculateDiminishingSchedule(
-      principal,
-      periodicInterestRate, // Pass the calculated periodic rate
-      repayment_period, 
-      startDate,
-      loan_period // Pass the loan period for date calculation
-    );
-    this.repaymentSchedule.set(schedule);
+    let calculatedSchedule: ScheduleItem[] = [];
+
+    // --- Call appropriate calculation based on interest method ---
+    if (interest_method === 'diminishing') {
+        calculatedSchedule = this.calculateDiminishingSchedule(
+          principal,
+          periodicInterestRate, 
+          repayment_period, 
+          startDate,
+          loan_period 
+        );
+        console.log('Diminishing schedule calculated:', calculatedSchedule);
+
+    } else if (interest_method === 'straight') {
+         calculatedSchedule = this.calculateStraightSchedule(
+          principal,
+          periodicInterestRate, 
+          repayment_period, 
+          startDate,
+          loan_period 
+        );
+         console.log('Straight schedule calculated:', calculatedSchedule);
+    } else {
+        console.warn('Unsupported interest method for schedule generation:', interest_method);
+    }
+    // --- End Method Call Logic ---
+
+    // --- Always update the signal for the modal --- 
+    this.repaymentSchedule.set(calculatedSchedule);
+    // --- End Signal Update ---
+
+    return calculatedSchedule; // Return the schedule for potential use elsewhere (e.g., saving)
   }
 
   calculateDiminishingSchedule(
@@ -363,6 +396,71 @@ export class LoanFormPage implements OnInit {
 
     return schedule;
   }
+
+  // --- Add Straight Interest Calculation Method ---
+  calculateStraightSchedule(
+    principal: number,
+    periodicRate: number, // The rate for the chosen period (e.g., monthly)
+    numberOfPayments: number,
+    startDate: Date,
+    loanPeriod: string // e.g., 'monthly', 'daily'
+  ): ScheduleItem[] {
+    const schedule: ScheduleItem[] = [];
+    if (principal <= 0 || periodicRate < 0 || numberOfPayments <= 0) {
+      return [];
+    }
+
+    // Straight Interest Calculations
+    const totalInterest = principal * periodicRate * numberOfPayments;
+    const principalPerPeriod = principal / numberOfPayments;
+    const interestPerPeriod = totalInterest / numberOfPayments;
+    const periodicPayment = principalPerPeriod + interestPerPeriod;
+
+    let balance = principal;
+
+    for (let i = 1; i <= numberOfPayments; i++) {
+      balance -= principalPerPeriod;
+      if (i === numberOfPayments) {
+          // Ensure balance is exactly 0 on the last payment due to potential floating point issues
+          balance = 0; 
+      }
+      if (balance < 0) balance = 0; // Prevent negative balance display
+
+      let currentDueDate: Date;
+      // --- Calculate Due Date based on Loan Period ---
+      // TODO: Refine date calculations for other periods
+       switch (loanPeriod.toLowerCase()) {
+        case 'monthly':
+          currentDueDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, startDate.getDate());
+          break;
+        case 'daily':
+          currentDueDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+          break;
+        case 'weekly':
+          currentDueDate = new Date(startDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+          break;
+         case 'bi-monthly':
+           currentDueDate = new Date(startDate.getTime() + i * 15 * 24 * 60 * 60 * 1000); // Approx
+           break;
+        default:
+          currentDueDate = new Date(startDate);
+          break;
+      }
+       // --- End Due Date Calculation ---
+
+      schedule.push({
+        periodNumber: i,
+        dueDate: currentDueDate,
+        paymentAmount: periodicPayment,
+        interest: interestPerPeriod,
+        principal: principalPerPeriod,
+        balance: balance,
+      });
+    }
+    return schedule;
+  }
+  // --- End Straight Interest Method ---
+
   // --- End Schedule Logic ---
 
   // --- Add CSV Export Function ---
