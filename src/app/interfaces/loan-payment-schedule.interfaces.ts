@@ -20,4 +20,30 @@ export interface LoanPaymentSchedule {
   actual_payment_date?: string | null; // DATE
   status?: PaymentStatus; // TEXT DEFAULT 'Pending' -> Mapped to PaymentStatus enum
   created_at?: string; // TIMESTAMPTZ DEFAULT NOW()
-} 
+}
+
+// --- LoanPaymentSchedule Interface (for Supabase) ---
+export interface LoanPaymentScheduleSupabase {
+  loan_id: number;
+  period_number: number;
+  due_date: string; // Format as YYYY-MM-DD for Supabase
+  amount_due: number;
+  principal_paid: number;
+  interest_paid: number;
+  outstanding_balance: number;
+  status: string; // e.g., 'Pending', 'Paid'
+}
+// --- End Interface --- 
+
+// --- Exported LoanPaymentSchedule Interface (for Supabase) ---
+export interface LoanPaymentSchedule {
+  loan_id: number;
+  period_number: number;
+  due_date: string; // Format as YYYY-MM-DD for Supabase
+  amount_due: number;
+  principal_paid: number;
+  interest_paid: number;
+  outstanding_balance: number;
+  status?: PaymentStatus; // Use the exported enum
+}
+// --- End Interface --- 

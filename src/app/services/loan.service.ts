@@ -1,7 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
+import { PostgrestSingleResponse, PostgrestError, PostgrestResponse } from '@supabase/supabase-js';
 import { Loan } from '../interfaces/loan.interfaces';
+import { LoanPaymentSchedule } from '../interfaces/loan-payment-schedule.interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -27,28 +28,45 @@ export class LoanService {
   async getAllLoans(): Promise<PostgrestSingleResponse<any[]>> {
     this.isLoading.set(true);
     try {
-      const response = await this.supabase
+      // First fetch loans
+      const loansResponse = await this.supabase
         .from(this.tableName)
-        .select(`
-          *,
-          borrower: ${this.borrowerTableName}!inner ( id, name_of_borrower ) 
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('getAllLoans with borrower response:', response);
-
-      if (response.error) {
-        console.error('Supabase error fetching loans with borrowers:', response.error);
-        return response as PostgrestSingleResponse<any>;
+      if (loansResponse.error) {
+        console.error('Error fetching loans:', loansResponse.error);
+        return loansResponse;
       }
 
-      const dataWithBorrower = response.data as unknown as any[];
+      // Then fetch all borrowers
+      const borrowersResponse = await this.supabase
+        .from(this.borrowerTableName)
+        .select('id, name_of_borrower');
+
+      if (borrowersResponse.error) {
+        console.error('Error fetching borrowers:', borrowersResponse.error);
+        return borrowersResponse;
+      }
+
+      // Manually join the data
+      const borrowersMap = new Map(
+        borrowersResponse.data?.map(b => [b.id, b]) || []
+      );
+
+      const combinedData = loansResponse.data?.map(loan => ({
+        ...loan,
+        borrower: borrowersMap.get(loan.borrower_id)
+      })) || [];
+
+      console.log('Combined loans with borrowers:', combinedData);
 
       return {
-        ...response,
-        data: dataWithBorrower,
+        ...loansResponse,
+        data: combinedData,
         error: null
       };
+
     } catch (error: any) {
       console.error('Unexpected error in getAllLoans:', error);
       const pgError: PostgrestError = {
@@ -103,26 +121,47 @@ export class LoanService {
     }
   }
 
-  // TODO: Add methods for getLoanById, updateLoan, deleteLoan later
 
-  /* Example: Fetch loan with borrower name (requires foreign key relation setup in Supabase)
-  async getAllLoansWithBorrowerName(): Promise<PostgrestSingleResponse<any[]>> { // Return type would need adjustment
+  /**
+   * Inserts multiple loan payment schedule records into the database.
+   * @param scheduleItems Array of loan payment schedule items to insert
+   * @returns Promise resolving to the Supabase response containing the inserted records or an error
+   */
+  async addLoanSchedule(
+    scheduleItems: LoanPaymentSchedule[]
+  ): Promise<PostgrestSingleResponse<LoanPaymentSchedule[]>> {
     this.isLoading.set(true);
     try {
+      // Use explicit table name and select to match getAllLoans pattern
       const response = await this.supabase
-        .from(this.tableName)
+        .from('loan_payment_schedules')
+        .insert(scheduleItems)
         .select(`
           *,
-          account_information ( name_of_borrower )
-        `)
-        .order('created_at', { ascending: false });
+          loan:loans!inner (
+            id,
+            borrower:account_information!inner (
+              id, 
+              name_of_borrower
+            )
+          )
+        `);
+
+      console.log('addLoanSchedule response:', response);
       return response;
+
     } catch (error: any) {
-      // ... error handling ...
+      console.error('Unexpected error in addLoanSchedule:', error);
+      const pgError: PostgrestError = {
+        message: error?.message || 'Client Schedule Add Error',
+        details: error?.details || '',
+        hint: error?.hint || '',
+        code: error?.code || 'CLIENT_SCHEDULE_ADD_ERR',
+        name: 'ClientScheduleAddError'
+      };
+      return { data: null, error: pgError, status: 0, statusText: 'Client Schedule Add Error', count: null };
     } finally {
       this.isLoading.set(false);
     }
   }
-  */
-
 } 

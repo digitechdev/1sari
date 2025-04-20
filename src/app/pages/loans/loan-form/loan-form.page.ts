@@ -11,6 +11,8 @@ import { LoanService } from '../../../services/loan.service';
 import { Loan } from '../../../interfaces/loan.interfaces';
 import { BorrowerService } from '../../../services/borrower.service';
 import { AccountInformation } from '../../../interfaces/account-information.interfaces';
+import { LoanPaymentSchedule } from '../../../interfaces/loan-payment-schedule.interfaces';
+import { PaymentStatus } from 'src/app/enums/payment-status.enum';
 
 // --- Add ScheduleItem Interface ---
 interface ScheduleItem {
@@ -22,6 +24,12 @@ interface ScheduleItem {
   balance: number;
 }
 // --- End Interface ---
+
+// --- Remove LoanPaymentSchedule Interface (moved to separate file) ---
+/* 
+interface LoanPaymentSchedule { ... } 
+*/
+// --- End Removal ---
 
 @Component({
   selector: 'app-loan-form',
@@ -122,32 +130,86 @@ export class LoanFormPage implements OnInit {
       return;
     }
 
+    // Ensure schedule is calculated (especially if needed for validation or saving)
+    this.generateSchedule(); 
+    const scheduleToSave = this.repaymentSchedule();
+
+    // Optional: Add check if schedule calculation is required before saving
+    if (this.loanForm.value.interest_method === 'diminishing' && scheduleToSave.length === 0) {
+        this.presentToast('Could not calculate repayment schedule. Please check inputs.', 'danger');
+        return;
+    }
+
     this.isLoading.set(true);
     const formData = this.loanForm.value;
     console.log('Attempting to save loan:', formData);
 
-    // try {
-    //   const response = await this.loanService.addLoan(
-    //     formData as Omit<Loan, 'id' | 'created_at'>
-    //   );
+    try {
+      // 1. Save the main loan details
+      const loanResponse = await this.loanService.addLoan(
+        formData as Omit<Loan, 'id' | 'created_at' | 'updated_at'> // Ensure type matches service expectation
+      );
 
-    //   if (response.error) {
-    //     console.error('Error saving loan:', response.error);
-    //     await this.presentToast(`Error: ${response.error.message}`, 'danger');
-    //   } else {
-    //     console.log('Loan saved successfully:', response.data);
-    //     await this.presentToast('Loan added successfully!', 'success');
-    //     this.navCtrl.back();
-    //   }
-    // } catch (error: any) {
-    //   console.error('Unexpected error during save:', error);
-    //   await this.presentToast(
-    //     `Error: ${error.message || 'An unexpected error occurred.'}`,
-    //     'danger'
-    //   );
-    // } finally {
-    //   this.isLoading.set(false);
-    // }
+      if (loanResponse.error || !loanResponse.data) {
+        console.error('Error saving loan:', loanResponse.error);
+        await this.presentToast(`Error saving loan: ${loanResponse.error?.message || 'Unknown error'}`, 'danger');
+        this.isLoading.set(false);
+        return; // Stop if loan saving failed
+      }
+      
+      // --- Corrected Access: Get ID directly from data object ---
+      const newLoanId = loanResponse.data.id; 
+      if (!newLoanId) { // Add a check for the ID itself
+         console.error('Error saving loan: Could not retrieve ID from response.');
+         await this.presentToast('Error saving loan: Failed to get new loan ID.', 'danger');
+         this.isLoading.set(false);
+         return;
+      }
+      console.log('Loan saved successfully with ID:', newLoanId);
+
+      // 2. Save the repayment schedule (if applicable)
+      if (scheduleToSave.length > 0 && newLoanId) {
+        console.log('Attempting to save repayment schedule for loan ID:', newLoanId);
+        const formattedSchedule: LoanPaymentSchedule[] = scheduleToSave.map(item => ({
+          loan_id: newLoanId,
+          period_number: item.periodNumber,
+          due_date: this.datePipe.transform(item.dueDate, 'yyyy-MM-dd') || '', // Format date
+          amount_due: item.paymentAmount,
+          principal_paid: item.principal,
+          interest_paid: item.interest,
+          outstanding_balance: item.balance,
+          status: PaymentStatus.Pending // Align with expected PaymentStatus enum
+        }));
+
+        // Assume loanService has a method addLoanSchedule
+        const scheduleResponse = await this.loanService.addLoanSchedule(formattedSchedule);
+
+        if (scheduleResponse.error) {
+           console.error('Error saving loan schedule:', scheduleResponse.error);
+           // Decide on rollback strategy or just warn user
+           await this.presentToast(`Loan saved (ID: ${newLoanId}), but failed to save schedule: ${scheduleResponse.error.message}`, 'warning');
+           // Don't navigate back automatically if schedule fails, user might need to retry/fix
+           this.isLoading.set(false);
+           return; 
+        }
+        console.log('Loan schedule saved successfully.');
+      } else {
+         console.log('No repayment schedule to save for this loan type or ID missing.');
+      }
+
+      // 3. Success: Both loan and schedule (if applicable) saved
+      await this.presentToast('Loan added successfully!', 'success');
+      this.navCtrl.back();
+
+    } catch (error: any) {
+      console.error('Unexpected error during save operation:', error);
+      await this.presentToast(
+        `Save failed: ${error.message || 'An unexpected error occurred.'}`,
+        'danger'
+      );
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
