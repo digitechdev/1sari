@@ -273,13 +273,7 @@
                     Please fill required loan terms (Principal, Rate, Tenure, Repayment Period, Release Date) to view schedule.
                   </p>
                 </ion-text>
-              } @else if (loanForm.controls['interest_method'].value !== 'diminishing') {
-                 <ion-text color="medium">
-                  <p class="ion-text-center ion-padding-top">
-                    Schedule available only for Diminishing interest method.
-                  </p>
-                </ion-text>
-              }
+              } 
             </ion-card-content>
           </ion-card>
           <!-- End Repayment Schedule Card -->
@@ -293,16 +287,20 @@
   <ion-modal [isOpen]="isModalOpen()" (didDismiss)="isModalOpen.set(false)">
     <ng-template>
       <ion-header>
-        <ion-toolbar>
+        <ion-toolbar  color="primary">
           <ion-title>Repayment Schedule</ion-title>
           <ion-buttons slot="end">
+            <ion-button (click)="exportToCsv()">
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Export CSV
+            </ion-button>
             <ion-button (click)="isModalOpen.set(false)">Close</ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
         @if (repaymentSchedule().length > 0) {
-          <ion-grid fixed>
+          <ion-grid fixed id="repayment-schedule-grid">
             <ion-row class="header-row">
               <ion-col size="1">#</ion-col>
               <ion-col size="3">Due Date</ion-col>
@@ -322,7 +320,7 @@
               </ion-row>
             }
              <ion-row class="total-row">
-              <ion-col size="4" offset="1" class="ion-text-right ion-text-bold">Totals:</ion-col>
+              <ion-col size="3" offset="1" class="ion-text-right ion-text-bold">Total:</ion-col>
               <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPayment() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
               <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalInterest() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
               <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPrincipal() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>

@@ -58,6 +58,8 @@ import {
   eyeOutline,
   createOutline,
   trashOutline,
+  calendarOutline,
+  downloadOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -173,6 +175,8 @@ export class AppComponent implements OnInit {
       eyeOutline,
       createOutline,
       trashOutline,
+      calendarOutline,
+      downloadOutline,
     });
   }
 

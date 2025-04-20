@@ -35,6 +35,7 @@ interface ScheduleItem {
     CurrencyPipe, // Add CurrencyPipe here
     DatePipe // Add DatePipe here
   ],
+  providers: [CurrencyPipe, DatePipe]
 })
 
 export class LoanFormPage implements OnInit {
@@ -43,6 +44,8 @@ export class LoanFormPage implements OnInit {
   private borrowerService = inject(BorrowerService);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
+  private currencyPipe = inject(CurrencyPipe);
+  private datePipe = inject(DatePipe);
 
   loanForm!: FormGroup;
   borrowers = signal<AccountInformation[]>([]);
@@ -60,20 +63,11 @@ export class LoanFormPage implements OnInit {
   }
 
   // --- Add Computed Signal for Button Disabling ---
-  canCalculateSchedule = computed(() => {
+  canCalculateSchedule = () => {
     const controls = this.loanForm?.controls;
     if (!controls) return false;
-    // return (
-    //   controls['principal']?.valid &&
-    //   controls['interest_rate']?.valid &&
-    //   controls['repayment_period']?.valid &&
-    //   controls['loan_release_date']?.valid &&
-    //   controls['interest_method']?.value === 'diminishing' && // Only for diminishing
-    //   controls['principal']?.value > 0 && 
-    //   controls['repayment_period']?.value > 0
-    // );
-    return true;
-  });
+    return controls['principal'].valid && controls['principal'].value > 0 && controls['interest_method'].valid && controls['loan_period'].valid && controls['interest_rate'].valid && controls['tenure_in_months'].valid && controls['repayment_period'].valid && controls['loan_release_date'].valid;
+  };
   // --- End Computed Signal ---
 
   // --- Add Computed Signals for Totals ---
@@ -182,58 +176,108 @@ export class LoanFormPage implements OnInit {
     const { 
       principal, 
       interest_rate, 
-      repayment_period, // Use this for number of payments
+      repayment_period, 
       loan_release_date,
-      // tenure_in_months, // Use repayment_period for N
-      // loan_period // Assuming monthly based on image/form
+      loan_period // Get the loan period from the form
     } = this.loanForm.value;
 
-    // Corrected: Treat interest_rate input as MONTHLY % rate
-    const monthlyInterestRate = interest_rate / 100;
+    let periodicInterestRate = 0;
+    const monthlyRateDecimal = interest_rate / 100; // Monthly rate as decimal
+
+    // --- Calculate Periodic Interest Rate based on Loan Period ---
+    // TODO: Implement other cases (daily, weekly, bi-monthly)
+    switch (loan_period.toLowerCase()) { 
+      case 'monthly':
+        periodicInterestRate = monthlyRateDecimal;
+        break;
+      case 'daily':
+        // Example: Approximate daily rate (adjust as needed)
+        periodicInterestRate = monthlyRateDecimal / 30; 
+        break;
+      case 'weekly':
+        // Example: Approximate weekly rate (adjust as needed)
+        periodicInterestRate = (monthlyRateDecimal * 12) / 52; 
+        break;
+      case 'bi-monthly': 
+         // Example: Approximate rate per half-month (adjust as needed)
+        periodicInterestRate = monthlyRateDecimal / 2;
+        break;
+      default:
+        console.error('Unsupported loan period:', loan_period);
+        this.repaymentSchedule.set([]);
+        return; // Or handle error appropriately
+    }
+    // --- End Rate Calculation ---
+    
     const startDate = new Date(loan_release_date);
     
     const schedule = this.calculateDiminishingSchedule(
       principal,
-      monthlyInterestRate, // Pass the correct monthly decimal rate
-      repayment_period, // N = number of payments
-      startDate
+      periodicInterestRate, // Pass the calculated periodic rate
+      repayment_period, 
+      startDate,
+      loan_period // Pass the loan period for date calculation
     );
     this.repaymentSchedule.set(schedule);
   }
 
   calculateDiminishingSchedule(
     principal: number,
-    monthlyRate: number,
+    periodicRate: number, // Changed from monthlyRate
     numberOfPayments: number,
-    startDate: Date
+    startDate: Date,
+    loanPeriod: string // Added loanPeriod
   ): ScheduleItem[] {
     const schedule: ScheduleItem[] = [];
     let balance = principal;
 
-    if (principal <= 0 || monthlyRate < 0 || numberOfPayments <= 0) {
+    if (principal <= 0 || periodicRate < 0 || numberOfPayments <= 0) {
       return []; // Return empty if inputs are invalid
     }
 
-    // Calculate monthly payment (PMT formula)
-    // Handle edge case where rate is 0
-    const monthlyPayment = monthlyRate === 0 
+    // Calculate periodic payment (PMT formula using periodic rate)
+    const periodicPayment = periodicRate === 0 
       ? principal / numberOfPayments
-      : principal * (monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) / (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+      : principal * (periodicRate * Math.pow(1 + periodicRate, numberOfPayments)) / (Math.pow(1 + periodicRate, numberOfPayments) - 1);
 
     for (let i = 1; i <= numberOfPayments; i++) {
-      const interestPayment = balance * monthlyRate;
-      let principalPayment = monthlyPayment - interestPayment;
+      const interestPayment = balance * periodicRate;
+      let principalPayment = periodicPayment - interestPayment;
+      let currentDueDate: Date;
+
+      // --- Calculate Due Date based on Loan Period ---
+      // TODO: Implement other cases (daily, weekly, bi-monthly)
+       switch (loanPeriod.toLowerCase()) {
+        case 'monthly':
+          currentDueDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, startDate.getDate());
+          break;
+        case 'daily':
+          // Example: Add i days
+          currentDueDate = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
+          break;
+        case 'weekly':
+           // Example: Add i weeks (i * 7 days)
+          currentDueDate = new Date(startDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
+          break;
+         case 'bi-monthly':
+            // Example: Add i * 15 days (approx half month)
+           currentDueDate = new Date(startDate.getTime() + i * 15 * 24 * 60 * 60 * 1000);
+           break;
+        default:
+          // Fallback or error - Should not happen if validated in generateSchedule
+          currentDueDate = new Date(startDate);
+          break;
+      }
+       // --- End Due Date Calculation ---
       
       // Adjust last payment to ensure balance is exactly 0
       if (i === numberOfPayments) {
-        principalPayment = balance; // Pay off remaining balance
-        // Recalculate payment amount for the last period if principal was adjusted
+        principalPayment = balance; 
         const adjustedPayment = principalPayment + interestPayment;
          balance = 0;
           schedule.push({
             periodNumber: i,
-            // Calculate due date (simple month increment for now)
-            dueDate: new Date(startDate.getFullYear(), startDate.getMonth() + i, startDate.getDate()),
+            dueDate: currentDueDate,
             paymentAmount: adjustedPayment, 
             interest: interestPayment,
             principal: principalPayment,
@@ -241,23 +285,63 @@ export class LoanFormPage implements OnInit {
           });
       } else {
         balance -= principalPayment;
-         // Ensure balance doesn't go negative due to floating point issues
         if (balance < 0) balance = 0;
         schedule.push({
           periodNumber: i,
-          // Calculate due date (simple month increment for now)
-          dueDate: new Date(startDate.getFullYear(), startDate.getMonth() + i, startDate.getDate()),
-          paymentAmount: monthlyPayment,
+          dueDate: currentDueDate,
+          paymentAmount: periodicPayment,
           interest: interestPayment,
           principal: principalPayment,
           balance: balance,
         });
       }
-
-     
     }
 
     return schedule;
   }
   // --- End Schedule Logic ---
+
+  // --- Add CSV Export Function ---
+  exportToCsv() {
+    const schedule = this.repaymentSchedule();
+    if (schedule.length === 0) {
+      console.warn('No schedule data to export.');
+      this.presentToast('No schedule data to export.', 'warning');
+      return;
+    }
+
+    // Define headers
+    const headers = ['#', 'Due Date', 'Payment', 'Interest', 'Principal', 'Balance'];
+    // Format data rows (using pipes for consistency, remove currency symbols)
+    const rows = schedule.map(item => [
+      item.periodNumber,
+      this.datePipe.transform(item.dueDate, 'yyyy-MM-dd'), // Format date
+      this.currencyPipe.transform(item.paymentAmount, '', '', '1.2-2'), // Format currency without symbol
+      this.currencyPipe.transform(item.interest, '', '', '1.2-2'),
+      this.currencyPipe.transform(item.principal, '', '', '1.2-2'),
+      this.currencyPipe.transform(item.balance, '', '', '1.2-2')
+    ].join(',')); // Join cells with comma
+
+    // Combine headers and rows
+    const csvContent = [headers.join(','), ...rows].join('\n'); // Join rows with newline
+
+    // Create Blob and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) { // Check for download attribute support
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'repayment-schedule.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      console.error('Browser does not support automatic download.');
+      this.presentToast('CSV export failed: Browser lacks support.', 'danger');
+      // Potential fallback: Display CSV content in a new window/textarea
+    }
+  }
+  // --- End CSV Export Function ---
 }
