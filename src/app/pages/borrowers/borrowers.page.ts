@@ -11,7 +11,6 @@ import {
   IonSearchbar,
   IonSpinner,
   IonText,
-  IonFooter, 
   IonRow, 
   IonGrid, 
   IonCol,
@@ -54,7 +53,6 @@ import { BorrowerFormComponent } from '../../components/borrower-form/borrower-f
     IonSearchbar,
     IonSpinner,
     IonText,
-    IonFooter,
     IonCol,
     IonGrid,
   ],
@@ -119,7 +117,6 @@ export class BorrowersPage implements OnInit, AfterViewInit {
   ];
 
   constructor() {
-    addIcons({ searchOutline, addOutline, refreshOutline, ellipsisHorizontal, eyeOutline, createOutline, trashOutline });
     effect(() => {
       console.log('Borrowers list updated:', this.borrowers().length);
       console.log('Filtered count:', this.filteredBorrowers().length);

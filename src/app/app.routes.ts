@@ -27,17 +27,17 @@ export const routes: Routes = [
        {
           path: 'new',
           loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
-          data: { title: 'Add Borrower' }
+          data: { title: 'Borrowers' }
        },
        {
           path: 'edit/:id',
           loadComponent: () => import('./pages/borrowers/borrower-form-page/borrower-form-page.page').then( m => m.BorrowerFormPagePage),
-          data: { title: 'Edit Borrower' }
+          data: { title: 'Borrowers' }
        },
        {
           path: 'detail/:id',
           loadComponent: () => import('./pages/borrowers/borrower-detail/borrower-detail.page').then( m => m.BorrowerDetailPage),
-          data: { title: 'Borrower Details' }
+          data: { title: 'Borrowers ' }
        },
     ]
   },

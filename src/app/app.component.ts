@@ -1,10 +1,15 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
-import { Router, NavigationEnd, ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
+import {
+  Router,
+  NavigationEnd,
+  ActivatedRoute,
+  RouterLink,
+  RouterOutlet,
+} from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter, map, mergeMap } from 'rxjs/operators';
 import {
   IonApp,
-  IonRouterOutlet,
   IonSplitPane,
   IonMenu,
   IonHeader,
@@ -21,7 +26,7 @@ import {
   IonSearchbar,
   IonAvatar,
   IonButton,
-  PopoverController
+  PopoverController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -34,10 +39,8 @@ import {
   notificationsOutline,
   settingsOutline,
   helpCircleOutline,
-  searchOutline,
   mailOutline,
   filterOutline,
-  ellipsisHorizontal,
   personCircleOutline,
   logOutOutline,
   peopleOutline,
@@ -47,7 +50,14 @@ import {
   idCardOutline,
   locationOutline,
   storefrontOutline,
-  documentTextOutline
+  documentTextOutline,
+  searchOutline,
+  addOutline,
+  refreshOutline,
+  ellipsisHorizontal,
+  eyeOutline,
+  createOutline,
+  trashOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -73,7 +83,6 @@ interface MenuItem {
     RouterLink,
     RouterOutlet,
     IonApp,
-    IonRouterOutlet,
     IonSplitPane,
     IonMenu,
     IonHeader,
@@ -127,8 +136,8 @@ export class AppComponent implements OnInit {
       return this.allMenuItems;
     }
     // Keep headers, filter regular items
-    return this.allMenuItems.filter(item =>
-        item.isHeader || item.title.toLowerCase().includes(term)
+    return this.allMenuItems.filter(
+      (item) => item.isHeader || item.title.toLowerCase().includes(term)
     );
   });
 
@@ -157,25 +166,32 @@ export class AppComponent implements OnInit {
       idCardOutline,
       locationOutline,
       storefrontOutline,
-      documentTextOutline
+      documentTextOutline,
+      addOutline,
+      refreshOutline,
+      eyeOutline,
+      createOutline,
+      trashOutline,
     });
   }
 
   ngOnInit() {
     // Subscribe to router events to update title
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      map(() => this.activatedRoute),
-      map(route => {
-        while (route.firstChild) route = route.firstChild;
-        return route;
-      }),
-      filter(route => route.outlet === 'primary'),
-      mergeMap(route => route.data),
-      map(data => data['title'] || 'Dashboard') // Get title from route data or default
-    ).subscribe(title => {
-      this.currentPageTitle.set(title); // Update the signal
-    });
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        map(() => this.activatedRoute),
+        map((route) => {
+          while (route.firstChild) route = route.firstChild;
+          return route;
+        }),
+        filter((route) => route.outlet === 'primary'),
+        mergeMap((route) => route.data),
+        map((data) => data['title'] || 'Dashboard') // Get title from route data or default
+      )
+      .subscribe((title) => {
+        this.currentPageTitle.set(title); // Update the signal
+      });
   }
 
   // Method to update the search term signal
@@ -205,7 +221,7 @@ export class AppComponent implements OnInit {
       event: ev,
       translucent: true,
       dismissOnSelect: false,
-      cssClass: 'profile-popover'
+      cssClass: 'profile-popover',
     });
     await popover.present();
   }
