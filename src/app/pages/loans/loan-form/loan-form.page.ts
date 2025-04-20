@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController, NavController } from '@ionic/angular';
-import { LoanService } from '../../services/loan.service';
-import { Loan } from '../../interfaces/loan.interfaces';
-import { BorrowerService } from '../../services/borrower.service';
-import { AccountInformation } from '../../interfaces/account-information.interfaces';
+import { LoanService } from '../../../services/loan.service';
+import { Loan } from '../../../interfaces/loan.interfaces';
+import { BorrowerService } from '../../../services/borrower.service';
+import { AccountInformation } from '../../../interfaces/account-information.interfaces';
 
 @Component({
   selector: 'app-loan-form',

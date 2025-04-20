@@ -43,12 +43,18 @@ export const routes: Routes = [
   },
   {
     path: 'loans',
-    loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage),
-    data: { title: 'Loans' }
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/loans/loans.page').then( m => m.LoansPage),
+        data: { title: 'Loans' }
+      },
+      {
+        path: 'new',
+        loadComponent: () => import('./pages/loans/loan-form/loan-form.page').then( m => m.LoanFormPage),
+        data: { title: 'Add New Loan' }
+      },
+    ]
   },
-  {
-    path: 'loans/new',
-    loadComponent: () => import('./pages/loan-form/loan-form.page').then( m => m.LoanFormPage),
-    data: { title: 'Add New Loan' }
-  },
+ 
 ];

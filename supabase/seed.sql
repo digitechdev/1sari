@@ -63,47 +63,69 @@ INSERT INTO public.account_information (
 ('Janet Laspoña Villahermosa', 'CL-00251', 'F', 'Single', NULL, NULL, NULL, NULL, 'Alma Villahermosa Vidas', 'Post Dated Checks', 'Check Deposit', 'JAVS Glass and Aluminum  Services', NULL, NULL, 'Blk 16 Lot A  Everlasting St. Queen''s Row West Area B  Bacoor Cavite', 'Cavite', '9776380338', 'Tier 1', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
 ('Marites Untalan Caig', 'CL-00252', 'F', 'Single', NULL, NULL, NULL, NULL, 'None', 'None', 'BDO Bank Transfer', 'Trisha Sari Sari Store', NULL, NULL, 'B21 L55    Mistral Plains Subivision Brgy. San Francisco Gen Tri Cavite', 'Cavite', '9955082308', 'Tier 1', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
 ('Mari June Dela Cruz Funtilar', 'CL-00253', 'F', 'Single', NULL, NULL, NULL, NULL, 'Joseph Doma Funtilar', 'Post Dated Checks', 'Check Deposit', 'Marijune Sari-Sari Store', NULL, NULL, '47 Malihan St. Zone IV  Dasmariñas Cavite Cavite', 'Cavite', '9955082308', 'Tier 1', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
-('Govind Kishu Daswani', 'CL-00244', 'M', 'Single', NULL, NULL, NULL, NULL, 'None', 'Post Dated Checks/REM', 'Check Deposit', 'Kindercare Baby', NULL, NULL, 'Unit3203,32nd Flr,North Tower,Joya Lofts Towers Plaza Drive,Rockwell Center  Makati (Rockwell) NCR', 'NCR', '9189283650', 'Tier 1', 'Wholesale Distributor of Baby Products', 'None', 'N/A'),
-('Dennis Erlano Destura', 'CL-00254', 'M', 'Single', NULL, NULL, NULL, NULL, 'Grecyl Pacaldo Canteri', 'Post Dated Checks', 'Gcash', 'Destura Variety Store', NULL, NULL, ' Blk 2B Lot 36    Landmass Commercial  Brgy. Sanja Major Tanza Cavite', 'Cavite', '9387174193', 'Tier 2', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
-('Felixberto Helig Fajardo Jr.', 'CL-00255', 'M', 'Single', NULL, NULL, NULL, NULL, 'Merlyn Helig Fajardo', 'Post Dated Checks', 'Gcash', 'GM Sari-Sari Store', NULL, NULL, 'Blk 44 Lot 1 PH-2    Lumina Homes  Brgy. Bagtas Tanza Cavite', 'Cavite', '9665368829', 'Tier 1', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
-('Melyn Sanchez Epres', 'CL-00212', 'F', 'Single', NULL, NULL, NULL, NULL, 'Marivic Epres Javier', 'Post Dated Checks', 'Check Deposit', 'Epres Food Products', NULL, NULL, 'Block 8 Lot 1    Bukluran 1  Brgy. Bulihan Silang  Cavite', 'Cavite', '9479926816', 'Tier 1', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
-('Margie Lopez Padua', 'CL-00258', 'F', 'Single', NULL, NULL, NULL, NULL, 'None', 'Post Dated Checks', 'Check Deposit', 'JMP Gold collection and Jewelry shop', NULL, NULL, '50 Grocery  Imus Public Market Tanza Luma I Imus Cavite', 'Cavite', '9951440991', 'Tier 1', 'Jewelry shop', 'John Florentino Miraya', 'N/A'),
-('Elisa Belen Borais', 'CL-00259', 'F', 'Married', NULL, NULL, NULL, NULL, 'Romeo Barcebal Borais Jr.', 'Post Dated Checks', 'Gcash', 'JC&S Bakery', NULL, NULL, ' L6 B16    Macapuno St.,  Golden Acres Subd.,  Talon V  Las Piñas City NCR', 'NCR', '9472461422', 'Tier 2', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
-('Michelle Garcia Camania', 'CL-00260', 'F', 'Married', NULL, NULL, NULL, NULL, 'Edgar Nazareno Camania', 'Post Dated Checks', 'Gcash', 'Michelle Store', NULL, NULL, 'B8 L2 SG1    Springtown Villas  Bucal  Tanza Cavite', 'Cavite', '9199311554', 'Tier 2', 'Wholesale Trade', 'John Florentino Miraya', 'N/A'),
 ('Darwin Buan Pacio', 'CL-00261', 'M', NULL, NULL, NULL, NULL, NULL, 'N/A', 'Post Dated Checks', 'Check Deposit', 'Tapsiwin and Pares Hub', NULL, NULL, ' Blk 3 Lot 9 / Blk 3 Lot 17    Brgy. Sta. Fe Dasmariñas  Cavite', 'Cavite', '9268103754', 'Tier 1', 'Food Services', 'John Florentino Miraya', 'N/A');
 
--- Insert sample loans
-INSERT INTO public.loans (account_id, loan_amount, loan_term_months, interest_rate, start_date, status)
-VALUES
-(1, 10000.00, 6, 10.00, CURRENT_DATE, 'Active'), -- Loan ID will be 1
-(2, 25000.00, 12, 8.00, CURRENT_DATE, 'Active'), -- Loan ID will be 2
-(3, 5000.00, 3, 12.00, CURRENT_DATE, 'Active');  -- Loan ID will be 3
+-- Section 2: Insert sample loan data based on loan.interfaces.ts
+-- Assuming account_information IDs are generated sequentially starting from 1
+-- Using CURRENT_DATE for dates, adjust as needed
+INSERT INTO public.loans (
+    borrower_id, co_borrower_id, co_maker_id, store_name, 
+    principal, interest_rate, term_in_months, value_date, calculation_type, repayment_frequency, 
+    status, application_date, approval_date, purpose, notes
+) VALUES
+-- Loan 1 for Arlene Andaya Corook (borrower_id = 1)
+(1, NULL, NULL, 'D.S.A. Sari Sari Store', 
+ 30000.00, 0.03, 2, '2025-03-01', 'straight', 'daily', 
+ 'Active', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan'
+),
+-- Loan 2 for Edwin Lopez Mercado (borrower_id = 2)
+(2, NULL, NULL, 'Five (5) Commercial Space - E.L. Mercado', 
+ 100000.00, 0.03, 6, '2025-03-01', 'diminishing', 'monthly', 
+ 'Active', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '3 days', 'Store Expansion', 'Sample diminishing monthly loan'
+),
+-- Loan 3 for Jenalyn Santiago Dy (borrower_id = 3)
+(3, NULL, NULL, 'Jenalyn Store', 
+ 50000.00, 0.025, 12, CURRENT_DATE, 'diminishing', 'monthly', 
+ 'Pending', CURRENT_DATE, NULL, 'Inventory Purchase', 'Sample pending loan'
+);
 
--- Insert sample payment schedules (assuming loan IDs 1, 2, 3 are generated sequentially)
--- Loan 1 Schedules (6 months, ~1715.61/month - simplified)
-INSERT INTO public.loan_payment_schedules (loan_id, due_date, amount_due, status)
-VALUES
-(1, CURRENT_DATE + INTERVAL '1 month', 1715.61, 'Pending'),
-(1, CURRENT_DATE + INTERVAL '2 month', 1715.61, 'Pending'),
-(1, CURRENT_DATE + INTERVAL '3 month', 1715.61, 'Pending'),
-(1, CURRENT_DATE + INTERVAL '4 month', 1715.61, 'Pending'),
-(1, CURRENT_DATE + INTERVAL '5 month', 1715.61, 'Pending'),
-(1, CURRENT_DATE + INTERVAL '6 month', 1715.61, 'Pending');
+-- Section 3: Insert sample loan payment schedule data based on loan-payment-schedule.interfaces.ts
+-- Assuming loan IDs are generated sequentially starting from 1 (matching the inserts above)
+-- Placeholder amounts used for principal_paid, interest_paid, outstanding_balance - these should be calculated realistically
 
--- Loan 2 Schedules (12 months, ~2173.87/month - simplified)
-INSERT INTO public.loan_payment_schedules (loan_id, due_date, amount_due, status)
-VALUES
-(2, CURRENT_DATE + INTERVAL '1 month', 2173.87, 'Pending'),
-(2, CURRENT_DATE + INTERVAL '2 month', 2173.87, 'Pending'),
-(2, CURRENT_DATE + INTERVAL '3 month', 2173.87, 'Pending'); -- Add more for full 12 months if needed
+-- Schedule for Loan 1 (ID=1, Straight Daily, 60 days)
+-- Only showing first few days for brevity
+INSERT INTO public.loan_payment_schedules (
+    loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
+) VALUES
+(1, 1, '2025-03-02', 530.00, 500.00, 30.00, 29500.00, 'Pending'),
+(1, 2, '2025-03-03', 530.00, 500.00, 30.00, 29000.00, 'Pending'),
+(1, 3, '2025-03-04', 530.00, 500.00, 30.00, 28500.00, 'Pending'),
+(1, 4, '2025-03-05', 530.00, 500.00, 30.00, 28000.00, 'Pending'),
+(1, 5, '2025-03-06', 530.00, 500.00, 30.00, 27500.00, 'Pending');
+-- ... Add rows for all 60 days if seeding completely
 
--- Loan 3 Schedules (3 months, ~1700.33/month - simplified)
-INSERT INTO public.loan_payment_schedules (loan_id, due_date, amount_due, status)
-VALUES
-(3, CURRENT_DATE + INTERVAL '1 month', 1700.33, 'Pending'),
-(3, CURRENT_DATE + INTERVAL '2 month', 1700.33, 'Pending'),
-(3, CURRENT_DATE + INTERVAL '3 month', 1700.33, 'Pending');
+-- Schedule for Loan 2 (ID=2, Diminishing Monthly, 6 months)
+-- Using placeholder calculated values
+INSERT INTO public.loan_payment_schedules (
+    loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
+) VALUES
+(2, 1, '2025-03-31', 18459.75, 15459.75, 3000.00, 84540.25, 'Pending'), 
+(2, 2, '2025-04-30', 18459.75, 15923.54, 2536.21, 68616.71, 'Pending'),
+(2, 3, '2025-05-31', 18459.75, 16401.25, 2058.50, 52215.46, 'Pending'),
+(2, 4, '2025-06-30', 18459.75, 16893.29, 1566.46, 35322.17, 'Pending'),
+(2, 5, '2025-07-31', 18459.75, 17400.08, 1059.67, 17922.09, 'Pending'),
+(2, 6, '2025-08-31', 18459.75, 17922.09, 537.66, 0.00, 'Pending');
 
--- Add more data rows here if needed, following the same format.
+-- Schedule for Loan 3 (ID=3, Diminishing Monthly, 12 months) 
+-- Only showing first few months for brevity
+-- Placeholder values
+INSERT INTO public.loan_payment_schedules (
+    loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
+) VALUES
+(3, 1, (CURRENT_DATE + INTERVAL '1 month')::date, 4757.80, 3507.80, 1250.00, 46492.20, 'Pending'),
+(3, 2, (CURRENT_DATE + INTERVAL '2 month')::date, 4757.80, 3595.50, 1162.30, 42896.70, 'Pending'),
+(3, 3, (CURRENT_DATE + INTERVAL '3 month')::date, 4757.80, 3685.38, 1072.42, 39211.32, 'Pending');
+-- ... Add rows for all 12 months if seeding completely
 
 COMMIT; 
