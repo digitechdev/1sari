@@ -145,7 +145,7 @@
                       [errorText]="loanForm.controls['interest_method'].invalid &&
        loanForm.controls['interest_method'].touched ? 'Interest Method is required.' : ''"
                     >
-                      <ion-select-option value="dimishing"
+                      <ion-select-option value="diminishing"
                         >Diminishing</ion-select-option
                       >
                       <ion-select-option value="straight"
@@ -165,14 +165,14 @@
                       [errorText]="loanForm.controls['loan_period'].invalid &&
           loanForm.controls['loan_period'].touched ? 'Loan Period is required.' : ''"
                     >
-                      <ion-select-option value="Daily">Daily</ion-select-option>
-                      <ion-select-option value="Weekly"
+                      <ion-select-option value="daily">Daily</ion-select-option>
+                      <ion-select-option value="weekly"
                         >Weekly</ion-select-option
                       >
-                      <ion-select-option value="Monthly"
+                      <ion-select-option value="monthly"
                         >Monthly</ion-select-option
                       >
-                      <ion-select-option value="Monthly"
+                      <ion-select-option value="bi-monthly"
                         >Bi-Monthly</ion-select-option
                       >
                     </ion-select>
@@ -249,8 +249,91 @@
               </ion-grid>
             </ion-card-content>
           </ion-card>
+
+          <!-- Repayment Schedule Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
+                Repayment Schedule
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-button
+                expand="block"
+                (click)="openScheduleModal()"
+                [disabled]="!canCalculateSchedule()"
+              >
+                <ion-icon slot="start" name="eye-outline"></ion-icon>
+                View Repayment Schedule
+              </ion-button>
+              @if (!canCalculateSchedule() && loanForm.controls['interest_method'].value === 'diminishing') {
+                <ion-text color="medium">
+                  <p class="ion-text-center ion-padding-top">
+                    Please fill required loan terms (Principal, Rate, Tenure, Repayment Period, Release Date) to view schedule.
+                  </p>
+                </ion-text>
+              } @else if (loanForm.controls['interest_method'].value !== 'diminishing') {
+                 <ion-text color="medium">
+                  <p class="ion-text-center ion-padding-top">
+                    Schedule available only for Diminishing interest method.
+                  </p>
+                </ion-text>
+              }
+            </ion-card-content>
+          </ion-card>
+          <!-- End Repayment Schedule Card -->
+
         </ion-col>
       </ion-row>
     </ion-grid>
   </form>
+
+  <!-- Repayment Schedule Modal -->
+  <ion-modal [isOpen]="isModalOpen()" (didDismiss)="isModalOpen.set(false)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Repayment Schedule</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="isModalOpen.set(false)">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        @if (repaymentSchedule().length > 0) {
+          <ion-grid fixed>
+            <ion-row class="header-row">
+              <ion-col size="1">#</ion-col>
+              <ion-col size="3">Due Date</ion-col>
+              <ion-col size="2" class="ion-text-right">Payment</ion-col>
+              <ion-col size="2" class="ion-text-right">Interest</ion-col>
+              <ion-col size="2" class="ion-text-right">Principal</ion-col>
+              <ion-col size="2" class="ion-text-right">Balance</ion-col>
+            </ion-row>
+            @for (item of repaymentSchedule(); track item.periodNumber) {
+              <ion-row>
+                <ion-col size="1">{{ item.periodNumber }}</ion-col>
+                <ion-col size="3">{{ item.dueDate | date:'yyyy-MM-dd' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.paymentAmount | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.interest | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.principal | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.balance | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              </ion-row>
+            }
+             <ion-row class="total-row">
+              <ion-col size="4" offset="1" class="ion-text-right ion-text-bold">Totals:</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPayment() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalInterest() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPrincipal() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="1"></ion-col>
+            </ion-row>
+          </ion-grid>
+        } @else {
+          <ion-text color="medium"><p>No schedule data available.</p></ion-text>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
 </ion-content>
