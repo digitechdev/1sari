@@ -70,22 +70,22 @@ INSERT INTO public.account_information (
 -- Using CURRENT_DATE for dates, adjust as needed
 INSERT INTO public.loans (
     borrower_id, co_borrower_id, co_maker_id, store_name, 
-    principal, interest_rate, term_in_months, value_date, calculation_type, repayment_frequency, 
+    principal, interest_rate, tenure_in_months, loan_release_date, interest_method, loan_period, repayment_period, disbursement_method,
     status, application_date, approval_date, purpose, notes
 ) VALUES
 -- Loan 1 for Arlene Andaya Corook (borrower_id = 1)
 (1, NULL, NULL, 'D.S.A. Sari Sari Store', 
- 30000.00, 0.03, 2, '2025-03-01', 'straight', 'daily', 
+ 30000.00, 0.03, 2, '2025-03-01', 'straight', 'Daily', 60, 'Gcash', -- Updated tenure_in_months=2, period=Daily, repayment=60, disbursement=Gcash
  'Active', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan'
 ),
 -- Loan 2 for Edwin Lopez Mercado (borrower_id = 2)
 (2, NULL, NULL, 'Five (5) Commercial Space - E.L. Mercado', 
- 100000.00, 0.03, 6, '2025-03-01', 'diminishing', 'monthly', 
+ 100000.00, 0.03, 6, '2025-03-01', 'diminishing', 'Monthly', 6, 'Bank', -- Updated tenure_in_months=6, period=Monthly, repayment=6, disbursement=Bank
  'Active', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '3 days', 'Store Expansion', 'Sample diminishing monthly loan'
 ),
 -- Loan 3 for Jenalyn Santiago Dy (borrower_id = 3)
 (3, NULL, NULL, 'Jenalyn Store', 
- 50000.00, 0.025, 12, CURRENT_DATE, 'diminishing', 'monthly', 
+ 50000.00, 0.025, 12, CURRENT_DATE, 'diminishing', 'Monthly', 12, 'Gcash', -- Updated tenure_in_months=12, period=Monthly, repayment=12, disbursement=Gcash
  'Pending', CURRENT_DATE, NULL, 'Inventory Purchase', 'Sample pending loan'
 );
 

@@ -107,7 +107,7 @@
                       <ion-label>
                         <h2>Loan ID: {{ loan.id }}</h2>
                         <p>Amount: {{ loan.principal | currency:'PHP':'symbol' }} | Status: {{ loan.status }}</p>
-                        <p>Disbursed: {{ loan.value_date ? datePipe.transform(loan.value_date, 'mediumDate') : 'N/A' }}</p>
+                        <p>Disbursed: {{ loan.loan_release_date ? datePipe.transform(loan.loan_release_date, 'mediumDate') : 'N/A' }}</p>
                       </ion-label>
                     </ion-item>
                   }

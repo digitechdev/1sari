@@ -18,10 +18,12 @@ export interface Loan {
   // Loan terms (previously in calculationParams)
   principal: number; // NUMERIC
   interest_rate: number; // NUMERIC (Store as decimal, e.g., 0.03 for 3%)
-  term_in_months: number; // INTEGER
-  value_date: string; // DATE (Loan start date)
-  calculation_type: 'straight' | 'diminishing'; // TEXT
-  repayment_frequency: 'daily' | 'monthly'; // TEXT
+  tenure_in_months: number; // INTEGER (Matches form)
+  loan_release_date: string; // DATE (Matches form)
+  interest_method: 'straight' | 'diminishing'; // TEXT (Matches form)
+  loan_period: 'Daily' | 'Weekly' | 'Monthly' | 'Bi-Monthly'; // TEXT (Matches form)
+  repayment_period: number; // INTEGER (Added from form, assuming number)
+  disbursement_method: 'cash' | 'bank'; // TEXT (Added from form)
 
   // Calculated results (Optional - could be calculated on demand or stored)
   // periodic_payment?: number; // NUMERIC (The fixed payment amount)
