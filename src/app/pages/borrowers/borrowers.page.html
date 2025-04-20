@@ -1,19 +1,7 @@
-<!-- Remove the original header -->
-<!-- 
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>borrowers</ion-title>
-  </ion-toolbar>
-</ion-header> 
--->
-<ion-header class="ion-no-border">
-  <!-- Controls Bar -->
+<!-- <ion-header class="ion-no-border" fixed>
   <ion-toolbar class="controls-toolbar">
-    <!-- Add padding to the grid itself if needed -->
     <ion-grid class="ion-no-padding ion-padding-horizontal">
-      <!-- Use justify-content-between to push columns apart -->
       <ion-row class="ion-align-items-center ion-justify-content-between">
-        <!-- Column 1: Search Bar (Takes available space, limited max width) -->
         <ion-col size="auto" size-md="6" size-lg="5" style="max-width: 400px;">
           <ion-searchbar
             class="controls-searchbar"
@@ -24,7 +12,6 @@
           ></ion-searchbar>
         </ion-col>
 
-        <!-- Column 2: Action Buttons (Takes needed space, content aligned end) -->
         <ion-col size="auto" class="ion-text-end">
           <ion-button fill="clear" color="medium" (click)="refreshData()" class="ion-margin-end">
             <ion-icon slot="start" name="refresh-outline"></ion-icon>
@@ -38,79 +25,131 @@
       </ion-row>
     </ion-grid>
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<!-- Added class for horizontal scrolling -->
-<ion-content [scrollY]="true" class="datatable-content">
-  <!-- Remove the condense header -->
-  <!-- 
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">borrowers</ion-title>
-    </ion-toolbar>
-  </ion-header> 
-  -->
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="borrowers-card-list">
+          <ion-card-header class="borrowers-card-header">
+            <ion-card-title>
+              <!-- <ion-icon name="people-outline"></ion-icon>
+              Borrowers -->
+              <ion-grid class="ion-no-padding ion-padding-horizontal">
+                <ion-row
+                  class="ion-align-items-center ion-justify-content-between"
+                >
+                  <ion-col
+                    size="auto"
+                    size-md="6"
+                    size-lg="5"
+                    style="max-width: 400px"
+                  >
+                    <ion-searchbar
+                      class="controls-searchbar"
+                      (ionInput)="handleSearch($event)"
+                      [value]="searchTerm()"
+                      placeholder="Search borrowers..."
+                      debounce="300"
+                    ></ion-searchbar>
+                  </ion-col>
 
-  <!-- Loading/Error States -->
-  @if (isLoading()) {
-    <div class="state-message"><ion-spinner name="crescent"></ion-spinner></div>
-  }
-  @if (errorLoading()) {
-    <div class="state-message"><ion-text color="danger">{{ errorLoading() }}</ion-text></div>
-  }
-
-  <!-- ngx-datatable implementation -->
-  @if (!isLoading() && !errorLoading()) {
-    <ngx-datatable
-      class="material expandable"
-      [rows]="displayableBorrowers()"
-      [columns]="tableColumns"
-      [columnMode]="ColumnMode.force"
-      [headerHeight]="50"
-      [footerHeight]="50"
-      [rowHeight]="50"
-      [scrollbarH]="true"
-      [limit]="10"
-    >
-      <!-- Columns are now entirely driven by the [columns] binding -->
-      <!-- Remove the explicit Actions column definition from here -->
-      <!-- 
-      <ngx-datatable-column
-        name="Actions"
-        prop="id" 
-        [sortable]="false"
-        [canAutoResize]="false"
-        [draggable]="false"
-        [resizeable]="false"
-        [width]="120"
-      >
-        <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
-          ...
-        </ng-template>
-      </ngx-datatable-column> 
-      -->
-    </ngx-datatable>
-
-    <!-- Define the template for the Actions cell outside the table -->
-    <ng-template #actionsTemplate let-row="row" let-value="value">
-      <!-- Add some spacing using utility classes or inline style -->
-      <ion-button fill="clear" size="small" (click)="viewBorrower(row)" title="View" class="action-button">
-        <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="clear" size="small" (click)="editBorrower(row)" title="Edit" class="action-button">
-        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="clear" size="small" color="danger" (click)="deleteBorrower(row)" title="Delete" class="action-button">
-        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-      </ion-button>
-    </ng-template>
-
-    <ng-template #editTmpl let-row="row" let-value="value">
-      {{ value  }}
-    </ng-template>
-
-  }
+                  <ion-col size="auto" class="ion-text-end">
+                    <ion-button
+                      fill="clear"
+                      color="medium"
+                      (click)="refreshData()"
+                      class="ion-margin-end"
+                    >
+                      <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                      Refresh
+                    </ion-button>
+                    <ion-button color="primary" (click)="addUser()">
+                      <ion-icon slot="start" name="add-outline"></ion-icon>
+                      Add New
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            @if (isLoading()) {
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            } 
+            
+            @if (errorLoading()) {
+            <div class="state-message">
+              <ion-text color="danger">{{ errorLoading() }}</ion-text>
+            </div>
+            } 
+            
+            @if (!isLoading() && !errorLoading()) {
+            <ngx-datatable
+              class="material expandable borrowers-datatable"
+              [rows]="displayableBorrowers()"
+              [columns]="tableColumns"
+              [columnMode]="ColumnMode.force"
+              [headerHeight]="50"
+              [footerHeight]="50"
+              [rowHeight]="50"
+              [scrollbarH]="true"
+              [limit]="10"
+            >
+            </ngx-datatable>
+            <ng-template #actionsTemplate let-row="row" let-value="value">
+              <div class="action-buttons-container">
+                <ion-button
+                  fill="solid"
+                  size="small"
+                  (click)="viewBorrower(row)"
+                  title="View"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+                <ion-button
+                  fill="solid"
+                  color="medium"
+                  size="small"
+                  (click)="editBorrower(row)"
+                  title="Edit"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button
+                  fill="solid"
+                  size="small"
+                  color="danger"
+                  (click)="deleteBorrower(row)"
+                  title="Delete"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ng-template>
+            }
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
-
-<!-- Footer -->
-<!-- ... -->

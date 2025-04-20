@@ -1,5 +1,9 @@
 /* src/app/app.component.scss */
 
+.searchbar-menu {
+  background: #fff!important;
+
+} 
 // Ensure header items are vertically centered
 ion-header ion-toolbar {
   ion-buttons {
@@ -81,3 +85,4 @@ ion-content {
   --padding-start: 0;
   --padding-end: 0;
 }
+
