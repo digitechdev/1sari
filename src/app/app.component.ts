@@ -119,6 +119,7 @@ export class AppComponent implements OnInit {
     { title: 'Menu', isHeader: true },
     { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
     { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' }, // Example route
+    { title: 'Loans', url: '/loans', icon: 'cash-outline' }, // Example route
     // { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
     // { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
     // { title: 'Card', url: '/card', icon: 'card-outline' },

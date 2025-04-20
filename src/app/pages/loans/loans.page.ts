@@ -4,18 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
-import { addIcons } from 'ionicons';
-import {
-  searchOutline,
-  addOutline,
-  refreshOutline,
-  eyeOutline,
-  createOutline,
-  trashOutline
-} from 'ionicons/icons';
 
 import { LoanService } from '../../services/loan.service';
-import { Loan, LoanWithBorrower } from '../../interfaces/loan.interfaces';
+import { LoanWithBorrower } from '../../interfaces/loan.interfaces';
 
 @Component({
   selector: 'app-loans',
@@ -39,11 +30,9 @@ export class LoansPage implements OnInit, AfterViewInit {
   @ViewChild(DatatableComponent) table: DatatableComponent | undefined;
 
   private loanService = inject(LoanService);
-  private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
   private cdRef = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private modalCtrl = inject(ModalController);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
 
@@ -81,21 +70,7 @@ export class LoansPage implements OnInit, AfterViewInit {
       width: 120,
       pipe: { transform: (value: number) => this.currencyPipe.transform(value, 'PHP', 'symbol') } 
     },
-    { prop: 'loan_term', name: 'Term (m)', width: 80 },
-    { prop: 'interest_rate', name: 'Rate (%)', width: 80 },
     { prop: 'status', name: 'Status', width: 100 },
-    { 
-      prop: 'disbursement_date', 
-      name: 'Disbursed', 
-      width: 120,
-      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
-    },
-    { 
-      prop: 'created_at', 
-      name: 'Created', 
-      width: 120,
-      pipe: { transform: (value: string) => this.datePipe.transform(value, 'shortDate') } 
-    },
     {
       name: 'Actions',
       prop: 'id',
@@ -109,7 +84,6 @@ export class LoansPage implements OnInit, AfterViewInit {
   ];
 
   constructor() {
-    addIcons({ searchOutline, addOutline, refreshOutline, eyeOutline, createOutline, trashOutline });
     effect(() => {
       console.log('Loans list updated:', this.allLoans().length);
       console.log('Filtered loan count:', this.filteredLoans().length);
@@ -190,7 +164,7 @@ export class LoansPage implements OnInit, AfterViewInit {
       message: 'Loan data refreshed.',
       duration: 1500,
       position: 'bottom',
-      color: 'medium'
+      color: 'medium',
     });
     await toast.present();
   }
