@@ -187,7 +187,7 @@ export class AppComponent implements OnInit {
         }),
         filter((route) => route.outlet === 'primary'),
         mergeMap((route) => route.data),
-        map((data) => data['title'] || 'Dashboard') // Get title from route data or default
+        map((data) => data['title'] || '') // Get title from route data or default
       )
       .subscribe((title) => {
         this.currentPageTitle.set(title); // Update the signal

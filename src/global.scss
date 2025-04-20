@@ -37,7 +37,12 @@
 @import '@ionic/angular/css/palettes/dark.system.css';
 
 ion-header {
+    --box-shadow: none;
+}
+
+.page-header {
     box-shadow: none;
+    border-bottom: 1px solid #ccc;
 }
 
 ion-card {
