@@ -1,106 +1,125 @@
 <ion-app>
-  <ion-split-pane contentId="main-content">
-    <!-- Menu -->
-    <ion-menu contentId="main-content" type="overlay">
-      <ion-header class="ion-no-border">
-        <ion-toolbar>
-          <!-- Replace title with logo component -->
-          <app-logo></app-logo>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <!-- Search Bar -->
-        <ion-searchbar
-          placeholder="Search Menu..."
-          (ionInput)="handleSearchInput($event)"
-          [value]="searchTerm()"
-          class="ion-padding-horizontal searchbar-menu"
-        ></ion-searchbar>
+  <!-- Wrap split-pane with @if based on authentication -->
+  @if (authService.isAuthenticated()) {
+    <ion-split-pane contentId="main-content">
+      <!-- Menu -->
+      <ion-menu contentId="main-content" type="overlay">
+        <ion-header class="ion-no-border">
+          <ion-toolbar>
+            <!-- Replace title with logo component -->
+            <app-logo></app-logo>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <!-- Search Bar -->
+          <ion-searchbar
+            placeholder="Search Menu..."
+            (ionInput)="handleSearchInput($event)"
+            [value]="searchTerm()"
+            class="ion-padding-horizontal searchbar-menu"
+          ></ion-searchbar>
 
-        <ion-list id="menu-list">
-          <!-- Use @for to iterate over filtered menu items -->
-          @for (item of filteredMenuItems(); track item.title) {
-            @if (item.isHeader) {
-              <ion-item lines="none" class="menu-header ion-margin-top">
-                <ion-label class="ion-text-uppercase menu-header-label">{{ item.title }}</ion-label>
-              </ion-item>
-            } @else {
-              <ion-item
-                button
-                detail="false"
-                [routerLink]="item.url"
-                routerDirection="root"
-                [ngClass]="{ 'selected': router.url === item.url }"
-                lines="none"
-              >
-                @if (item.icon) {
-                  <ion-icon [name]="item.icon" slot="start"></ion-icon>
-                }
-                <ion-label>{{ item.title }}</ion-label>
-                @if (item.badge) {
-                  <ion-badge slot="end" color="primary">{{ item.badge }}</ion-badge>
-                }
-                 <!-- Example for conditional chevron, if nesting is added later -->
-                <!-- @if (item.children) { <ion-icon name="chevron-down-outline" slot="end"></ion-icon> } -->
-              </ion-item>
+          <ion-list id="menu-list">
+            <!-- Use @for to iterate over filtered menu items -->
+            @for (item of filteredMenuItems(); track item.title) {
+              @if (item.isHeader) {
+                <ion-item lines="none" class="menu-header ion-margin-top">
+                  <ion-label class="ion-text-uppercase menu-header-label">{{ item.title }}</ion-label>
+                </ion-item>
+              } @else {
+                <ion-item
+                  button
+                  detail="false"
+                  [routerLink]="item.url"
+                  routerDirection="root"
+                  [ngClass]="{ 'selected': router.url === item.url }"
+                  lines="none"
+                >
+                  @if (item.icon) {
+                    <ion-icon [name]="item.icon" slot="start"></ion-icon>
+                  }
+                  <ion-label>{{ item.title }}</ion-label>
+                  @if (item.badge) {
+                    <ion-badge slot="end" color="primary">{{ item.badge }}</ion-badge>
+                  }
+                   <!-- Example for conditional chevron, if nesting is added later -->
+                  <!-- @if (item.children) { <ion-icon name="chevron-down-outline" slot="end"></ion-icon> } -->
+                </ion-item>
+              }
             }
-          }
-        </ion-list>
-      </ion-content>
-    </ion-menu>
+          </ion-list>
+        </ion-content>
+        <!-- Add Footer for Sign Out -->
+        <ion-footer class="ion-no-border menu-footer">
+          <ion-toolbar>
+            <ion-item lines="none" button detail="false" (click)="signOut()">
+              <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
+              <ion-label color="danger">Sign Out</ion-label>
+            </ion-item>
+          </ion-toolbar>
+        </ion-footer>
+      </ion-menu>
 
-    <!-- Main Content Area -->
-    <div class="ion-page" id="main-content">
-      <!-- Header for Main Content with Menu Toggle -->
-      <ion-header class="ion-no-border">
-        <ion-toolbar>
-          <!-- Menu Button (appears on small screens) -->
-          <ion-buttons slot="start">
-            <ion-menu-button></ion-menu-button>
-            <!-- Dynamic Title (shown on small screens or when menu button is visible) -->
-            <ion-title class="ion-hide-md-up">{{ currentPageTitle() }}</ion-title>
-          </ion-buttons>
+      <!-- Main Content Area -->
+      <div class="ion-page" id="main-content">
+        <!-- Header for Main Content with Menu Toggle -->
+        <ion-header class="ion-no-border">
+          <ion-toolbar>
+            <!-- Menu Button (appears on small screens) -->
+            <ion-buttons slot="start">
+              <ion-menu-button></ion-menu-button>
+              <!-- Dynamic Title (shown on small screens or when menu button is visible) -->
+              <ion-title class="ion-hide-md-up">{{ currentPageTitle() }}</ion-title>
+            </ion-buttons>
 
-          <!-- Main Header Content (appears on larger screens) -->
-          <ion-title class="ion-hide-md-down">{{ currentPageTitle() }}</ion-title>
+            <!-- Main Header Content (appears on larger screens) -->
+            <ion-title class="ion-hide-md-down">{{ currentPageTitle() }}</ion-title>
 
-          <ion-buttons slot="end">
-            <!-- Search Bar -->
-            <!-- <ion-searchbar
-              class="ion-hide-md-down header-searchbar"
-              placeholder="Search..."
-              (click)="openSearch()"
-            ></ion-searchbar>  -->
-            <!-- Add keybinding display later if needed -->
+            <ion-buttons slot="end">
+              <!-- Search Bar -->
+              <!-- <ion-searchbar
+                class="ion-hide-md-down header-searchbar"
+                placeholder="Search..."
+                (click)="openSearch()"
+              ></ion-searchbar>  -->
+              <!-- Add keybinding display later if needed -->
 
-            <!-- Action Buttons -->
-            <ion-button fill="clear" (click)="openMessages()">
-              <ion-icon slot="icon-only" name="mail-outline"></ion-icon>
-              <!-- Add badge if needed -->
-            </ion-button>
-            <ion-button fill="clear" (click)="openNotifications()">
-              <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-              <!-- Add badge if needed -->
-            </ion-button>
+              <!-- Action Buttons -->
+              <ion-button fill="clear" (click)="openMessages()">
+                <ion-icon slot="icon-only" name="mail-outline"></ion-icon>
+                <!-- Add badge if needed -->
+              </ion-button>
+              <ion-button fill="clear" (click)="openNotifications()">
+                <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
+                <!-- Add badge if needed -->
+              </ion-button>
 
-            <!-- Profile Avatar & Menu Trigger -->
-            <ion-button fill="clear" class="avatar-button" (click)="openProfileMenu($event)">
-              <ion-avatar>
-                <!-- Placeholder, replace with actual image -->
-                <img alt="User avatar" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-              </ion-avatar>
-               <!-- Optional: Add dropdown indicator -->
-               <!-- <ion-icon name="ellipsis-horizontal" class="ion-margin-start"></ion-icon> -->
-            </ion-button>
+              <!-- Profile Avatar & Menu Trigger -->
+              <ion-button fill="clear" class="avatar-button" (click)="openProfileMenu($event)">
+                <ion-avatar>
+                  <!-- Placeholder, replace with actual image -->
+                  <img alt="User avatar" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+                </ion-avatar>
+                 <!-- Optional: Add dropdown indicator -->
+                 <!-- <ion-icon name="ellipsis-horizontal" class="ion-margin-start"></ion-icon> -->
+              </ion-button>
 
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding">
-        <!-- Router outlet for page content -->
-        <router-outlet></router-outlet>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <!-- Router outlet for page content -->
+          <router-outlet></router-outlet>
+        </ion-content>
+      </div>
+
+    </ion-split-pane>
+  } @else {
+    <!-- If not authenticated, provide minimal structure with ion-content -->
+    <div class="ion-page" id="main-content-unauth">
+      <ion-content>
+        <router-outlet></router-outlet> 
       </ion-content>
     </div>
-
-  </ion-split-pane>
+  }
 </ion-app>

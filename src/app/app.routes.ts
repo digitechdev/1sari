@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+// TODO: Import AuthGuard and LoginGuard once created
 
 export const routes: Routes = [
   {
@@ -6,15 +7,19 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
   },
   {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
+  },
+  {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'login',
     pathMatch: 'full',
   },
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard/dashboard.page').then((m) => m.DashboardPage),
-    data: { title: 'Dashboard' }
+    data: { title: 'Dashboard' },
   },
   {
     path: 'borrowers',
