@@ -1,28 +1,28 @@
--- Section 1: Create the table structure
+-- Section 1: Create the table structure based on seed.sql columns
 CREATE TABLE public.account_information (
-    id SERIAL PRIMARY KEY, -- Or use UUID: id UUID DEFAULT uuid_generate_v4() PRIMARY KEY
-    name_of_borrower TEXT,
-    provider_subject_no TEXT,
-    gender TEXT,
-    civil_status TEXT,
-    type_of_id TEXT,
-    birthday_borrower TEXT, -- Consider DATE type if data exists and is needed
-    age TEXT, -- Consider INTEGER type if data exists and is needed
-    mothers_maiden_name_borrower TEXT,
-    name_of_co_borrower_maker TEXT,
-    security_collateral TEXT,
-    mode_of_payment TEXT,
-    store_name TEXT,
-    residence_address TEXT,
-    length_of_stay_in_residence TEXT,
-    store_address TEXT,
-    area TEXT,
-    contact_no_borrower TEXT,
-    classification TEXT,
-    store_category TEXT,
-    account_relationship_officer TEXT,
-    retail_partner TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW() -- Optional: track insertion time
+    id SERIAL PRIMARY KEY,
+    name_of_borrower TEXT NULL,
+    provider_subject_no TEXT NULL,
+    gender TEXT NULL, -- Consider limiting values with CHECK constraint later if needed
+    civil_status TEXT NULL,
+    type_of_id TEXT NULL,
+    birthday_borrower TEXT NULL, -- Consider DATE type if data format is consistent
+    age TEXT NULL, -- Consider INTEGER type if data format is consistent
+    mothers_maiden_name_borrower TEXT NULL,
+    name_of_co_borrower_maker TEXT NULL,
+    security_collateral TEXT NULL,
+    mode_of_payment TEXT NULL,
+    store_name TEXT NULL,
+    residence_address TEXT NULL,
+    length_of_stay_in_residence TEXT NULL,
+    store_address TEXT NULL,
+    area TEXT NULL,
+    contact_no_borrower TEXT NULL,
+    classification TEXT NULL,
+    store_category TEXT NULL,
+    account_relationship_officer TEXT NULL,
+    retail_partner TEXT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Section 2: Optional - Add comments to columns for better schema understanding in Supabase UI
@@ -50,8 +50,9 @@ COMMENT ON COLUMN public.account_information.retail_partner IS 'Associated retai
 COMMENT ON COLUMN public.account_information.created_at IS 'Timestamp when the record was created';
 
 -- Section 3: Optional - Add indexes for frequently queried columns to improve performance
-CREATE INDEX IF NOT EXISTS idx_borrower_name ON public.account_information (name_of_borrower);
-CREATE INDEX IF NOT EXISTS idx_provider_subject_no ON public.account_information (provider_subject_no);
-CREATE INDEX IF NOT EXISTS idx_area ON public.account_information (area);
-CREATE INDEX IF NOT EXISTS idx_classification ON public.account_information (classification);
-CREATE INDEX IF NOT EXISTS idx_aro ON public.account_information (account_relationship_officer); 
+-- Ensure index names are unique if they were created before
+CREATE INDEX IF NOT EXISTS idx_ai_borrower_name ON public.account_information (name_of_borrower);
+CREATE INDEX IF NOT EXISTS idx_ai_provider_subject_no ON public.account_information (provider_subject_no);
+CREATE INDEX IF NOT EXISTS idx_ai_area ON public.account_information (area);
+CREATE INDEX IF NOT EXISTS idx_ai_classification ON public.account_information (classification);
+CREATE INDEX IF NOT EXISTS idx_ai_aro ON public.account_information (account_relationship_officer); 
