@@ -1,0 +1,114 @@
+ion-content.login-content {
+    --background: #f8f9fa; // Light gray background
+    display: flex;
+    align-items: center; // Center content vertically
+}
+
+ion-grid {
+    height: 100%;
+}
+
+.login-row {
+    min-height: 100%; // Ensure row takes full height for vertical centering
+}
+
+.login-container {
+    background: #ffffff; // White background for the container
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    max-width: 450px; // Limit max width
+    margin: auto; // Center horizontally
+
+    .details-prompt {
+        color: var(--ion-color-medium-shade);
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 25px;
+        color: var(--ion-color-dark-shade);
+    }
+
+    .input-item {
+        --background: var(--ion-color-light);
+        --border-radius: 8px;
+        --border-color: #ccc; // Subtle border
+        --border-width: 1px;
+        --padding-start: 15px;
+        --highlight-color-focused: var(--ion-color-primary);
+        margin-bottom: 15px;
+        
+        ion-input {
+             --placeholder-color: var(--ion-color-medium-shade);
+             --placeholder-opacity: 1;
+             font-size: 1em;
+        }
+    }
+
+    .options-row {
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        margin-top: 5px;
+        margin-bottom: 20px;
+
+        .forgot-link {
+            text-transform: none;
+        }
+    }
+
+    .google-button {
+        --border-radius: 8px;
+        --border-color: var(--ion-color-medium-shade);
+        --color: var(--ion-color-dark-shade);
+        height: 48px;
+        font-weight: 500;
+        text-transform: none; // As per image
+        font-size: 1em;
+        margin-top: 15px;
+        ion-icon {
+            margin-right: 10px;
+        }
+    }
+
+    .signup-prompt {
+        font-size: 0.9em;
+        color: var(--ion-color-dark-tint);
+        margin-top: 25px;
+        a {
+            color: var(--ion-color-primary);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+             &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+    
+    .error-message {
+        // Keep existing style
+        display: block;
+        text-align: center;
+        padding: 5px 0;
+        font-size: 0.9em;
+        margin-top: -10px; // Adjust positioning relative to options row
+        margin-bottom: 15px;
+    }
+}
+
+// Remove styles specific to the old card layout
+/* 
+.login-card { ... }
+.login-icon { ... }
+*/
+
+ion-spinner {
+    width: 20px;
+    height: 20px;
+} 

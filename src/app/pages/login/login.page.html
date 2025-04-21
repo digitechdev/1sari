@@ -1,0 +1,68 @@
+<ion-content class="ion-padding login-content">
+  <ion-grid fixed>
+    <ion-row
+      class="ion-justify-content-center ion-align-items-center login-row"
+    >
+      <ion-col size="12" size-sm="10" size-md="8" size-lg="6" size-xl="5">
+        <div class="login-container ion-text-center">
+          <p class="details-prompt">Please enter your details</p>
+          <h1>Welcome back</h1>
+
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="login()"
+            class="ion-margin-top ion-text-start"
+          >
+            <ion-input
+              class="ion-margin-bottom"
+              type="email"
+              fill="solid"
+              label="Email *"
+              placeholder="Enter Email"
+              formControlName="email"
+              label-placement="floating"
+              required
+              [disabled]="isLoading()"
+              (ionInput)="errorMessage.set(null)"
+            ></ion-input>
+
+            <ion-input
+              class="ion-margin-bottom"
+              type="password"
+              fill="solid"
+              label="Password *"
+              label-placement="floating"
+              placeholder="Enter Password"
+              formControlName="password"
+              required
+              [disabled]="isLoading()"
+              (ionInput)="errorMessage.set(null)"
+            ></ion-input>
+
+            <div class="options-row ion-margin-vertical">
+              <ion-button
+                fill="clear"
+                size="small"
+                (click)="forgotPassword()"
+                class="forgot-link"
+                >Forgot password?</ion-button
+              >
+            </div>
+
+            <ion-button
+              type="submit"
+              fill="solid"
+              expand="block"
+              class="ion-margin-top"
+              [disabled]="isLoading() || loginForm.invalid"
+            >
+              @if (isLoading()) {
+              <ion-spinner name="crescent" color="light"></ion-spinner>
+              } @else { Sign In }
+            </ion-button>
+          </form>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

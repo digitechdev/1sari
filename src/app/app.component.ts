@@ -27,6 +27,7 @@ import {
   IonAvatar,
   IonButton,
   PopoverController,
+  IonFooter,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -60,9 +61,11 @@ import {
   trashOutline,
   calendarOutline,
   downloadOutline,
+  logoGoogle,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
+import { AuthService } from './services/auth.service';
 
 // Define the structure for menu items
 interface MenuItem {
@@ -102,6 +105,7 @@ interface MenuItem {
     IonAvatar,
     IonButton,
     LogoComponent,
+    IonFooter,
   ],
 })
 export class AppComponent implements OnInit {
@@ -109,6 +113,7 @@ export class AppComponent implements OnInit {
   public router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private popoverCtrl = inject(PopoverController);
+  authService = inject(AuthService);
 
   // Signal for the current page title
   currentPageTitle = signal('Dashboard');
@@ -177,6 +182,7 @@ export class AppComponent implements OnInit {
       trashOutline,
       calendarOutline,
       downloadOutline,
+      logoGoogle,
     });
   }
 
@@ -229,5 +235,10 @@ export class AppComponent implements OnInit {
       cssClass: 'profile-popover',
     });
     await popover.present();
+  }
+
+  async signOut() {
+    await this.authService.signOut();
+    // Navigation is handled within authService.signOut
   }
 }
