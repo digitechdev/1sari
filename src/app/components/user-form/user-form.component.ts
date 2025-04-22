@@ -122,7 +122,7 @@ export class UserFormComponent implements OnInit {
           email: formValue.email,
           password: formValue.password
         };
-        const { profile, error } = await this.userService.createUser(credentials, profileData);
+        const { profile, error } = await this.userService.createUserProfile(credentials, profileData);
         if (error || !profile) {
           throw error || new Error('Failed to create user or profile.');
         }

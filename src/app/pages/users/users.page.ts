@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, WritableSignal, viewChild, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
+import { IonicModule, ToastController, AlertController } from '@ionic/angular';
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
 import { UserService } from '../../services/user.service';
 import { UserProfile } from '../../interfaces/user-profile.interface';
@@ -12,12 +12,11 @@ import { Router } from '@angular/router';
   templateUrl: './users.page.html',
   styleUrls: ['./users.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, NgxDatatableModule, UserFormComponent],
+  imports: [CommonModule, IonicModule, NgxDatatableModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersPage implements OnInit {
   private userService = inject(UserService);
-  private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
   private router = inject(Router);
@@ -109,28 +108,14 @@ export class UsersPage implements OnInit {
 
   async addUser() {
     this.router.navigate(['/users/new']);
-    // const modal = await this.modalCtrl.create({
-    //   component: UserFormComponent,
-    //   componentProps: { }
-    // });
-    // await modal.present();
-    // const { data, role } = await modal.onDidDismiss();
-    // if (role === 'confirm') {
-    //   this.loadUsers();
-    //   this.showToast('User added successfully.', 'success');
-    // }
   }
 
   async editUser(user: UserProfile) {
-    const modal = await this.modalCtrl.create({
-      component: UserFormComponent,
-      componentProps: { userProfile: user }
-    });
-    await modal.present();
-    const { data, role } = await modal.onDidDismiss();
-    if (role === 'confirm') {
-      this.loadUsers();
-      this.showToast('User updated successfully.', 'success');
+    if (user.id) {
+        this.router.navigate(['/users/edit', user.id]);
+    } else {
+        console.error('Cannot edit user without an ID');
+        this.showToast('Cannot edit user: missing ID.', 'danger');
     }
   }
 

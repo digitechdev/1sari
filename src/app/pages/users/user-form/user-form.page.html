@@ -1,78 +1,110 @@
- <ion-header class="page-header">
+<ion-header class="page-header">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/users"></ion-back-button> <!-- Adjust defaultHref as needed -->
+      <ion-back-button defaultHref="/users"></ion-back-button>
+      <!-- Adjust defaultHref as needed -->
     </ion-buttons>
     <ion-title>{{ isEditMode() ? 'Edit' : 'Add' }} User</ion-title>
+    <ion-buttons slot="end">
+      <!-- Trigger save method on click -->
+      <ion-button (click)="save()" [disabled]="isLoading() || userForm.invalid">
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        {{ isEditMode() ? 'Update' : 'Save' }}
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   @if (userForm) {
-    <form [formGroup]="userForm" (ngSubmit)="save()">
-      <ion-list lines="full">
+  <form [formGroup]="userForm" (ngSubmit)="save()">
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="12">
+          <!-- User Information Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="person-circle-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                User Information
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Full Name *"
+                labelPlacement="floating"
+                [errorText]="userForm.controls['full_name'].invalid &&
+                userForm.controls['full_name'].touched ? 'Full name is required.' : ''"
+                formControlName="full_name"
+                placeholder="Enter Full Name"
+              ></ion-input>
 
-        <ion-item>
-          <ion-label position="stacked">Name <ion-text color="danger">*</ion-text></ion-label>
-          <ion-input formControlName="name" type="text" required></ion-input>
-          @if (f['name'].invalid && f['name'].touched) {
-            <ion-note slot="error">Name is required.</ion-note>
-          }
-        </ion-item>
+              <ion-input
+                class="ion-margin-bottom"
+                type="text"
+                fill="solid"
+                label="Email *"
+                labelPlacement="floating"
+                [errorText]="userForm.controls['email'].invalid &&
+                userForm.controls['email'].touched ? 'Email is required.' : ''"
+                formControlName="email"
+                placeholder="Enter Email"
+              ></ion-input>
 
-        <ion-item>
-          <ion-label position="stacked">Username <ion-text color="danger">*</ion-text></ion-label>
-          <ion-input formControlName="username" type="text" required></ion-input>
-           @if (f['username'].invalid && f['username'].touched) {
-            <ion-note slot="error">Username is required.</ion-note>
-          }
-        </ion-item>
+              <!-- Role -->
+              <ion-select
+                class="ion-margin-bottom"
+                justify="space-between"
+                label="Role"
+                placeholder="Select Role"
+                fill="solid"
+                formControlName="role"
+              >
+                <ion-select-option value="Admin">Admin</ion-select-option>
+                <ion-select-option value="User">User</ion-select-option>
+                <ion-select-option value="Manager">Manager</ion-select-option>
+              </ion-select>
 
-        <ion-item>
-          <ion-label position="stacked">Email <ion-text color="danger">*</ion-text></ion-label>
-          <ion-input formControlName="email" type="email" required></ion-input>
-           @if (f['email'].errors?.['required'] && f['email'].touched) {
-            <ion-note slot="error">Email is required.</ion-note>
-          }
-           @if (f['email'].errors?.['email'] && f['email'].touched) {
-            <ion-note slot="error">Please enter a valid email address.</ion-note>
-          }
-        </ion-item>
+              @if (!isEditMode()) {
+              <ion-input
+                class="ion-margin-bottom"
+                type="password"
+                fill="solid"
+                label="Password *"
+                labelPlacement="floating"
+                [errorText]="userForm.controls['password'].invalid &&
+                userForm.controls['password'].touched ? 'Password is required.' : ''"
+                formControlName="password"
+                placeholder="Enter Password"
+              ></ion-input>
 
-        <ion-item>
-          <ion-label position="stacked">Role <ion-text color="danger">*</ion-text></ion-label>
-          <ion-select formControlName="role" placeholder="Select Role" required>
-            <ion-select-option value="Admin">Admin</ion-select-option>
-            <ion-select-option value="User">User</ion-select-option>
-            <ion-select-option value="Manager">Manager</ion-select-option> <!-- Example Role -->
-          </ion-select>
-          @if (f['role'].invalid && f['role'].touched) {
-            <ion-note slot="error">Role is required.</ion-note>
-          }
-        </ion-item>
-
-        <ion-item>
-          <ion-label>Active</ion-label>
-          <ion-toggle slot="end" formControlName="isActive"></ion-toggle>
-        </ion-item>
-
-        <!-- Add password fields here if needed, potentially using @if(!isEditMode()) -->
-
-      </ion-list>
-
-      <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="isLoading() || userForm.invalid">
-        @if (isLoading()) {
-          <ion-spinner name="dots"></ion-spinner>
-        } @else {
-          {{ isEditMode() ? 'Update' : 'Save' }} User
-        }
-      </ion-button>
-
-    </form>
+              <ion-input
+                class="ion-margin-bottom"
+                type="password"
+                fill="solid"
+                label="Confirm Password *"
+                labelPlacement="floating"
+                [errorText]="userForm.controls['confirmPassword'].invalid &&
+                userForm.controls['confirmPassword'].touched ? 'Confirm Password is required.' : ''"
+                formControlName="confirmPassword"
+                placeholder="Enter Confirm Password"
+              ></ion-input>
+              }
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
   } @else {
-     <!-- Optional: Show a loading indicator while form is initializing -->
-     <div class="ion-text-center ion-padding">
-        <ion-spinner name="crescent"></ion-spinner>
-     </div>
+  <div class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+  </div>
   }
-</ion-content> 
+</ion-content>

@@ -64,7 +64,7 @@ export class UserService {
 
   // --- User Creation --- (Interacting with Auth and Profiles)
   // IMPORTANT: See notes in thought process about atomicity concerns for production.
-  async createUser(credentials: { email: string; password: string }, profileData: Pick<UserProfile, 'full_name' | 'role'>): Promise<{ user: User | null, profile: UserProfile | null, error: any }> {
+  async createUserProfile(credentials: { email: string; password: string }, profileData: Pick<UserProfile, 'full_name' | 'role'>): Promise<{ user: User | null, profile: UserProfile | null, error: any }> {
     // 1. Sign up the user with Supabase Auth
     const { data: authData, error: signUpError } = await this.supabase.auth.signUp(credentials);
 
