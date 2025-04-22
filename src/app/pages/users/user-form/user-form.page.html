@@ -1,0 +1,78 @@
+ <ion-header class="page-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/users"></ion-back-button> <!-- Adjust defaultHref as needed -->
+    </ion-buttons>
+    <ion-title>{{ isEditMode() ? 'Edit' : 'Add' }} User</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (userForm) {
+    <form [formGroup]="userForm" (ngSubmit)="save()">
+      <ion-list lines="full">
+
+        <ion-item>
+          <ion-label position="stacked">Name <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input formControlName="name" type="text" required></ion-input>
+          @if (f['name'].invalid && f['name'].touched) {
+            <ion-note slot="error">Name is required.</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Username <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input formControlName="username" type="text" required></ion-input>
+           @if (f['username'].invalid && f['username'].touched) {
+            <ion-note slot="error">Username is required.</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Email <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input formControlName="email" type="email" required></ion-input>
+           @if (f['email'].errors?.['required'] && f['email'].touched) {
+            <ion-note slot="error">Email is required.</ion-note>
+          }
+           @if (f['email'].errors?.['email'] && f['email'].touched) {
+            <ion-note slot="error">Please enter a valid email address.</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Role <ion-text color="danger">*</ion-text></ion-label>
+          <ion-select formControlName="role" placeholder="Select Role" required>
+            <ion-select-option value="Admin">Admin</ion-select-option>
+            <ion-select-option value="User">User</ion-select-option>
+            <ion-select-option value="Manager">Manager</ion-select-option> <!-- Example Role -->
+          </ion-select>
+          @if (f['role'].invalid && f['role'].touched) {
+            <ion-note slot="error">Role is required.</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Active</ion-label>
+          <ion-toggle slot="end" formControlName="isActive"></ion-toggle>
+        </ion-item>
+
+        <!-- Add password fields here if needed, potentially using @if(!isEditMode()) -->
+
+      </ion-list>
+
+      <ion-button class="ion-margin-top" type="submit" expand="block" [disabled]="isLoading() || userForm.invalid">
+        @if (isLoading()) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          {{ isEditMode() ? 'Update' : 'Save' }} User
+        }
+      </ion-button>
+
+    </form>
+  } @else {
+     <!-- Optional: Show a loading indicator while form is initializing -->
+     <div class="ion-text-center ion-padding">
+        <ion-spinner name="crescent"></ion-spinner>
+     </div>
+  }
+</ion-content> 

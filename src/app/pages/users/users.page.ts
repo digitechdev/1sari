@@ -5,6 +5,7 @@ import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ng
 import { UserService } from '../../services/user.service';
 import { UserProfile } from '../../interfaces/user-profile.interface';
 import { UserFormComponent } from '../../components/user-form/user-form.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-users',
@@ -19,6 +20,7 @@ export class UsersPage implements OnInit {
   private modalCtrl = inject(ModalController);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
+  private router = inject(Router);
 
   // Signals for state management
   users: WritableSignal<UserProfile[]> = signal([]);
@@ -59,13 +61,12 @@ export class UsersPage implements OnInit {
       {
         name: 'Actions',
         prop: 'id',
-        cellTemplate: this.actionsTemplate,
         sortable: false,
-        flexGrow: 1,
-        minWidth: 100,
-        maxWidth: 100,
-        cellClass: 'action-buttons-cell'
-      }
+        draggable: false,
+        resizable: false,
+        width: 120,
+        cellTemplate: this.actionsTemplate,
+      },
     ];
   }
 
@@ -89,9 +90,16 @@ export class UsersPage implements OnInit {
     }
   }
 
-  refreshData() {
+  async refreshData () {
     this.searchTerm.set(''); // Clear search on refresh
     this.loadUsers(true);
+    const toast = await this.toastCtrl.create({
+      message: 'Data refreshed.',
+      duration: 1500,
+      position: 'bottom',
+      color: 'medium',
+    });
+    await toast.present();
   }
 
   handleSearch(event: any) {
@@ -100,16 +108,17 @@ export class UsersPage implements OnInit {
   }
 
   async addUser() {
-    const modal = await this.modalCtrl.create({
-      component: UserFormComponent,
-      componentProps: { }
-    });
-    await modal.present();
-    const { data, role } = await modal.onDidDismiss();
-    if (role === 'confirm') {
-      this.loadUsers();
-      this.showToast('User added successfully.', 'success');
-    }
+    this.router.navigate(['/users/new']);
+    // const modal = await this.modalCtrl.create({
+    //   component: UserFormComponent,
+    //   componentProps: { }
+    // });
+    // await modal.present();
+    // const { data, role } = await modal.onDidDismiss();
+    // if (role === 'confirm') {
+    //   this.loadUsers();
+    //   this.showToast('User added successfully.', 'success');
+    // }
   }
 
   async editUser(user: UserProfile) {

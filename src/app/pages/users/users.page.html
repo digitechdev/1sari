@@ -6,13 +6,20 @@
           <ion-card-header class="users-card-header">
             <ion-card-title>
               <ion-grid class="ion-no-padding ion-padding-horizontal">
-                <ion-row class="ion-align-items-center ion-justify-content-between">
-                  <ion-col size="auto" size-md="6" size-lg="5" style="max-width: 400px">
+                <ion-row
+                  class="ion-align-items-center ion-justify-content-between"
+                >
+                  <ion-col
+                    size="auto"
+                    size-md="6"
+                    size-lg="5"
+                    style="max-width: 400px"
+                  >
                     <ion-searchbar
                       class="controls-searchbar"
                       (ionInput)="handleSearch($event)"
                       [value]="searchTerm()"
-                      placeholder="Search users by name, email, role..."
+                      placeholder="Search users..."
                       debounce="300"
                     ></ion-searchbar>
                   </ion-col>
@@ -23,14 +30,13 @@
                       color="medium"
                       (click)="refreshData()"
                       class="ion-margin-end"
-                      [disabled]="isLoading()"
                     >
                       <ion-icon slot="start" name="refresh-outline"></ion-icon>
                       Refresh
                     </ion-button>
-                    <ion-button color="primary" (click)="addUser()" [disabled]="isLoading()">
-                      <ion-icon slot="start" name="person-add-outline"></ion-icon>
-                      Add New User
+                    <ion-button color="primary" (click)="addUser()">
+                      <ion-icon slot="start" name="add-outline"></ion-icon>
+                      Add New
                     </ion-button>
                   </ion-col>
                 </ion-row>
@@ -38,75 +44,59 @@
             </ion-card-title>
           </ion-card-header>
           <ion-card-content>
-            @if (isLoading()) {
-              <div class="skeleton-loader">
-                <ion-skeleton-text animated style="height: 50px;"></ion-skeleton-text>
-                @for (i of [1,2,3,4,5]; track i) {
-                  <ion-skeleton-text animated style="height: 50px; margin-top: 2px;"></ion-skeleton-text>
-                }
-              </div>
+         @if (isLoading()) {
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            } @if (errorLoading()) {
+            <div class="state-message">
+              <ion-text color="danger">{{ errorLoading() }}</ion-text>
+            </div>
+            } @if (!isLoading() && !errorLoading()) { 
+            <ngx-datatable
+              class="material expandable users-datatable"
+              [rows]="displayableUsers()"
+              [columns]="tableColumns"
+              [columnMode]="ColumnMode.force"
+              [headerHeight]="50"
+              [footerHeight]="50"
+              [rowHeight]="'auto'"
+              [scrollbarH]="true"
+              [limit]="10"
+            >
+            </ngx-datatable>
             }
-
-            @if (errorLoading()) {
-              <div class="state-message ion-padding ion-text-center">
-                <ion-icon name="warning-outline" color="danger" size="large"></ion-icon>
-                <ion-text color="danger"><p>{{ errorLoading() }}</p></ion-text>
-                <ion-button (click)="loadUsers()" fill="outline" color="medium" size="small">
-                  <ion-icon slot="start" name="refresh-outline"></ion-icon>
-                  Retry
-                </ion-button>
-              </div>
-            }
-
-            @if (!isLoading() && !errorLoading()) {
-              @if (displayableUsers().length > 0) {
-                <ngx-datatable
-                  class="material expandable users-datatable"
-                  [rows]="displayableUsers()"
-                  [columns]="tableColumns"
-                  [columnMode]="ColumnMode.force"
-                  [headerHeight]="50"
-                  [footerHeight]="50"
-                  [rowHeight]="'auto'"
-                  [scrollbarH]="true"
-                  [limit]="10"
-                  [messages]="{ emptyMessage: 'No users found matching your criteria.', totalMessage: 'total users' }"
-                >
-                </ngx-datatable>
-              } @else {
-                <div class="state-message ion-padding ion-text-center">
-                  <ion-icon name="people-outline" color="medium" size="large"></ion-icon>
-                  <ion-text color="medium"><p>No users found.</p></ion-text>
-                  @if (searchTerm()) {
-                    <ion-text color="medium"><p>Try adjusting your search.</p></ion-text>
-                  } @else {
-                    <ion-button (click)="addUser()" fill="outline" color="primary" size="small">
-                      <ion-icon slot="start" name="person-add-outline"></ion-icon>
-                      Add First User
-                    </ion-button>
-                  }
-                </div>
-              }
-            }
-
+            
             <ng-template #actionsTemplate let-row="row" let-value="value">
               <div class="action-buttons-container">
                 <ion-button
-                  fill="clear"
-                  color="primary"
+                  fill="solid"
+                  color="medium"
                   size="small"
                   (click)="editUser(row)"
-                  title="Edit User"
+                  title="Edit"
                   class="action-button"
                 >
                   <ion-icon slot="icon-only" name="create-outline"></ion-icon>
                 </ion-button>
               </div>
             </ng-template>
-
           </ion-card-content>
         </ion-card>
       </ion-col>
     </ion-row>
   </ion-grid>
-</ion-content> 
+</ion-content>
