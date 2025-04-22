@@ -74,5 +74,11 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'users',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/users/users.page').then((m) => m.UsersPage),
+  },
  
 ];

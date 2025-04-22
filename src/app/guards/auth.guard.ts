@@ -16,6 +16,7 @@ export const authGuard: CanActivateFn = (route, state):
 
   // Use the computed signal directly for synchronous check
   if (authService.isAuthenticated()) {
+    console.log('AuthGuard: User is authenticated, allowing access');
     return true; // User is authenticated, allow access
   } else {
     // User is not authenticated, redirect to login page

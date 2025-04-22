@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>{{ isEditMode() ? 'Edit User' : 'Add New User' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()" [disabled]="isLoading()">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label position="stacked">Email <ion-text color="danger">*</ion-text></ion-label>
+        <ion-input
+          formControlName="email"
+          type="email"
+          required
+          [readonly]="isEditMode()"
+          [disabled]="isLoading()"
+        ></ion-input>
+      </ion-item>
+
+      @if (f['email'].invalid && f['email'].touched) {
+        @if (f['email'].errors?.[ 'required']) {
+            <ion-note slot="error" color="danger" class="ion-padding-start">Email is required.</ion-note>
+        }
+        @if (f['email'].errors?.[ 'email']) {
+            <ion-note slot="error" color="danger" class="ion-padding-start">Please enter a valid email address.</ion-note>
+        }
+      }
+
+      @if (!isEditMode()) {
+        <ion-item>
+          <ion-label position="stacked">Password <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input
+            formControlName="password"
+            type="password"
+            required
+            minlength="6"
+            [disabled]="isLoading()"
+          ></ion-input>
+        </ion-item>
+        @if (f['password'].invalid && f['password'].touched) {
+          @if (f['password'].errors?.[ 'required']) {
+              <ion-note slot="error" color="danger" class="ion-padding-start">Password is required.</ion-note>
+          }
+          @if (f['password'].errors?.[ 'minlength']) {
+              <ion-note slot="error" color="danger" class="ion-padding-start">Password must be at least 6 characters.</ion-note>
+          }
+        }
+
+        <ion-item>
+          <ion-label position="stacked">Confirm Password <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input
+            formControlName="confirmPassword"
+            type="password"
+            required
+            [disabled]="isLoading()"
+          ></ion-input>
+        </ion-item>
+        @if (f['confirmPassword'].invalid && f['confirmPassword'].touched) {
+             <ion-note slot="error" color="danger" class="ion-padding-start">Please confirm your password.</ion-note>
+        }
+        @if (userForm.hasError('passwordsMismatch') && f['confirmPassword'].touched) {
+            <ion-note slot="error" color="danger" class="ion-padding-start">Passwords do not match.</ion-note>
+        }
+      }
+
+      <ion-item>
+        <ion-label position="stacked">Full Name</ion-label>
+        <ion-input
+          formControlName="fullName"
+          type="text"
+          [disabled]="isLoading()"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Role <ion-text color="danger">*</ion-text></ion-label>
+        <ion-select
+          formControlName="role"
+          interface="popover"
+          required
+          [disabled]="isLoading()"
+        >
+          @for (roleOption of availableRoles; track roleOption) {
+            <ion-select-option [value]="roleOption">{{ roleOption | titlecase }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+
+      @if (f['role'].invalid && f['role'].touched) {
+            <ion-note slot="error" color="danger" class="ion-padding-start">Role is required.</ion-note>
+        }
+
+    </ion-list>
+
+    <ion-button
+      type="submit"
+      expand="block"
+      class="ion-margin-top"
+      [disabled]="!userForm.valid || isLoading()"
+    >
+      @if (isLoading()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <ion-icon slot="start" [name]="isEditMode() ? 'save-outline' : 'person-add-outline'"></ion-icon>
+        {{ isEditMode() ? 'Save Changes' : 'Create User' }}
+      }
+    </ion-button>
+  </form>
+</ion-content> 

@@ -1,0 +1,46 @@
+/* Add styles specific to the Users page here */
+
+.users-card-list {
+  // Add specific card styles if needed
+}
+
+.users-card-header {
+  // Style the header containing search/buttons
+}
+
+.users-datatable {
+  // Ensure the datatable looks good within the card
+  box-shadow: none; // Remove default shadow if inside a card
+  border: 1px solid var(--ion-color-step-150, #d9d9d9);
+  border-radius: 4px;
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: center; // Center buttons in the cell
+  align-items: center;
+  height: 100%;
+}
+
+.action-button {
+  margin: 0 2px; // Small spacing between buttons
+}
+
+/* Styles for loading/error/empty states */
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px; // Ensure it takes some space
+  color: var(--ion-color-medium);
+}
+
+.state-message ion-icon {
+  margin-bottom: 10px;
+}
+
+/* Styles for Skeleton Loader */
+.skeleton-loader {
+  padding: 16px; // Match card content padding if needed
+} 

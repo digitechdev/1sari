@@ -1,0 +1,139 @@
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, WritableSignal, viewChild, TemplateRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { IonicModule, ModalController, ToastController, AlertController } from '@ionic/angular';
+import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
+import { UserService } from '../../services/user.service';
+import { UserProfile } from '../../interfaces/user-profile.interface';
+import { UserFormComponent } from '../../components/user-form/user-form.component';
+
+@Component({
+  selector: 'app-users',
+  templateUrl: './users.page.html',
+  styleUrls: ['./users.page.scss'],
+  standalone: true,
+  imports: [CommonModule, IonicModule, NgxDatatableModule, UserFormComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class UsersPage implements OnInit {
+  private userService = inject(UserService);
+  private modalCtrl = inject(ModalController);
+  private toastCtrl = inject(ToastController);
+  private alertCtrl = inject(AlertController);
+
+  // Signals for state management
+  users: WritableSignal<UserProfile[]> = signal([]);
+  isLoading = signal<boolean>(false);
+  errorLoading = signal<string | null>(null);
+  searchTerm = signal<string>('');
+
+  // Access the datatable instance and the template
+  @ViewChild(DatatableComponent) table!: DatatableComponent;
+  @ViewChild('actionsTemplate', { static: true }) actionsTemplate!: TemplateRef<any>;
+
+  tableColumns: any[] = [];
+  readonly ColumnMode = ColumnMode;
+
+  // Computed signal for filtering
+  displayableUsers = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) {
+      return this.users();
+    }
+    return this.users().filter(user =>
+      user.full_name?.toLowerCase().includes(term) ||
+      user.email.toLowerCase().includes(term) ||
+      user.role?.toLowerCase().includes(term)
+    );
+  });
+
+  ngOnInit() {
+    this.setupTableColumns();
+    this.loadUsers();
+  }
+
+  setupTableColumns() {
+    this.tableColumns = [
+      { prop: 'email', name: 'Email', flexGrow: 3 },
+      { prop: 'full_name', name: 'Full Name', flexGrow: 2 },
+      { prop: 'role', name: 'Role', flexGrow: 1 },
+      {
+        name: 'Actions',
+        prop: 'id',
+        cellTemplate: this.actionsTemplate,
+        sortable: false,
+        flexGrow: 1,
+        minWidth: 100,
+        maxWidth: 100,
+        cellClass: 'action-buttons-cell'
+      }
+    ];
+  }
+
+  async loadUsers(refresh = false) {
+    this.isLoading.set(true);
+    this.errorLoading.set(null);
+    if (refresh) {
+        // Optional: Add logic for pull-to-refresh or cache busting if needed
+    }
+
+    try {
+      const fetchedUsers = await this.userService.getUsers();
+      this.users.set(fetchedUsers);
+    } catch (err: any) {
+      const message = err.message || 'Failed to load users.';
+      console.error('Error loading users:', err);
+      this.errorLoading.set(message);
+      this.showToast(message, 'danger');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  refreshData() {
+    this.searchTerm.set(''); // Clear search on refresh
+    this.loadUsers(true);
+  }
+
+  handleSearch(event: any) {
+    const term = event.target.value || '';
+    this.searchTerm.set(term);
+  }
+
+  async addUser() {
+    const modal = await this.modalCtrl.create({
+      component: UserFormComponent,
+      componentProps: { }
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'confirm') {
+      this.loadUsers();
+      this.showToast('User added successfully.', 'success');
+    }
+  }
+
+  async editUser(user: UserProfile) {
+    const modal = await this.modalCtrl.create({
+      component: UserFormComponent,
+      componentProps: { userProfile: user }
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'confirm') {
+      this.loadUsers();
+      this.showToast('User updated successfully.', 'success');
+    }
+  }
+
+  // No deleteUser method here - should be handled securely via backend/functions
+
+  async showToast(message: string, color: 'success' | 'warning' | 'danger') {
+    const toast = await this.toastCtrl.create({
+      message: message,
+      duration: 3000,
+      color: color,
+      position: 'bottom'
+    });
+    toast.present();
+  }
+} 
