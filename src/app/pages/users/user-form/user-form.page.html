@@ -6,11 +6,12 @@
     </ion-buttons>
     <ion-title>{{ isEditMode() ? 'Edit' : 'Add' }} User</ion-title>
     <ion-buttons slot="end">
-      <!-- Trigger save method on click -->
+      <!-- Save/Update Button -->
       <ion-button (click)="save()" [disabled]="isLoading() || userForm.invalid">
         <ion-icon slot="start" name="save-outline"></ion-icon>
         {{ isEditMode() ? 'Update' : 'Save' }}
       </ion-button>
+      <!-- Delete Button Removed -->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>

@@ -119,7 +119,67 @@ export class UsersPage implements OnInit {
     }
   }
 
-  // No deleteUser method here - should be handled securely via backend/functions
+  async presentDeleteConfirm(user: UserProfile) {
+    if (!user || !user.id) {
+      console.error('Cannot delete: User data or ID is missing.', user);
+      this.showToast('Cannot delete user: Invalid data.', 'danger');
+      return;
+    }
+
+    const alert = await this.alertCtrl.create({
+      header: 'Confirm Deletion',
+      message: `Are you sure you want to permanently delete user ${user.full_name || user.email}? This action cannot be undone.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'secondary',
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          cssClass: 'danger',
+          handler: () => {
+            this.deleteUser(user.id!);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async deleteUser(userId: string) {
+    this.isLoading.set(true); // Show loading indicator
+    try {
+      console.log(`Calling userService.deleteUser for ID: ${userId}`);
+      // Call the actual service method which invokes the Edge Function
+      const { error } = await this.userService.deleteUser(userId);
+
+      if (error) {
+        // Re-throw the error to be caught by the catch block
+        throw error;
+      }
+
+      // If no error, deletion was successful (function invoked)
+      this.showToast('User deleted successfully.', 'success');
+      this.loadUsers(); // Refresh the user list
+
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      // Display the error message returned from the service/function
+      const message = error.message || error.details || 'Unknown error during deletion.';
+      this.showToast(`Error deleting user: ${message}`, 'danger');
+      // Keep loading false or let loadUsers handle it if called in finally
+       this.isLoading.set(false); // Explicitly set loading false on error
+
+    } finally {
+       // Optionally, you could move isLoading.set(false) here
+       // if loadUsers() isn't called on error or handles its own state.
+       // However, setting it in the catch block handles the error case better.
+       // If loadUsers() is called on success, it will manage the final loading state.
+    }
+  }
 
   async showToast(message: string, color: 'success' | 'warning' | 'danger') {
     const toast = await this.toastCtrl.create({

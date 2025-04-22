@@ -92,6 +92,16 @@
                 >
                   <ion-icon slot="icon-only" name="create-outline"></ion-icon>
                 </ion-button>
+                <ion-button
+                  fill="solid"
+                  color="danger"
+                  size="small"
+                  (click)="presentDeleteConfirm(row)"
+                  title="Delete"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
               </div>
             </ng-template>
           </ion-card-content>

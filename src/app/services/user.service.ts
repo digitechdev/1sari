@@ -100,6 +100,27 @@ export class UserService {
     }
   }
 
+  // --- User Deletion (Client-side call to Edge Function) --- 
+  async deleteUser(userId: string): Promise<{ error: any | null }> {
+    console.log(`Invoking delete-user Edge Function for userId: ${userId}`);
+    // IMPORTANT: This invokes a Supabase Edge Function named 'delete-user'.
+    // You MUST create this function in your Supabase project.
+    // The function needs to handle both profile and auth user deletion securely using the admin API.
+    const { data, error } = await this.supabase.functions.invoke('delete-user', {
+        body: { userId }, // Pass the userId in the request body
+    });
+
+    if (error) {
+        console.error('Error invoking delete-user function:', error);
+        // Return the error to be handled by the calling component
+        return { error };
+    }
+
+    console.log('delete-user function invoked successfully:', data);
+    // Return success (no specific data needed usually, just absence of error)
+    return { error: null };
+  }
+
   // --- Other Auth Related --- (Could also live in AuthService)
 
   // Example: Update Authenticated User's Email (Requires confirmation)

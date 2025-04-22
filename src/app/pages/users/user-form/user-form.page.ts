@@ -4,7 +4,8 @@ import {
   signal,
   computed,
   inject,
-  effect,
+  WritableSignal,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -12,6 +13,8 @@ import {
   FormGroup,
   ReactiveFormsModule,
   Validators,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -21,19 +24,14 @@ import {
   IonButtons,
   IonBackButton,
   IonContent,
-  IonList,
-  IonItem,
-  IonLabel,
   IonInput,
   IonSelect,
   IonSelectOption,
-  IonToggle,
   IonButton,
   IonSpinner,
   IonText,
   NavController,
   Platform,
-  IonNote,
   IonCard,
   IonCardHeader,
   IonCardTitle,
@@ -42,12 +40,31 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { UserProfile } from '../../../interfaces/user-profile.interface';
 import { UserService } from 'src/app/services/user.service';
-import { passwordsMatchValidator } from 'src/app/components/user-form/user-form.component';
-// import { User } from '../../../models/user.model'; // Assuming you have a User model
-// import { UserService } from '../../../services/user.service'; // Assuming you have a UserService
+
+// Custom Validator for Passwords (keep it here or move to a shared validators file)
+export const passwordsMatchValidator = (
+  control: AbstractControl
+): ValidationErrors | null => {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (password && confirmPassword && password.value !== confirmPassword.value) {
+    confirmPassword.setErrors({ passwordMismatch: true });
+    return { passwordMismatch: true };
+  }
+  // Clear error if they match or fields don't exist
+  if (confirmPassword?.hasError('passwordMismatch')) {
+      // Check if the specific error is passwordMismatch before clearing
+      if (password?.value === confirmPassword.value) {
+          confirmPassword.setErrors(null);
+      }
+  }
+  return null;
+};
 
 @Component({
   selector: 'app-user-form',
@@ -63,26 +80,22 @@ import { passwordsMatchValidator } from 'src/app/components/user-form/user-form.
     IonCardTitle,
     IonCardHeader,
     IonCard,
-    IonNote,
+    IonText,
+    IonSpinner,
+    IonButton,
+    IonSelectOption,
+    IonSelect,
+    IonInput,
+    IonContent,
+    IonBackButton,
+    IonButtons,
+    IonTitle,
+    IonToolbar,
+    IonHeader,
     CommonModule,
     ReactiveFormsModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonBackButton,
-    IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonInput,
-    IonSelect,
-    IonSelectOption,
-    IonToggle,
-    IonButton,
-    IonSpinner,
-    IonText,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserFormPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -90,123 +103,80 @@ export class UserFormPage implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly navController = inject(NavController);
   private readonly platform = inject(Platform);
-  private readonly userService = inject(UserService); // Inject your user service
+  private readonly userService = inject(UserService);
+  private readonly toastCtrl = inject(ToastController);
 
   userForm!: FormGroup;
-  userId = signal<string | null>(null);
+  userId: WritableSignal<string | null> = signal(null);
   isLoading = signal(false);
 
+  // Computed signal determines mode based on userId signal
   isEditMode = computed(() => !!this.userId());
 
-  constructor() {
-    // Initialize the form matching UserProfile
-    // this.userForm = this.formBuilder.group({
-    //   id: [''], // Keep for update logic
-    //   full_name: ['', Validators.required], // Changed from name
-    //   email: ['', [Validators.required, Validators.email]],
-    //   role: ['User', Validators.required], // Default role
-    //   password: ['', [Validators.required, Validators.minLength(6)]],
-    //   confirmPassword: ['', [Validators.required]],
-    //   // username removed
-    //   // isActive removed
-    // });
-
-    // Log form value changes (optional)
-    effect(() => {
-      // console.log('User form value:', this.userForm.value);
-    });
-  }
+  // No constructor needed for initialization if done in ngOnInit
 
   ngOnInit() {
-    // const id = this.route.snapshot.paramMap.get('id');
-    // if (id && id !== 'new') {
-    //   this.userId.set(id);
-    //   this.loadUserData(id);
-    // } else {
-    //   this.userId.set(null); // Ensure it's null for new users
-    //   // Optional: Initialize form with defaults for 'new' mode if needed
-    //   // this.userForm.reset({ role: 'User' }); // Example reset
-    // }
+    const id = this.route.snapshot.paramMap.get('id');
+    this.initializeForm(); // Initialize first
 
-    this.isEditMode.set(!!this.userProfile);
-    this.initializeForm();
-
-    if (this.isEditMode() && this.userProfile) {
-      this.populateFormForEdit();
+    if (id && id !== 'new') {
+      this.userId.set(id);
+      // Form validators/structure might change based on mode, re-initialize or adjust
+      this.initializeForm(); // Re-initialize to ensure correct validators for edit mode
+      this.loadUserData(id);
+    } else {
+      this.userId.set(null);
+      // Form is already initialized for create mode
     }
   }
 
   initializeForm() {
-    this.userForm = this.formBuilder.group(
-      {
-        email: ['', [Validators.required, Validators.email]],
-        password: [
-          '',
-          this.isEditMode()
-            ? []
-            : [Validators.required, Validators.minLength(6)],
-        ],
-        confirmPassword: ['', this.isEditMode() ? [] : [Validators.required]],
-        fullName: [''],
-        role: ['viewer', [Validators.required]],
-      },
-      {
-        // Add the custom validator to the form group for create mode
-        validators: this.isEditMode() ? [] : passwordsMatchValidator,
-      }
-    );
+    const isEditing = this.isEditMode();
 
-    // Disable email in edit mode
-    if (this.isEditMode()) {
-      this.f['email'].disable();
-      // Remove password validators if they were added initially for edit mode (alternative approach)
-      // this.f['password'].clearValidators();
-      // this.f['confirmPassword'].clearValidators();
-      // this.userForm.updateValueAndValidity();
+    const formConfig: { [key: string]: any } = {
+        // id is not needed in the form itself, managed by userId signal
+        full_name: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+        role: ['viewer', Validators.required], // Default role, adjust as needed
+    };
+
+    // Add password fields only if creating a new user
+    if (!isEditing) {
+        formConfig['password'] = ['', [Validators.required, Validators.minLength(6)]];
+        formConfig['confirmPassword'] = ['', Validators.required];
+    }
+
+    this.userForm = this.formBuilder.group(formConfig, {
+        // Apply the passwordsMatchValidator only when creating
+        validators: isEditing ? [] : passwordsMatchValidator,
+    });
+
+    // Disable email input in edit mode after form is created
+    if (isEditing && this.userForm.controls['email']) {
+        this.userForm.controls['email'].disable();
     }
   }
 
-  populateFormForEdit() {
-    if (!this.userProfile) return;
-    this.userForm.patchValue({
-      email: this.userProfile.email,
-      fullName: this.userProfile.full_name || '',
-      role: this.userProfile.role || 'viewer',
-      password: '', // Clear password fields for edit
-      confirmPassword: ''
-    });
-    // Ensure password fields are not required for edit
-    this.f['password'].clearValidators();
-    this.f['confirmPassword'].clearValidators();
-    this.userForm.removeValidators(passwordsMatchValidator);
-    this.userForm.updateValueAndValidity();
-  }
-
   async loadUserData(id: string) {
+    if (!this.userForm) this.initializeForm(); // Ensure form exists
     this.isLoading.set(true);
     try {
-      // TODO: Replace mock data with actual service call using UserService
-      // const user = await this.userService.getUserById(id);
-      // if (user) {
-      //   // Map UserProfile fields to form controls if names differ, otherwise patch directly
-      //   this.userForm.patchValue({
-      //      id: user.id,
-      //      full_name: user.full_name,
-      //      email: user.email,
-      //      role: user.role
-      //   });
-      // } else { ... }
-
-      // Mock data updated to match UserProfile structure (partially)
-      const mockUser: Partial<UserProfile> = {
-        id: id,
-        full_name: 'Test User',
-        email: 'test@example.com',
-        role: 'Admin',
-      };
-      this.userForm.patchValue(mockUser);
-    } catch (error) {
+      const user = await this.userService.getUserProfile(id);
+      if (user) {
+        this.userForm.patchValue({
+            full_name: user.full_name || '',
+            email: user.email, // Email will be disabled, but good to patch value
+            role: user.role || 'viewer',
+        });
+         // Email is already disabled in initializeForm for edit mode
+      } else {
+        console.error('User not found');
+        this.showToast('User not found.', 'danger');
+        this.goBack();
+      }
+    } catch (error: any) {
       console.error('Error loading user data:', error);
+      this.showToast(`Error loading user: ${error.message || 'Unknown error'}`, 'danger');
       this.goBack();
     } finally {
       this.isLoading.set(false);
@@ -216,63 +186,70 @@ export class UserFormPage implements OnInit {
   async save() {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
-      console.log(
-        'Form is invalid:',
-        this.userForm.errors,
-        this.userForm.value
-      );
+      console.warn('Form is invalid:', this.userForm.value, this.userForm.errors);
+      this.showToast('Please fill all required fields correctly.', 'warning');
       return;
     }
 
     this.isLoading.set(true);
-    // Create payload matching UserProfile structure expected by the service
-    const userData: Partial<UserProfile> = {
-      full_name: this.f['full_name'].value,
-      role: this.f['role'].value,
-    };
 
     try {
-      // TODO: Replace console.log with actual service calls using UserService
       if (this.isEditMode()) {
-        console.log(
-          'Updating user with ID:',
-          this.userId()!,
-          'Data:',
-          userData
-        );
-        await this.userService.updateUserProfile(this.userId()!, userData);
+        // --- UPDATE USER --- //
+        const userIdToUpdate = this.userId();
+        if (!userIdToUpdate) {
+            throw new Error('User ID is missing for update.');
+        }
+        const updateData: Partial<UserProfile> = {
+            // Email is disabled and should not be sent for update
+            full_name: this.f['full_name'].value,
+            role: this.f['role'].value,
+        };
+        console.log('Updating user with ID:', userIdToUpdate, 'Data:', updateData);
+        await this.userService.updateUserProfile(userIdToUpdate, updateData);
+        this.showToast('User updated successfully.', 'success');
+
       } else {
+        // --- CREATE USER --- //
         const credentials = {
-          email: this.f['email'].value,
-          password: this.f['password'].value,
+            email: this.f['email'].value,
+            password: this.f['password'].value,
+        };
+        const profileData: Partial<UserProfile> = {
+            full_name: this.f['full_name'].value,
+            role: this.f['role'].value,
+            // Email will be part of credentials / auth user, not profile usually
         };
 
-        console.log('Adding user:', userData);
-        await this.userService.createUserProfile(credentials, userData);
+        console.log('Creating user with credentials:', credentials, 'Profile Data:', profileData);
+        await this.userService.createUserProfile(credentials, profileData);
+        this.showToast('User created successfully.', 'success');
       }
-      this.goBack();
-    } catch (error) {
+      this.goBack(); // Navigate back after successful save/update
+    } catch (error: any) {
       console.error('Error saving user:', error);
+      this.showToast(`Error saving user: ${error.message || 'Unknown error'}`, 'danger');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  goBack() {
-    // Use NavController for potentially better back navigation handling within Ionic stack
-    if (this.platform.is('capacitor') || this.platform.is('cordova')) {
-      this.navController.back();
-    } else {
-      // Fallback for web or if NavController doesn't work as expected
-      this.router.navigate(['/users']); // Navigate back to the users list
-    }
+  async showToast(message: string, color: 'success' | 'warning' | 'danger') {
+      const toast = await this.toastCtrl.create({
+          message,
+          duration: 3000,
+          color,
+          position: 'bottom'
+      });
+      toast.present();
   }
 
-  // Helper for easy access to form controls
+  goBack() {
+    this.router.navigate(['/users']);
+  }
+
+  // Helper for easy access to form controls in the template
   get f() {
     return this.userForm.controls;
   }
 }
-
-// Remove the local User interface definition if UserProfile is imported and used
-// export interface User { ... }
