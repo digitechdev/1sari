@@ -1,0 +1,46 @@
+.action-buttons-container {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin-top: -5px !important;
+}
+
+.action-button {
+  box-shadow: none !important;
+}
+
+.users-card-header {
+  padding-top: 10px;
+  padding-bottom: 0;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+ion-card {
+  ion-grid {
+    padding: 0 !important;
+  }
+}
+
+.users-card-list {
+  --background: #fff !important;
+  margin: 15px;
+}
+
+.users-datatable {
+  box-shadow: none !important;
+}
+
+ion-grid {
+  margin-bottom: 15px;
+}
+
+ion-content {
+  --background: var(--ion-color-light);
+}
+
+ion-skeleton-text {
+  width: 100% !important;
+  height: 35px !important;
+  margin-bottom: 21px !important;
+}

@@ -67,6 +67,18 @@
               "sourceMap": true,
               "namedChunks": true
             },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            },
             "ci": {
               "progress": false
             }
@@ -81,6 +93,9 @@
             },
             "development": {
               "buildTarget": "app:build:development"
+            },
+            "staging": {
+              "buildTarget": "app:build:staging"
             },
             "ci": {
               "progress": false

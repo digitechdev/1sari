@@ -1,0 +1,112 @@
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="users-card-list">
+          <ion-card-header class="users-card-header">
+            <ion-card-title>
+              <ion-grid class="ion-no-padding ion-padding-horizontal">
+                <ion-row
+                  class="ion-align-items-center ion-justify-content-between"
+                >
+                  <ion-col
+                    size="auto"
+                    size-md="6"
+                    size-lg="5"
+                    style="max-width: 400px"
+                  >
+                    <ion-searchbar
+                      class="controls-searchbar"
+                      (ionInput)="handleSearch($event)"
+                      [value]="searchTerm()"
+                      placeholder="Search users..."
+                      debounce="300"
+                    ></ion-searchbar>
+                  </ion-col>
+
+                  <ion-col size="auto" class="ion-text-end">
+                    <ion-button
+                      fill="clear"
+                      color="medium"
+                      (click)="refreshData()"
+                      class="ion-margin-end"
+                    >
+                      <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                      Refresh
+                    </ion-button>
+                    <ion-button color="primary" (click)="addUser()">
+                      <ion-icon slot="start" name="add-outline"></ion-icon>
+                      Add New
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+         @if (isLoading()) {
+            <ion-list>
+              <ion-item>
+                <ion-label>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                  <ion-skeleton-text animated></ion-skeleton-text>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+            } @if (errorLoading()) {
+            <div class="state-message">
+              <ion-text color="danger">{{ errorLoading() }}</ion-text>
+            </div>
+            } @if (!isLoading() && !errorLoading()) { 
+            <ngx-datatable
+              class="material expandable users-datatable"
+              [rows]="displayableUsers()"
+              [columns]="tableColumns"
+              [columnMode]="ColumnMode.force"
+              [headerHeight]="50"
+              [footerHeight]="50"
+              [rowHeight]="'auto'"
+              [scrollbarH]="true"
+              [limit]="10"
+            >
+            </ngx-datatable>
+            }
+            
+            <ng-template #actionsTemplate let-row="row" let-value="value">
+              <div class="action-buttons-container">
+                <ion-button
+                  fill="solid"
+                  color="medium"
+                  size="small"
+                  (click)="editUser(row)"
+                  title="Edit"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-button
+                  fill="solid"
+                  color="danger"
+                  size="small"
+                  (click)="presentDeleteConfirm(row)"
+                  title="Delete"
+                  class="action-button"
+                >
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ng-template>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

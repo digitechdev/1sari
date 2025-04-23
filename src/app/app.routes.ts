@@ -74,5 +74,27 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'users',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/users/users.page').then(m => m.UsersPage),
+        data: { title: 'Users' }
+      },
+      {
+        path: 'new',
+        loadComponent: () => import('./pages/users/user-form/user-form.page').then( m => m.UserFormPage),
+        data: { title: 'Add User' }
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./pages/users/user-form/user-form.page').then( m => m.UserFormPage),
+        data: { title: 'Edit User' }
+      },
+      // Add other user-related child routes here if needed (e.g., user detail)
+    ]
+  },
  
 ];
