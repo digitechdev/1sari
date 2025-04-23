@@ -22,7 +22,9 @@ export class UserService {
     const { data, error } = await this.supabase
       .from('profiles')
       .select('id, email, full_name, role, created_at'); // Select specific columns
+    console.log('getUsers data:', data);
 
+    console.log('123');
     if (error) {
       console.error('Error fetching users:', error.message);
       throw error;
@@ -36,7 +38,7 @@ export class UserService {
       .select('*')
       .eq('id', userId)
       .single();
-
+    console.log('getUserProfile data:', data);
     if (error && error.code !== 'PGRST116') { // PGRST116: row not found
       console.error('Error fetching user profile:', error.message);
       throw error;
@@ -62,41 +64,65 @@ export class UserService {
     return data;
   }
 
-  // --- User Creation --- (Interacting with Auth and Profiles)
-  // IMPORTANT: See notes in thought process about atomicity concerns for production.
-  async createUserProfile(credentials: { email: string; password: string }, profileData: Pick<UserProfile, 'full_name' | 'role'>): Promise<{ user: User | null, profile: UserProfile | null, error: any }> {
+  // --- User Creation --- (Explicitly invoking 'create-profile' function)
+  // This approach directly calls the 'create-profile' Edge Function after signup.
+  // WARNING: This has atomicity concerns. If the 'create-profile' invocation fails
+  // after signup succeeds, you will have an auth user without a profile record.
+  async createUserProfile(
+    credentials: { email: string; password: string },
+    profileData: Pick<UserProfile, 'full_name' | 'role'>
+  ): Promise<any> {
     // 1. Sign up the user with Supabase Auth
-    const { data: authData, error: signUpError } = await this.supabase.auth.signUp(credentials);
+    // Remove the 'options.data' as we will pass data directly to the function
+    const { data: authData, error: signUpError } =
+      await this.supabase.auth.signUp({
+        email: credentials.email,
+        password: credentials.password,
+        // options: { data: ... } // Removed - data passed in step 2
+      });
 
-    if (signUpError || !authData.user) {
-      console.error('Error signing up user:', signUpError?.message);
-      return { user: null, profile: null, error: signUpError || new Error('Sign up failed.') };
+    if (signUpError) {
+      console.error('Error during Supabase Auth signUp:', signUpError.message);
+      return { user: null, profileOutcome: null, error: signUpError };
     }
 
-    // 2. Create the corresponding profile (best effort from client)
-    // Use a try-catch block for better error handling in the second step
+    if (!authData.user) {
+      console.error('Sign up successful but no user data returned.');
+      return {
+        user: null,
+        profileOutcome: null,
+        error: new Error('Sign up completed without returning user data.'),
+      };
+    }
+
+    console.log(`User ${authData.user.email} signed up successfully. Attempting to invoke create-profile function.`);
+
+    // 2. Explicitly invoke the 'create-profile' Edge Function
     try {
-      const { data: profile, error: profileError } = await this.supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: authData.user.email!, // email is guaranteed from signup
-          full_name: profileData.full_name,
-          role: profileData.role
-        })
-        .select()
-        .single();
+      const { data: profileResponse, error: functionError } =
+        await this.supabase.functions.invoke('create-profile', {
+          body: {
+            id: authData.user.id,
+            email: authData.user.email, // email should be available on user object after signup
+            full_name: profileData.full_name,
+            role: profileData.role,
+          },
+        });
 
-      if (profileError) {
-        console.error('Error creating user profile after signup:', profileError.message);
-        // Note: User exists in auth.users but not profiles. Manual cleanup or different approach needed.
-        return { user: authData.user, profile: null, error: profileError };
+      if (functionError) {
+        console.error(`Error invoking 'create-profile' function for user ${authData.user.id}:`, functionError);
+        // CRITICAL: User exists in auth, but profile creation failed.
+        return { user: authData.user, profileOutcome: { error: functionError }, error: functionError };
       }
-      return { user: authData.user, profile, error: null };
 
-    } catch (profileCatchError) {
-      console.error('Caught error creating user profile after signup:', profileCatchError);
-      return { user: authData.user, profile: null, error: profileCatchError };
+      console.log(`'create-profile' function invoked successfully for user ${authData.user.id}:`, profileResponse);
+      // Both signup and function invocation succeeded (though function might have internal errors reported in profileResponse)
+      return { user: authData.user, profileOutcome: profileResponse, error: null };
+
+    } catch (invokeCatchError: any) {
+      console.error(`Caught exception invoking 'create-profile' function for user ${authData.user.id}:`, invokeCatchError);
+      // CRITICAL: User exists in auth, but profile creation failed.
+      return { user: authData.user, profileOutcome: { error: invokeCatchError }, error: invokeCatchError };
     }
   }
 

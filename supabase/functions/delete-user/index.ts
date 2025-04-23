@@ -10,7 +10,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts"; // Or use 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'; // Or use a specific version
 
 // Import shared CORS headers (Make sure _shared/cors.ts exists)
-import { corsHeaders } from '../_shared/cors.ts';
+import { corsHeaders } from '../_shared/cors.js';
 
 console.log("Delete User Function Initializing");
 
