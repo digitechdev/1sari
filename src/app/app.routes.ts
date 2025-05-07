@@ -98,7 +98,24 @@ export const routes: Routes = [
   },
   {
     path: 'sales',
-    loadComponent: () => import('./pages/sales/sales.page').then(m => m.SalesPage),
-    data: { title: 'Sales Management' }
+    canActivate: [authGuard], 
+    children: [
+      {
+        path: '', 
+        loadComponent: () => import('./pages/sales/sales.page').then(m => m.SalesPage),
+        data: { title: 'Sales' }
+      },
+      {
+        path: 'new', 
+        loadComponent: () => import('./pages/sales/sale-form/sale-form.page').then(m => m.SaleFormPage),
+        data: { title: 'Add New Sale' }
+      }
+      // Future child route for editing:
+      // {
+      //   path: 'edit/:id',
+      //   loadComponent: () => import('./pages/sales/sale-form/sale-form.page').then(m => m.SaleFormPage),
+      //   data: { title: 'Edit Sale' }
+      // }
+    ]
   },
 ];

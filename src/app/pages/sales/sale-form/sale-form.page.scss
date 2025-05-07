@@ -1,0 +1,35 @@
+/* SCSS for Sale Form Page */
+
+ion-content {
+  // Add specific styling for the form page content if needed
+}
+
+ion-list {
+  margin-bottom: 16px;
+}
+
+ion-item {
+  --padding-start: 0; // Align with grid padding if used
+}
+
+ion-note[slot="error"] {
+  font-size: 0.8em;
+  padding-top: 4px;
+}
+
+.calculated-total {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+ion-toolbar[color="primary"] ion-spinner {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+ion-grid ion-button ion-spinner {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+} 

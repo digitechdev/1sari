@@ -15,14 +15,16 @@ export class SalesService {
     return this.supabaseClient.from('sales').select('*').order('created_at', { ascending: false });
   }
 
+  async addSale(saleData: Omit<Sale, 'id' | 'created_at' | 'updated_at'>): Promise<PostgrestSingleResponse<Sale>> {
+    // The created_by field will be handled by the form or backend logic (e.g., RLS policy with auth.uid())
+    // For now, if not provided by saleData, it will be null or default in DB if any.
+    const { data, error } = await this.supabaseClient.from('sales').insert([saleData]).select().single();
+    return { data, error } as PostgrestSingleResponse<Sale>; // Ensure the return type matches
+  }
+
   async deleteSale(id: string): Promise<PostgrestSingleResponse<null>> {
     return this.supabaseClient.from('sales').delete().match({ id });
   }
-
-  // Placeholder for adding a sale - to be implemented later if needed
-  // async addSale(saleData: Omit<Sale, 'id' | 'created_at' | 'updated_at'>): Promise<PostgrestSingleResponse<Sale>> {
-  //   return this.supabaseClient.from('sales').insert([saleData]).select().single();
-  // }
 
   // Placeholder for updating a sale - to be implemented later if needed
   // async updateSale(id: string, saleData: Partial<Sale>): Promise<PostgrestSingleResponse<Sale>> {

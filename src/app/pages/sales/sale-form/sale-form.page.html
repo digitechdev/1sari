@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar color="primary"> 
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" fill="clear" color="light">
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ pageTitle() }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="onSubmit()" [disabled]="isLoading() || saleForm.invalid" fill="solid" color="light">
+        <ion-icon slot="start" name="save-outline" *ngIf="!isLoading()"></ion-icon>
+        <ion-spinner *ngIf="isLoading()" name="circular" color="light" style="width: 20px; height: 20px; margin-right: 5px;"></ion-spinner>
+        {{ isLoading() ? 'Saving...' : 'Save Sale' }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
+    <ion-list>
+      <ion-item lines="full">
+        <ion-input 
+          label="Borrower Name" 
+          labelPlacement="stacked" 
+          formControlName="borrower_name"
+          type="text"
+          required
+          placeholder="Enter borrower's full name"
+        ></ion-input>
+        @if (saleForm.get('borrower_name')?.invalid && (saleForm.get('borrower_name')?.dirty || saleForm.get('borrower_name')?.touched)) {
+          <ion-note slot="error" color="danger">
+            @if (saleForm.get('borrower_name')?.errors?.['required']) {
+              Borrower name is required.
+            }
+            @if (saleForm.get('borrower_name')?.errors?.['minlength']) {
+              Must be at least 3 characters.
+            }
+          </ion-note>
+        }
+      </ion-item>
+
+      <ion-item lines="full">
+        <ion-input 
+          label="Item Name" 
+          labelPlacement="stacked" 
+          formControlName="item_name"
+          type="text"
+          required
+          placeholder="Enter the name of the item sold"
+        ></ion-input>
+        @if (saleForm.get('item_name')?.invalid && (saleForm.get('item_name')?.dirty || saleForm.get('item_name')?.touched)) {
+          <ion-note slot="error" color="danger">
+            @if (saleForm.get('item_name')?.errors?.['required']) {
+              Item name is required.
+            }
+            @if (saleForm.get('item_name')?.errors?.['minlength']) {
+              Must be at least 3 characters.
+            }
+          </ion-note>
+        }
+      </ion-item>
+
+      <ion-item lines="full">
+        <ion-textarea 
+          label="Description (Optional)" 
+          labelPlacement="stacked" 
+          formControlName="description"
+          placeholder="Enter any additional details about the sale"
+          [autoGrow]="true"
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item lines="full">
+        <ion-input 
+          label="Raw Price" 
+          labelPlacement="stacked" 
+          formControlName="raw_price"
+          type="number"
+          required
+          placeholder="0.00"
+        ></ion-input>
+         @if (saleForm.get('raw_price')?.invalid && (saleForm.get('raw_price')?.dirty || saleForm.get('raw_price')?.touched)) {
+          <ion-note slot="error" color="danger">
+            @if (saleForm.get('raw_price')?.errors?.['required']) {
+              Raw price is required.
+            }
+            @if (saleForm.get('raw_price')?.errors?.['min']) {
+              Price must be zero or positive.
+            }
+          </ion-note>
+        }
+      </ion-item>
+
+      <ion-item lines="full">
+        <ion-input 
+          label="Interest" 
+          labelPlacement="stacked" 
+          formControlName="interest"
+          type="number"
+          required
+          placeholder="0.00"
+        ></ion-input>
+        @if (saleForm.get('interest')?.invalid && (saleForm.get('interest')?.dirty || saleForm.get('interest')?.touched)) {
+          <ion-note slot="error" color="danger">
+            @if (saleForm.get('interest')?.errors?.['required']) {
+              Interest is required.
+            }
+             @if (saleForm.get('interest')?.errors?.['min']) {
+              Interest must be zero or positive.
+            }
+          </ion-note>
+        }
+      </ion-item>
+
+      <ion-item lines="none">
+        <ion-label>Total Price:</ion-label>
+        <ion-text slot="end" color="dark" style="font-size: 1.1em; font-weight: bold;">
+          {{ totalPrice | currency:'PHP':'symbol':'1.2-2' }}
+        </ion-text>
+      </ion-item>
+    </ion-list>
+
+    <ion-grid>
+      <ion-row>
+        <ion-col>
+          <ion-button expand="block" type="submit" [disabled]="isLoading() || saleForm.invalid" color="primary">
+            <ion-spinner *ngIf="isLoading()" name="circular" style="width: 20px; height: 20px; margin-right: 8px;"></ion-spinner>
+            {{ isLoading() ? 'Processing...' : 'Save Sale' }}
+          </ion-button>
+        </ion-col>
+        <ion-col>
+          <ion-button expand="block" color="light" (click)="cancel()" [disabled]="isLoading()">
+            Cancel
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+  </form>
+</ion-content> 

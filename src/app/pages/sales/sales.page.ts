@@ -1,16 +1,15 @@
 import { Component, OnInit, signal, computed, inject, ChangeDetectionStrategy, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AlertController, NavController, ToastController } from '@ionic/angular/standalone';
+import { AlertController, NavController, ToastController, IonContent, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonSearchbar, IonButton, IonIcon, IonSpinner, IonText } from '@ionic/angular/standalone';
 import { SalesService } from '../../services/sales.service';
 import { Sale } from '../../models/sale.interface';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
-import { IonContent, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonSearchbar, IonButton, IonIcon, IonSpinner, IonText } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-sales',
-  templateUrl: 'sales.page.html',
-  styleUrls: ['sales.page.scss'],
+  templateUrl: './sales.page.html',
+  styleUrls: ['./sales.page.scss'],
   standalone: true,
   imports: [
     CommonModule,
@@ -30,6 +29,7 @@ export class SalesPage implements OnInit {
   private salesService = inject(SalesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
+  private navCtrl = inject(NavController);
   private datePipe = inject(DatePipe);
   private decimalPipe = inject(DecimalPipe);
 
@@ -112,7 +112,7 @@ export class SalesPage implements OnInit {
   }
 
   addSale(): void {
-    this.presentToast('Add Sale functionality not yet implemented.', 'warning');
+    this.navCtrl.navigateForward('/sales/new');
   }
 
   viewSale(sale: Sale): void {
