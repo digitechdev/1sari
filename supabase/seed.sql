@@ -128,4 +128,26 @@ INSERT INTO public.loan_payment_schedules (
 (3, 3, (CURRENT_DATE + INTERVAL '3 month')::date, 4757.80, 3685.38, 1072.42, 39211.32, 'Pending');
 -- ... Add rows for all 12 months if seeding completely
 
-COMMIT; 
+COMMIT;
+
+-- Seed data for roles
+INSERT INTO roles (name, description) VALUES
+('admin', 'Full access to all features and settings.'),
+('editor', 'Can create and modify content.'),
+('viewer', 'Can view content but cannot make changes.')
+ON CONFLICT (name) DO NOTHING;
+
+-- Seed data for permissions
+INSERT INTO permissions (name, description) VALUES
+('content:create', 'Allows creating new content.'),
+('content:read', 'Allows viewing content.'),
+('content:update', 'Allows updating existing content.'),
+('content:delete', 'Allows deleting content.'),
+('users:manage', 'Allows managing users and their roles.'),
+('settings:view', 'Allows viewing application settings.'),
+('settings:edit', 'Allows editing application settings.')
+ON CONFLICT (name) DO NOTHING;
+
+-- Note: Seeding for user_roles and role_permissions would typically happen
+-- after users are created and you have specific role-permission assignments.
+-- For now, we are just seeding the roles and permissions themselves. 
