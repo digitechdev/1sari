@@ -1,0 +1,73 @@
+/* SCSS for Sales Page */
+
+.datatable-content {
+  // Ensures ion-content allows scrolling for the table if it overflows
+}
+
+.sales-card-list {
+  // Styling for the main card containing the table
+  margin-top: 16px;
+}
+
+.sales-card-header {
+  // Styling for the card header containing search and actions
+  ion-card-title {
+    padding: 0; // Remove default padding if using custom grid inside
+  }
+}
+
+.controls-searchbar {
+  // Custom styling for the search bar if needed
+}
+
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px; // Ensure it takes some space
+  color: var(--ion-color-medium-shade);
+
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  p {
+    margin-top: 8px;
+  }
+  ion-icon[size="large"] {
+    font-size: 48px; // Ensure large icons are indeed large
+    margin-bottom: 8px;
+  }
+}
+
+.sales-datatable {
+  // Custom styling for ngx-datatable if needed
+  // Example: making header sticky (might require more complex CSS/JS)
+  // .ngx-datatable-header {
+  //   position: sticky;
+  //   top: 0;
+  //   z-index: 10;
+  //   background: var(--ion-card-background, var(--ion-item-background, var(--ion-background-color, #fff)));
+  // }
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: center; // Center buttons in the cell
+  align-items: center;
+  gap: 4px; // Space between buttons
+
+  .action-button {
+    --padding-start: 6px;
+    --padding-end: 6px;
+  }
+}
+
+.custom-toast {
+  // Example for custom toast styling from sales.page.ts
+  // --background: var(--ion-color-primary);
+  // --color: var(--ion-color-primary-contrast);
+}
+
+// Ensure specific Ionic icons are available if not globally
+// ion-icon[name="refresh-outline"], ion-icon[name="add-outline"], etc. {} 

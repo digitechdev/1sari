@@ -151,3 +151,10 @@ ON CONFLICT (name) DO NOTHING;
 -- Note: Seeding for user_roles and role_permissions would typically happen
 -- after users are created and you have specific role-permission assignments.
 -- For now, we are just seeding the roles and permissions themselves. 
+
+-- Seed data for sales
+INSERT INTO sales (borrower_name, item_name, description, raw_price, interest, total_price, created_by) VALUES
+('Arlene Andaya Corook', 'Assorted Groceries Pack A', 'Weekly grocery supplies', 500.00, 50.00, 550.00, NULL),
+('Edwin Lopez Mercado', 'Construction Materials Lot 1', 'Cement and steel bars for store improvement', 12000.00, 1200.00, 13200.00, NULL),
+('Jenalyn Santiago Dy', 'Retail Goods Batch 15', 'Restock of various retail items', 2500.00, 200.00, 2700.00, NULL)
+ON CONFLICT (id) DO NOTHING; 

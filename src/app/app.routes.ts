@@ -96,5 +96,9 @@ export const routes: Routes = [
       // Add other user-related child routes here if needed (e.g., user detail)
     ]
   },
- 
+  {
+    path: 'sales',
+    loadComponent: () => import('./pages/sales/sales.page').then(m => m.SalesPage),
+    data: { title: 'Sales Management' }
+  },
 ];

@@ -1,0 +1,98 @@
+<ion-content [scrollY]="true" class="datatable-content">
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="sales-card-list">
+          <ion-card-header class="sales-card-header">
+            <ion-card-title>
+              <ion-grid class="ion-no-padding ion-padding-horizontal">
+                <ion-row class="ion-align-items-center ion-justify-content-between">
+                  <ion-col size="auto" size-md="6" size-lg="5" style="max-width: 400px">
+                    <ion-searchbar
+                      class="controls-searchbar"
+                      (ionInput)="handleSearch($event)"
+                      [value]="searchTerm()"
+                      placeholder="Search sales (ID, Borrower, Item...)"
+                      debounce="300"
+                    ></ion-searchbar>
+                  </ion-col>
+                  <ion-col size="auto" class="ion-text-end">
+                    <ion-button fill="clear" color="medium" (click)="refreshData()" class="ion-margin-end">
+                      <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                      Refresh
+                    </ion-button>
+                    <ion-button color="primary" (click)="addSale()">
+                      <ion-icon slot="start" name="add-outline"></ion-icon>
+                      Add New Sale
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            @if (isLoading()) {
+              <div class="state-message ion-text-center ion-padding">
+                <ion-spinner name="crescent"></ion-spinner>
+                <p>Loading Sales...</p>
+              </div>
+            }
+            @if (errorLoading()) {
+              <div class="state-message ion-text-center ion-padding">
+                <ion-icon name="warning-outline" color="danger" size="large"></ion-icon>
+                <p><ion-text color="danger">{{ errorLoading() }}</ion-text></p>
+                <ion-button color="medium" fill="outline" (click)="refreshData()">
+                  <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                  Retry
+                </ion-button>
+              </div>
+            }
+
+            @if (!isLoading() && !errorLoading()) {
+              @if (displayableSales().length > 0) {
+                <ngx-datatable
+                  class="material expandable sales-datatable"
+                  [rows]="displayableSales()"
+                  [columns]="tableColumns()"
+                  [columnMode]="ColumnMode.force"
+                  [headerHeight]="50"
+                  [footerHeight]="50"
+                  [rowHeight]="'auto'" 
+                  [scrollbarH]="true"
+                  [limit]="10" 
+                >
+                </ngx-datatable>
+              } @else {
+                <div class="state-message ion-text-center ion-padding">
+                  <ion-icon name="file-tray-outline" size="large" color="medium"></ion-icon>
+                  <p>No sales found.</p>
+                  @if (searchTerm()) {
+                    <p><ion-text color="medium">Try adjusting your search term or <ion-button fill="clear" (click)="searchTerm.set(''); refreshData();">clear the search</ion-button>.</ion-text></p>
+                  }
+                </div>
+              }
+            }
+            
+            <!-- Template for Formatted Date Column -->
+            <ng-template #createdAtDateTemplate let-value="value">
+              {{ value | date:'MMM d, y, h:mm a' }}
+            </ng-template>
+
+            <!-- Template for Action Buttons Column -->
+            <ng-template #salesActionsTemplate let-row="row" let-value="value">
+              <div class="action-buttons-container">
+                <ion-button fill="clear" size="small" (click)="viewSale(row)" title="View Sale" class="action-button">
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
+                </ion-button>
+                <ion-button fill="clear" size="small" color="danger" (click)="deleteSale(row)" title="Delete Sale" class="action-button">
+                  <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ng-template>
+
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content> 
