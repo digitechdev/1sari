@@ -67,6 +67,7 @@ import {
   addCircleOutline,
   cameraOutline,
   closeOutline,
+  basketOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -194,7 +195,8 @@ export class AppComponent implements OnInit {
       imageOutline,
       duplicateOutline,
       addCircleOutline,
-      closeOutline
+      closeOutline,
+      basketOutline,
     });
   }
 

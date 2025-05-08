@@ -134,6 +134,49 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- Associated Sale Items Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="basket-outline" class="card-title-icon"></ion-icon>
+          Associated Sale Items
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (saleItems(); as items) {
+          @if (items.length > 0) {
+            <ion-list lines="inset"> <!-- Use inset lines for better visual separation -->
+              @for (item of items; track item.id) {
+                <ion-item>
+                  <!-- Add thumbnail if image_url exists and is valid -->
+                  @if (item.image_url) {
+                    <ion-thumbnail slot="start">
+                      <ion-img [src]="item.image_url" alt="Image of {{ item.item_name }}"></ion-img>
+                    </ion-thumbnail>
+                  }
+                  <ion-label>
+                    <h2>{{ item.item_name }}</h2>
+                    <p>{{ item.description || 'No description' }}</p>
+                  </ion-label>
+                  <ion-note slot="end" color="primary">{{ item.price | currency:'PHP':'symbol' }}</ion-note>
+                </ion-item>
+              }
+            </ion-list>
+          } @else {
+            <ion-item lines="none">
+              <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+              <ion-label>No associated sale items found for this loan.</ion-label>
+            </ion-item>
+          }
+        } @else {
+           <ion-item lines="none">
+             <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+             <ion-label>Sale items data not available.</ion-label>
+           </ion-item>
+        }
+      </ion-card-content>
+    </ion-card>
+
     <!-- Repayment Schedule Card -->
     <ion-card>
        <ion-card-header>

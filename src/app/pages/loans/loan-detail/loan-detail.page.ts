@@ -6,6 +6,7 @@ import { LoanService } from '../../../services/loan.service';
 import { Loan } from '../../../interfaces/loan.interfaces';
 import { LoanPaymentSchedule } from '../../../interfaces/loan-payment-schedule.interfaces';
 import { PaymentStatus } from 'src/app/enums/payment-status.enum';
+import { Sale } from '../../../models/sale.interface';
 
 @Component({
   selector: 'app-loan-detail',
@@ -29,6 +30,7 @@ export class LoanDetailPage implements OnInit {
   // Using 'any' for loanDetail initially because Supabase join brings nested objects
   loanDetail = signal<any | null>(null); 
   loanSchedule = signal<LoanPaymentSchedule[] | null>(null);
+  saleItems = signal<Sale[] | null>(null);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
 
@@ -55,6 +57,7 @@ export class LoanDetailPage implements OnInit {
     this.errorMessage.set(null);
     this.loanDetail.set(null); // Reset previous data
     this.loanSchedule.set(null);
+    this.saleItems.set(null);
 
     try {
       const response = await this.loanService.getLoanById(id);
@@ -66,7 +69,9 @@ export class LoanDetailPage implements OnInit {
         console.log('Fetched Loan Detail:', response.data);
         this.loanDetail.set(response.data);
         // Extract schedule if it exists on the response data
-        this.loanSchedule.set(response.data.schedule || []); 
+        this.loanSchedule.set(response.data.schedule || []);
+        // Extract sales items if they exist on the response data
+        this.saleItems.set(response.data.sales || []);
       } else {
         this.errorMessage.set('Loan not found.');
         this.presentToast('Loan not found.', 'warning');

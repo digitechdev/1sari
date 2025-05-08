@@ -230,18 +230,37 @@ export class SaleFormPage implements OnInit {
   }
 
   async takeItemPhoto(itemIndex: number) {
-    const image = await Camera.getPhoto({
-      resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera,
-    });
-
-    if (image && image.dataUrl) {
-      const itemControl = this.saleItems.at(itemIndex) as FormGroup;
-      itemControl.patchValue({
-        image_preview: image.dataUrl,
-        image_to_upload: image, // Store the full Photo object for upload
-        image_timestamp: new Date().toLocaleString(),
+    console.log(`[takeItemPhoto] Called for item index: ${itemIndex}`);
+    try {
+      const image = await Camera.getPhoto({
+        resultType: CameraResultType.DataUrl,
+        source: CameraSource.Camera,
+        quality: 90, // Optional: added quality setting
       });
+
+      console.log(`[takeItemPhoto] Camera result for item ${itemIndex}:`, image);
+
+      if (image && image.dataUrl) {
+        const itemControl = this.saleItems.at(itemIndex) as FormGroup;
+        if (!itemControl) {
+            console.error(`[takeItemPhoto] Could not find itemControl for index ${itemIndex}`);
+            return;
+        }
+        const patchData = {
+          image_preview: image.dataUrl,
+          image_to_upload: image, // Store the full Photo object for upload
+          image_timestamp: new Date().toLocaleString(),
+        };
+        console.log(`[takeItemPhoto] Patching item ${itemIndex} with data:`, patchData);
+        itemControl.patchValue(patchData);
+        console.log(`[takeItemPhoto] Item ${itemIndex} value after patch:`, itemControl.value);
+      } else {
+        console.warn(`[takeItemPhoto] No image data returned from camera for item ${itemIndex}.`);
+      }
+    } catch (error) {
+        console.error(`[takeItemPhoto] Error taking photo for item ${itemIndex}:`, error);
+        // Optionally show a toast to the user
+        this.presentToast('Could not capture photo. Please try again.', 'danger');
     }
   }
 
@@ -249,6 +268,27 @@ export class SaleFormPage implements OnInit {
     const response = await fetch(blobUrl);
     return await response.blob();
   }
+
+  // --- Helper function to convert Data URL to Blob ---
+  private dataUrlToBlob(dataUrl: string): Blob {
+    const arr = dataUrl.split(',');
+    if (arr.length < 2) {
+        throw new Error('Invalid Data URL format');
+    }
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    if (!mimeMatch || mimeMatch.length < 2) {
+        throw new Error('Could not extract MIME type from Data URL');
+    }
+    const mime = mimeMatch[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type: mime});
+  }
+  // --- End Helper Function ---
 
   async onSubmit() {
     if (this.saleForm.invalid) {
@@ -261,83 +301,148 @@ export class SaleFormPage implements OnInit {
     }
 
     const loadingIndicator = await this.presentLoading(
-      'Processing Sale Items and Loan...'
+      'Processing Loan and Sale Items...'
     );
     this.isLoading.set(true);
 
-    // 1. Prepare and Submit Sale Items
-    const salesToSubmit: Sale[] = [];
+    // 1. Prepare Sale Items Data (without loan_id initially)
+    const salesItemData: Omit<Sale, 'id' | 'loan_id'>[] = [];
     for (let i = 0; i < this.saleItems.length; i++) {
       const itemCtrl = this.saleItems.at(i) as FormGroup;
       const formValue = itemCtrl.value;
-      let uploadedImageUrl: string | null = formValue.image_url;
+      let finalImageUrl: string | null = null;
       const photoToUpload = formValue.image_to_upload as Photo | undefined;
 
-      if (photoToUpload && photoToUpload.webPath) {
+      /*
+      // *** Temporarily commented out image upload logic ***
+      // *** Add detailed logging here ***
+      console.log(`[onSubmit] Item ${i + 1}: Checking photoToUpload:`, photoToUpload);
+      if (photoToUpload) {
+        console.log(`[onSubmit] Item ${i + 1}: Checking photoToUpload.webPath:`, photoToUpload.webPath);
+        console.log(`[onSubmit] Item ${i + 1}: Checking photoToUpload.dataUrl:`, photoToUpload.dataUrl ? 'Exists' : 'Missing');
+      }
+      // *** End detailed logging ***
+
+      if (photoToUpload && (photoToUpload.webPath || photoToUpload.dataUrl)) {
         try {
-          const photoBlob = await this.blobUrlToBlob(photoToUpload.webPath);
+          console.log(`[onSubmit] Item ${i + 1}: Preparing blob for upload...`);
+          let photoBlob: Blob;
+          // Prioritize webPath if available (usually more efficient)
+          if (photoToUpload.webPath) {
+            console.log(`[onSubmit] Item ${i + 1}: Using webPath to get blob.`);
+            photoBlob = await this.blobUrlToBlob(photoToUpload.webPath);
+          } else if (photoToUpload.dataUrl) {
+            console.log(`[onSubmit] Item ${i + 1}: Using dataUrl to get blob.`);
+            photoBlob = this.dataUrlToBlob(photoToUpload.dataUrl);
+          } else {
+             // Should not happen due to the outer if, but good for safety
+             throw new Error('No uploadable image source found (webPath or dataUrl)');
+          }
+          
+          // Use photoBlob for upload
           const fileName = `sale_item_${Date.now()}_${i}.${photoToUpload.format || 'jpeg'}`;
+          console.log(`[onSubmit] Item ${i + 1}: Uploading blob...`, {fileName, type: photoBlob.type, size: photoBlob.size});
           const { data: uploadData, error: uploadError } =
-            await this.supabaseService.uploadFile('item_images', fileName, photoBlob, { contentType: photoBlob.type });
-          if (uploadError) throw uploadError;
-          uploadedImageUrl = this.supabaseService.getPublicUrl('item_images', fileName);
+            await this.supabaseService.uploadFile('item-images', fileName, photoBlob, { contentType: photoBlob.type });
+          
+          if (uploadError) {
+            console.error(`[onSubmit] Item ${i + 1}: Upload failed!`, uploadError);
+            throw uploadError; // Re-throw to trigger the outer catch block
+          }
+
+          console.log(`[onSubmit] Item ${i + 1}: Upload successful. Data:`, uploadData);
+          
+          // Log the raw result from the Supabase client call
+          const publicUrlResult = this.supabaseService.supabase.storage.from('item-images').getPublicUrl(fileName);
+          console.log(`[onSubmit] Item ${i + 1}: Raw result from getPublicUrl call:`, publicUrlResult);
+
+          // Assign the actual Supabase URL upon successful upload (using the result directly)
+          finalImageUrl = publicUrlResult.data.publicUrl;
+          console.log(`[onSubmit] Item ${i + 1}: Generated public URL from data:`, finalImageUrl);
+
         } catch (uploadError: any) {
-          console.error(`Error uploading image for item ${i + 1}:`, uploadError);
-          this.presentToast(`Failed to upload image for item ${i + 1}. Submission aborted.`, 'danger');
+          // Catch block now handles both explicit throw and other errors
+          console.error(`[onSubmit] Item ${i + 1}: Catch block - Error during image upload:`, uploadError);
+          let errorMsg = `Failed to upload image for item ${i + 1}. Submission aborted.`;
+          // Check for specific Supabase storage errors
+          if (uploadError && typeof uploadError === 'object' && 'message' in uploadError) {
+             if (uploadError.message.toLowerCase().includes('bucket not found')) {
+               errorMsg = `Upload Error: Storage bucket 'item-images' not found. Please create it via Supabase dashboard or setup script.`;
+             } else {
+               errorMsg = `Upload Error for item ${i + 1}: ${uploadError.message}. Submission aborted.`;
+             }
+          }
+          this.presentToast(errorMsg, 'danger', 5000); // Show detailed error for longer
           loadingIndicator.dismiss();
           this.isLoading.set(false);
           return;
         }
+      } else {
+         console.log(`[onSubmit] Item ${i + 1}: No new photo to upload (photoToUpload or webPath/dataUrl missing).`);
       }
-      salesToSubmit.push({
+      */
+
+      // Prepare item data (loan_id will be added later)
+      const saleItemObject: Omit<Sale, 'id' | 'loan_id'> = {
         borrower_name: formValue.borrower_name,
         item_name: formValue.item_name,
         description: formValue.description || null,
         price: parseFloat(formValue.price),
-        image_url: uploadedImageUrl,
-        // created_by: userId, // If you have user tracking for who created the sale item
-      });
+        image_url: null, // Image upload disabled
+      };
+      console.log(`[onSubmit] Item ${i + 1}: Prepared sale data (pre-loan):`, saleItemObject);
+      salesItemData.push(saleItemObject);
     }
 
-    if (salesToSubmit.length === 0) {
-      this.presentToast('No items to submit for sale.', 'warning');
+    if (salesItemData.length === 0) {
+      this.presentToast('No items defined for sale.', 'warning');
       loadingIndicator.dismiss();
       this.isLoading.set(false);
       return;
     }
 
     try {
-      const salesResponse = await this.salesService.addSales(salesToSubmit);
-      if (salesResponse.error) {
-        throw new Error(`Sale items: ${salesResponse.error.message}`);
-      }
-      this.presentToast('Sale items added successfully! Proceeding to create loan...', 'success');
-
-      // 2. Prepare and Submit Loan Data
+      // 2. Prepare and Submit Loan Data FIRST
       const loanFormData = this.saleForm.value;
       const loanData: Omit<Loan, 'id' | 'created_at' | 'updated_at'> = {
         borrower_id: parseInt(loanFormData.borrower_id, 10),
         principal: parseFloat(loanFormData.principal),
-        interest_rate: parseFloat(loanFormData.interest_rate) / 100, // Store rate as decimal, e.g. 3% -> 0.03
+        interest_rate: parseFloat(loanFormData.interest_rate) / 100,
         tenure_in_months: parseInt(loanFormData.tenure_in_months, 10),
         loan_release_date: this.datePipe.transform(loanFormData.loan_release_date, 'yyyy-MM-dd') || '',
         interest_method: loanFormData.interest_method,
         loan_period: loanFormData.loan_period,
         repayment_period: parseInt(loanFormData.repayment_period, 10),
         disbursement_method: loanFormData.disbursement_method,
-        status: loanFormData.status as LoanStatus, // Cast to LoanStatus enum
+        status: loanFormData.status as LoanStatus,
         purpose: loanFormData.purpose || null,
-        // store_name can be added if relevant from sale form
       };
 
+      console.log('[onSubmit] Attempting to add loan:', loanData);
       const newLoanResponse = await this.loanService.addLoan(loanData);
       if (newLoanResponse.error || !newLoanResponse.data || !newLoanResponse.data.id) {
-        throw new Error(`Loan creation: ${newLoanResponse.error?.message || 'Failed to create loan or get new loan ID.'}`);
+        throw new Error(`Loan creation failed: ${newLoanResponse.error?.message || 'Failed to create loan or get new loan ID.'}`);
       }
       const newLoanId = newLoanResponse.data.id;
-      this.presentToast(`Loan created successfully (ID: ${newLoanId})! Proceeding to save schedule...`, 'success');
+      this.presentToast(`Loan created successfully (ID: ${newLoanId})! Proceeding to save sale items...`, 'success');
 
-      // 3. Generate and Submit Loan Schedule
+      // 3. Add loan_id to Sale Items and Submit Sales
+      const salesToSubmit: Sale[] = salesItemData.map(item => ({
+        ...item,
+        loan_id: newLoanId // Add the loan_id link
+      }));
+
+      console.log('[onSubmit] Preparing to call addSales with data linked to loan:', JSON.stringify(salesToSubmit, null, 2));
+      const salesResponse = await this.salesService.addSales(salesToSubmit);
+      if (salesResponse.error) {
+        // Note: Loan was already created. Handle this inconsistency? Maybe delete the loan?
+        // For now, we throw an error indicating sales failed.
+        console.error('Error saving sale items after loan creation:', salesResponse.error);
+        throw new Error(`Sale items saving failed (Loan ${newLoanId} created): ${salesResponse.error.message}`);
+      }
+      this.presentToast('Sale items saved successfully! Proceeding to save schedule...', 'success');
+
+      // 4. Generate and Submit Loan Schedule
       const calculatedScheduleItems = this.generateSchedule();
       if (calculatedScheduleItems.length > 0) {
         const formattedSchedule: LoanPaymentSchedule[] = calculatedScheduleItems.map(item => ({

@@ -171,7 +171,8 @@ export class LoanService {
         .select(`
           *,
           borrower:account_information!borrower_id(*),
-          schedule:loan_payment_schedules(*, status)
+          schedule:loan_payment_schedules(*, status),
+          sales:sales(*)
         `)
         .eq('id', id)
         .single(); // Expecting one result
