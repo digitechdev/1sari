@@ -40,6 +40,9 @@ import {
   IonCardTitle,
   IonCardSubtitle,
   IonCardContent,
+  IonThumbnail,
+  IonModal,
+  IonImg,
 } from '@ionic/angular/standalone';
 import { SalesService } from '../../../services/sales.service';
 import { Sale } from '../../../models/sale.interface';
@@ -85,6 +88,9 @@ import { SupabaseService } from '../../../services/supabase.service';
     IonGrid,
     IonRow,
     IonCol,
+    IonThumbnail,
+    IonModal,
+    IonImg,
   ],
 })
 export class SaleFormPage implements OnInit {
@@ -98,6 +104,7 @@ export class SaleFormPage implements OnInit {
   saleForm!: FormGroup;
   pageTitle = signal('Add Sale Items');
   isLoading = signal(false);
+  imageToShowInModal = signal<string | null>(null);
 
   get saleItems() {
     return this.saleForm.get('saleItems') as FormArray;
@@ -115,7 +122,7 @@ export class SaleFormPage implements OnInit {
     });
   }
 
-  createSaleItemGroup(initialValue?: Partial<Sale>): FormGroup {
+  createSaleItemGroup(initialValue?: Partial<Sale & { image_timestamp: string | null }>): FormGroup {
     return this.formBuilder.group({
       borrower_name: [
         initialValue?.borrower_name || '',
@@ -133,6 +140,7 @@ export class SaleFormPage implements OnInit {
       image_url: [initialValue?.image_url || null],
       image_preview: [initialValue?.image_preview || null],
       image_to_upload: [initialValue?.image_to_upload || null],
+      image_timestamp: [initialValue?.image_timestamp || null],
     });
   }
 
@@ -147,12 +155,13 @@ export class SaleFormPage implements OnInit {
   }
 
   duplicateItem(index: number): void {
-    const itemToDuplicate = this.saleItems.at(index).value as Sale;
-    const duplicatedItemData: Partial<Sale> = {
+    const itemToDuplicate = this.saleItems.at(index).value as Sale & { image_timestamp?: string | null };
+    const duplicatedItemData: Partial<Sale & { image_timestamp: string | null }> = {
       ...itemToDuplicate,
       image_url: null,
       image_preview: null,
       image_to_upload: null,
+      image_timestamp: null,
     };
     this.saleItems.insert(
       index + 1,
@@ -172,7 +181,15 @@ export class SaleFormPage implements OnInit {
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Camera,
     });
-    console.log('image:', image.dataUrl);
+
+    if (image && image.dataUrl) {
+      const itemControl = this.saleItems.at(itemIndex) as FormGroup;
+      itemControl.patchValue({
+        image_preview: image.dataUrl,
+        image_to_upload: image, // Store the full Photo object for upload
+        image_timestamp: new Date().toLocaleString(),
+      });
+    }
   }
 
   private async blobUrlToBlob(blobUrl: string): Promise<Blob> {
@@ -300,5 +317,15 @@ export class SaleFormPage implements OnInit {
 
   cancel() {
     this.navController.navigateBack('/sales');
+  }
+
+  openImageModal(imageUrl: string | undefined | null): void {
+    if (imageUrl) {
+      this.imageToShowInModal.set(imageUrl);
+    }
+  }
+
+  closeImageModal(): void {
+    this.imageToShowInModal.set(null);
   }
 }

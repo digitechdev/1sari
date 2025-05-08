@@ -166,33 +166,58 @@
                 </ion-col>
               </ion-row>
               <ion-row>
-                <ion-col size="12" class="photo-section">
-                  <ion-label class="photo-label">Photo</ion-label>
-                  <ion-button
-                    expand="block"
-                    fill="outline"
-                    (click)="takeItemPhoto(i)"
-                    class="take-photo-button ion-margin-top"
-                  >
-                    <ion-icon slot="start" name="camera-outline"></ion-icon>
-                    {{ itemCtrl.get('image_preview')?.value ? 'Change Photo' : 'Take Photo' }}
-                  </ion-button>
-                  @if (itemCtrl.get('image_preview')?.value) {
-                    <img
-                      [src]="itemCtrl.get('image_preview')?.value"
-                      class="item-image-preview ion-margin-top"
-                      alt="Item Preview {{i+1}}"
-                    />
-                  } @else {
-                    <div class="no-image-placeholder ion-text-center ion-margin-top">
-                      <ion-icon
+                <ion-col size="12">
+                  <ion-list lines="none" class="ion-no-padding photo-section-list">
+                    <ion-list-header class="ion-no-padding">
+                      <ion-label>Item Photo</ion-label>
+                      <ion-button
+                      size="small"
+                      expand="block"
+                      fill="outline"
+                      (click)="takeItemPhoto(i)"
+                      class="take-photo-button"
+                    >
+                      <ion-icon slot="start" name="camera-outline"></ion-icon>
+                      {{ itemCtrl.get('image_preview')?.value ? 'Change Photo' : 'Take Photo' }}
+                    </ion-button>
+                    </ion-list-header>
+                    @if (itemCtrl.get('image_preview')?.value) {
+                    <ion-item class="image-preview-item">
+                      <ion-thumbnail slot="start" class="item-thumbnail" (click)="openImageModal(itemCtrl.get('image_preview')?.value)" tappable>
+                        <img
+                          [src]="itemCtrl.get('image_preview')?.value"
+                          alt="Item Preview {{i+1}}"
+                          class="item-image-preview-img"
+                        />
+                      </ion-thumbnail>
+                      <ion-label>
+                        <h2>
+                          {{ itemCtrl.get('item_name')?.value || 'Item Photo' }}
+                        </h2>
+                        <p>
+                          @if (itemCtrl.get('image_timestamp')?.value) {
+                            Captured: {{ itemCtrl.get('image_timestamp')?.value }}
+                          } @else {
+                            Photo captured
+                          }
+                        </p>
+                      </ion-label>
+                    </ion-item>
+                    } @else {
+                    <ion-item class="no-image-placeholder-item ion-text-center">
+                      <ion-label color="medium">
+                        <ion-icon
                         name="image-outline"
                         color="medium"
                         size="large"
-                      ></ion-icon>
-                      <ion-text color="medium"><p>No photo taken</p></ion-text>
-                    </div>
-                  }
+                        class="placeholder-icon"
+                      ></ion-icon> 
+                      <br>
+                        No photo taken
+                      </ion-label>
+                    </ion-item>
+                    }
+                  </ion-list>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -231,4 +256,25 @@
       </ion-row>
     </ion-grid>
   </form>
+
+  <!-- Image Preview Modal -->
+  <ion-modal [isOpen]="!!imageToShowInModal()" (didDismiss)="closeImageModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Image Preview</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeImageModal()" color="light">
+              <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding image-modal-content">
+        @if (imageToShowInModal(); as imageUrl) {
+          <ion-img [src]="imageUrl" alt="Full image preview" class="full-preview-image"></ion-img>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

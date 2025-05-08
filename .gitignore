@@ -68,3 +68,13 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+
+# Capacitor / Ionic
+.ionic/
+/android/
+/ios/
+/www/
+/build/
+/plugins/
+/platforms/
