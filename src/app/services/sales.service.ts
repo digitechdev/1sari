@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { Sale } from '../models/sale.interface';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { PostgrestSingleResponse, PostgrestResponse } from '@supabase/supabase-js';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +15,21 @@ export class SalesService {
     return this.supabaseClient.from('sales').select('*').order('created_at', { ascending: false });
   }
 
-  async addSale(saleData: Omit<Sale, 'id' | 'created_at' | 'updated_at'>): Promise<PostgrestSingleResponse<Sale>> {
-    // The created_by field will be handled by the form or backend logic (e.g., RLS policy with auth.uid())
-    // For now, if not provided by saleData, it will be null or default in DB if any.
-    const { data, error } = await this.supabaseClient.from('sales').insert([saleData]).select().single();
-    return { data, error } as PostgrestSingleResponse<Sale>; // Ensure the return type matches
+  /**
+   * Adds multiple sale records to the database.
+   * Each Sale object in the array will be a separate row in the 'sales' table.
+   */
+  async addSales(salesData: Sale[]): Promise<PostgrestResponse<Sale>> {
+    // Omit id, created_at, updated_at, image_preview, image_to_upload from each sale object before inserting
+    const dataToInsert = salesData.map(sale => {
+      const { id, created_at, updated_at, image_preview, image_to_upload, ...rest } = sale;
+      return rest; // Contains borrower_name, item_name, description, price, image_url, created_by
+    });
+
+    if (dataToInsert.length === 0) {
+      return { data: [], error: null, status: 200, statusText: 'OK', count: 0 }; // Or handle as an error/warning
+    }
+    return this.supabaseClient.from('sales').insert(dataToInsert).select();
   }
 
   async deleteSale(id: string): Promise<PostgrestSingleResponse<null>> {

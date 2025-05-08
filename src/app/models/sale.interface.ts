@@ -1,13 +1,13 @@
 export interface Sale {
-  id: string; // uuid
+  id?: string; // uuid, optional for new sales client-side
   borrower_name: string;
   item_name: string;
   description?: string | null;
-  raw_price: number; // numeric
-  interest: number; // numeric
-  total_price: number; // numeric
-  image_url?: string | null; // New field for item image
-  created_by?: string | null; // uuid
-  created_at: string; // timestamp with time zone
-  updated_at: string; // timestamp with time zone
-} 
+  price: number; // Renamed from raw_price, represents the sale price
+  image_url?: string | null; // URL of the item's image from storage
+  image_preview?: string | null; // For UI preview before upload
+  image_to_upload?: any; // Temporary storage for file/photo object
+  created_by?: string | null; // uuid of the user who created the sale
+  created_at?: string; // timestamp with time zone
+  updated_at?: string; // timestamp with time zone
+}

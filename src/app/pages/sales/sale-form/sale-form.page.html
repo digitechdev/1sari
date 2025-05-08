@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar color="primary"> 
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-button (click)="cancel()" fill="clear" color="light">
         <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
@@ -7,10 +7,24 @@
     </ion-buttons>
     <ion-title>{{ pageTitle() }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="onSubmit()" [disabled]="isLoading() || saleForm.invalid" fill="solid" color="light">
-        <ion-icon slot="start" name="save-outline" *ngIf="!isLoading()"></ion-icon>
-        <ion-spinner *ngIf="isLoading()" name="circular" color="light" style="width: 20px; height: 20px; margin-right: 5px;"></ion-spinner>
-        {{ isLoading() ? 'Saving...' : 'Save Sale' }}
+      <ion-button
+        (click)="onSubmit()"
+        [disabled]="isLoading() || saleForm.invalid"
+        fill="solid"
+        color="light"
+      >
+        <ion-icon
+          slot="start"
+          name="save-outline"
+          *ngIf="!isLoading()"
+        ></ion-icon>
+        <ion-spinner
+          *ngIf="isLoading()"
+          name="circular"
+          color="light"
+          style="width: 20px; height: 20px; margin-right: 5px"
+        ></ion-spinner>
+        {{ isLoading() ? 'Saving...' : 'Save All Items' }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -18,124 +32,203 @@
 
 <ion-content class="ion-padding">
   <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
-    <ion-list>
-      <ion-item lines="full">
-        <ion-input 
-          label="Borrower Name" 
-          labelPlacement="stacked" 
-          formControlName="borrower_name"
-          type="text"
-          required
-          placeholder="Enter borrower's full name"
-        ></ion-input>
-        @if (saleForm.get('borrower_name')?.invalid && (saleForm.get('borrower_name')?.dirty || saleForm.get('borrower_name')?.touched)) {
-          <ion-note slot="error" color="danger">
-            @if (saleForm.get('borrower_name')?.errors?.['required']) {
-              Borrower name is required.
-            }
-            @if (saleForm.get('borrower_name')?.errors?.['minlength']) {
-              Must be at least 3 characters.
-            }
-          </ion-note>
-        }
-      </ion-item>
+    <ion-list-header>
+      <ion-label>Sale Items</ion-label>
+      <ion-button
+        fill="outline"
+        (click)="addItem()"
+        size="small"
+        class="add-item-button"
+      >
+        <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+        Add Item
+      </ion-button>
+    </ion-list-header>
 
-      <ion-item lines="full">
-        <ion-input 
-          label="Item Name" 
-          labelPlacement="stacked" 
-          formControlName="item_name"
-          type="text"
-          required
-          placeholder="Enter the name of the item sold"
-        ></ion-input>
-        @if (saleForm.get('item_name')?.invalid && (saleForm.get('item_name')?.dirty || saleForm.get('item_name')?.touched)) {
-          <ion-note slot="error" color="danger">
-            @if (saleForm.get('item_name')?.errors?.['required']) {
-              Item name is required.
-            }
-            @if (saleForm.get('item_name')?.errors?.['minlength']) {
-              Must be at least 3 characters.
-            }
-          </ion-note>
-        }
-      </ion-item>
+    <div formArrayName="saleItems" class="items-form-list">
+      <ng-container *ngFor="let itemCtrl of saleItems.controls; let i = index">
+        <ion-card [formGroupName]="i" class="item-entry-card">
+          <ion-card-header>
+            <ion-card-title>Item #{{ i + 1 }}</ion-card-title>
+            <div class="item-actions-header">
+              <ion-button
+                size="small"
+                fill="clear"
+                color="primary"
+                (click)="duplicateItem(i)"
+                title="Duplicate Item"
+              >
+                <ion-icon slot="start" name="duplicate-outline"></ion-icon>
+                Duplicate
+              </ion-button>
+              <ion-button
+                size="small"
+                fill="clear"
+                color="danger"
+                (click)="removeItem(i)"
+                [disabled]="saleItems.controls.length <= 1"
+                title="Remove Item"
+              >
+                <ion-icon slot="start" name="trash-outline"></ion-icon>
+                Remove
+              </ion-button>
+            </div>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-grid fixed>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-input
+                    class="ion-margin-bottom"
+                    fill="solid"
+                    formControlName="borrower_name"
+                    type="text"
+                    label="Borrower's Name"
+                    labelPlacement="stacked"
+                    placeholder="Enter Borrower's Name"
+                    required
+                  ></ion-input>
+                  @if (itemCtrl.get('borrower_name')?.invalid &&
+                  (itemCtrl.get('borrower_name')?.dirty ||
+                  itemCtrl.get('borrower_name')?.touched)) {
+                    <ion-note slot="error" color="danger" class="input-error-note">
+                      @if (itemCtrl.get('borrower_name')?.errors?.['required']) {
+                        Borrower Name is required.
+                      }
+                      @if (itemCtrl.get('borrower_name')?.errors?.['minlength']) {
+                        Must be at least 3 characters.
+                      }
+                    </ion-note>
+                  }
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12" size-md="6">
+                  <ion-input
+                    class="ion-margin-bottom"
+                    fill="solid"
+                    formControlName="item_name"
+                    type="text"
+                    label="Item Name"
+                    labelPlacement="stacked"
+                    placeholder="Enter Item Name"
+                    required
+                  ></ion-input>
+                  @if (itemCtrl.get('item_name')?.invalid &&
+                  (itemCtrl.get('item_name')?.dirty ||
+                  itemCtrl.get('item_name')?.touched)) {
+                    <ion-note slot="error" color="danger" class="input-error-note">
+                      @if (itemCtrl.get('item_name')?.errors?.['required']) {
+                        Item Name is required.
+                      }
+                      @if (itemCtrl.get('item_name')?.errors?.['minlength']) {
+                        Must be at least 2 characters.
+                      }
+                    </ion-note>
+                  }
+                </ion-col>
+                <ion-col size="12" size-md="6">
+                  <ion-input
+                    class="ion-margin-bottom"
+                    fill="solid"
+                    formControlName="price"
+                    type="number"
+                    label="Price"
+                    labelPlacement="stacked"
+                    placeholder="Enter Price"
+                    required
+                  ></ion-input>
+                  @if (itemCtrl.get('price')?.invalid &&
+                  (itemCtrl.get('price')?.dirty ||
+                  itemCtrl.get('price')?.touched)) {
+                    <ion-note slot="error" color="danger" class="input-error-note">
+                      @if (itemCtrl.get('price')?.errors?.['required']) {
+                        Price is required.
+                      }
+                      @if (itemCtrl.get('price')?.errors?.['min']) {
+                        Price must be zero or positive.
+                      }
+                    </ion-note>
+                  }
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-textarea
+                    class="ion-margin-bottom"
+                    label="Description"
+                    labelPlacement="stacked"
+                    fill="solid"
+                    placeholder="Enter Description (Optional)"
+                    formControlName="description"
+                    [autoGrow]="true"
+                  ></ion-textarea>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12" class="photo-section">
+                  <ion-label class="photo-label">Photo</ion-label>
+                  <ion-button
+                    expand="block"
+                    fill="outline"
+                    (click)="takeItemPhoto(i)"
+                    class="take-photo-button ion-margin-top"
+                  >
+                    <ion-icon slot="start" name="camera-outline"></ion-icon>
+                    {{ itemCtrl.get('image_preview')?.value ? 'Change Photo' : 'Take Photo' }}
+                  </ion-button>
+                  @if (itemCtrl.get('image_preview')?.value) {
+                    <img
+                      [src]="itemCtrl.get('image_preview')?.value"
+                      class="item-image-preview ion-margin-top"
+                      alt="Item Preview {{i+1}}"
+                    />
+                  } @else {
+                    <div class="no-image-placeholder ion-text-center ion-margin-top">
+                      <ion-icon
+                        name="image-outline"
+                        color="medium"
+                        size="large"
+                      ></ion-icon>
+                      <ion-text color="medium"><p>No photo taken</p></ion-text>
+                    </div>
+                  }
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card-content>
+        </ion-card>
+      </ng-container>
+    </div>
 
-      <ion-item lines="full">
-        <ion-textarea 
-          label="Description (Optional)" 
-          labelPlacement="stacked" 
-          formControlName="description"
-          placeholder="Enter any additional details about the sale"
-          [autoGrow]="true"
-        ></ion-textarea>
-      </ion-item>
-
-      <ion-item lines="full">
-        <ion-input 
-          label="Raw Price" 
-          labelPlacement="stacked" 
-          formControlName="raw_price"
-          type="number"
-          required
-          placeholder="0.00"
-        ></ion-input>
-         @if (saleForm.get('raw_price')?.invalid && (saleForm.get('raw_price')?.dirty || saleForm.get('raw_price')?.touched)) {
-          <ion-note slot="error" color="danger">
-            @if (saleForm.get('raw_price')?.errors?.['required']) {
-              Raw price is required.
-            }
-            @if (saleForm.get('raw_price')?.errors?.['min']) {
-              Price must be zero or positive.
-            }
-          </ion-note>
-        }
-      </ion-item>
-
-      <ion-item lines="full">
-        <ion-input 
-          label="Interest" 
-          labelPlacement="stacked" 
-          formControlName="interest"
-          type="number"
-          required
-          placeholder="0.00"
-        ></ion-input>
-        @if (saleForm.get('interest')?.invalid && (saleForm.get('interest')?.dirty || saleForm.get('interest')?.touched)) {
-          <ion-note slot="error" color="danger">
-            @if (saleForm.get('interest')?.errors?.['required']) {
-              Interest is required.
-            }
-             @if (saleForm.get('interest')?.errors?.['min']) {
-              Interest must be zero or positive.
-            }
-          </ion-note>
-        }
-      </ion-item>
-
-      <ion-item lines="none">
-        <ion-label>Total Price:</ion-label>
-        <ion-text slot="end" color="dark" style="font-size: 1.1em; font-weight: bold;">
-          {{ totalPrice | currency:'PHP':'symbol':'1.2-2' }}
-        </ion-text>
-      </ion-item>
-    </ion-list>
-
-    <ion-grid>
+    <ion-grid class="ion-margin-top submit-buttons">
       <ion-row>
         <ion-col>
-          <ion-button expand="block" type="submit" [disabled]="isLoading() || saleForm.invalid" color="primary">
-            <ion-spinner *ngIf="isLoading()" name="circular" style="width: 20px; height: 20px; margin-right: 8px;"></ion-spinner>
-            {{ isLoading() ? 'Processing...' : 'Save Sale' }}
+          <ion-button
+            expand="block"
+            type="submit"
+            [disabled]="isLoading() || saleForm.invalid"
+            color="primary"
+          >
+            <ion-spinner
+              *ngIf="isLoading()"
+              name="circular"
+              class="button-spinner"
+            ></ion-spinner>
+            {{ isLoading() ? 'Processing...' : 'Save All Items' }}
           </ion-button>
         </ion-col>
         <ion-col>
-          <ion-button expand="block" color="light" (click)="cancel()" [disabled]="isLoading()">
+          <ion-button
+            expand="block"
+            color="light"
+            (click)="cancel()"
+            [disabled]="isLoading()"
+          >
             Cancel
           </ion-button>
         </ion-col>
       </ion-row>
     </ion-grid>
-
   </form>
-</ion-content> 
+</ion-content>

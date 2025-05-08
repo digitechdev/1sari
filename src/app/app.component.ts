@@ -62,6 +62,10 @@ import {
   calendarOutline,
   downloadOutline,
   logoGoogle,
+  imageOutline,
+  duplicateOutline,
+  addCircleOutline,
+  cameraOutline,
 } from 'ionicons/icons';
 import { ProfileMenuComponent } from './components/profile-menu/profile-menu.component';
 import { LogoComponent } from './components/logo/logo.component';
@@ -185,6 +189,10 @@ export class AppComponent implements OnInit {
       calendarOutline,
       downloadOutline,
       logoGoogle,
+      cameraOutline,
+      imageOutline,
+      duplicateOutline,
+      addCircleOutline,
     });
   }
 

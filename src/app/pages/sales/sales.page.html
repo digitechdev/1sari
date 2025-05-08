@@ -90,6 +90,11 @@
               </div>
             </ng-template>
 
+            <!-- Template for Formatted Price Column -->
+            <ng-template #priceTemplate let-value="value">
+              {{ value | currency:'PHP':'symbol':'1.2-2' }}
+            </ng-template>
+
           </ion-card-content>
         </ion-card>
       </ion-col>

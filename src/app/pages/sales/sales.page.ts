@@ -25,13 +25,12 @@ import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
 export class SalesPage implements OnInit {
   @ViewChild('salesActionsTemplate', { static: true }) salesActionsTemplate!: TemplateRef<any>;
   @ViewChild('createdAtDateTemplate', { static: true }) createdAtDateTemplate!: TemplateRef<any>;
+  @ViewChild('priceTemplate', { static: true }) priceTemplate!: TemplateRef<any>;
 
   private salesService = inject(SalesService);
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
-  private datePipe = inject(DatePipe);
-  private decimalPipe = inject(DecimalPipe);
 
   isLoading = signal<boolean>(false);
   errorLoading = signal<string | null>(null);
@@ -47,10 +46,10 @@ export class SalesPage implements OnInit {
       return this.allSales();
     }
     return this.allSales().filter(sale => 
-      sale.borrower_name.toLowerCase().includes(term) ||
-      sale.item_name.toLowerCase().includes(term) ||
+      (sale.borrower_name?.toLowerCase().includes(term)) ||
+      (sale.item_name?.toLowerCase().includes(term)) ||
       (sale.description && sale.description.toLowerCase().includes(term)) ||
-      sale.id.toLowerCase().includes(term)
+      (sale.id && sale.id.toLowerCase().includes(term))
     );
   });
 
@@ -63,12 +62,11 @@ export class SalesPage implements OnInit {
 
   setupTableColumns(): void {
     this.tableColumns.set([
-      { name: 'ID', prop: 'id', width: 280, frozenLeft: true },
+      { name: 'Sale ID', prop: 'id', width: 280, frozenLeft: true },
       { name: 'Borrower', prop: 'borrower_name', width: 180 },
-      { name: 'Item', prop: 'item_name', width: 200 },
-      { name: 'Description', prop: 'description', width: 250 },
-      { name: 'Total Price', prop: 'total_price', pipe: this.decimalPipe, width: 120 },
-      { name: 'Created At', prop: 'created_at', cellTemplate: this.createdAtDateTemplate, width: 220 },
+      { name: 'Item Name', prop: 'item_name', width: 200 },
+      { name: 'Price', prop: 'price', cellTemplate: this.priceTemplate, width: 120, headerClass: 'ion-text-end', cellClass: 'ion-text-end' },
+      { name: 'Sale Date', prop: 'created_at', cellTemplate: this.createdAtDateTemplate, width: 220 },
       {
         name: 'Actions',
         prop: 'id',
@@ -116,13 +114,18 @@ export class SalesPage implements OnInit {
   }
 
   viewSale(sale: Sale): void {
-     this.presentToast(`View Sale: ${sale.item_name} - not yet implemented.`, 'warning');
+    console.log('View Sale:', sale);
+    this.presentToast(`Viewing sale for ${sale.item_name}. Details in console.`, 'tertiary');
   }
 
   async deleteSale(sale: Sale): Promise<void> {
+    if (!sale.id) {
+      this.presentToast('Cannot delete sale without an ID.', 'danger');
+      return;
+    }
     const alert = await this.alertCtrl.create({
       header: 'Confirm Delete',
-      message: `Are you sure you want to delete the sale for "${sale.item_name}" by ${sale.borrower_name}? This action cannot be undone.`,
+      message: `Are you sure you want to delete the sale for "${sale.item_name}" (Borrower: ${sale.borrower_name})? This action cannot be undone.`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
@@ -131,7 +134,7 @@ export class SalesPage implements OnInit {
           handler: async () => {
             this.isLoading.set(true);
             try {
-              const res = await this.salesService.deleteSale(sale.id);
+              const res = await this.salesService.deleteSale(sale.id!);
               if (res.error) {
                 throw new Error(res.error.message);
               }
@@ -150,7 +153,7 @@ export class SalesPage implements OnInit {
     await alert.present();
   }
 
-  private async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
+  private async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'tertiary') {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
