@@ -32,6 +32,14 @@ export class SalesService {
     return this.supabaseClient.from('sales').insert(dataToInsert).select();
   }
 
+  async getSaleById(id: string): Promise<PostgrestSingleResponse<Sale>> {
+    return this.supabaseClient
+      .from('sales')
+      .select('*')
+      .eq('id', id)
+      .single(); // Use single() to get one record or null/error
+  }
+
   async deleteSale(id: string): Promise<PostgrestSingleResponse<null>> {
     return this.supabaseClient.from('sales').delete().match({ id });
   }

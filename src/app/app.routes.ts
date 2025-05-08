@@ -109,6 +109,10 @@ export const routes: Routes = [
         path: 'new', 
         loadComponent: () => import('./pages/sales/sale-form/sale-form.page').then(m => m.SaleFormPage),
         data: { title: 'Add New Sale' }
+      },
+      {
+        path: 'detail/:id',
+        loadComponent: () => import('./pages/sales/sale-detail/sale-detail.page').then(m => m.SaleDetailPage)
       }
       // Future child route for editing:
       // {

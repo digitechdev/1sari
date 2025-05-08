@@ -70,4 +70,16 @@
 }
 
 // Ensure specific Ionic icons are available if not globally
-// ion-icon[name="refresh-outline"], ion-icon[name="add-outline"], etc. {} 
+// ion-icon[name="refresh-outline"], ion-icon[name="add-outline"], etc. {}
+
+ion-grid {
+  margin-bottom: 15px;
+}
+
+ion-card-title {
+  display: flex;
+  align-items: center;
+  ion-icon {
+    margin-right: 10px;
+  }
+}

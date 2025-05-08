@@ -1,0 +1,79 @@
+<ion-header class="page-header">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/sales"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      @if (saleDetail()) {
+        Sale Details: {{ saleDetail()?.item_name }}
+      } @else {
+        Sale Details
+      }
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <div class="ion-text-center ion-padding">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading Sale Details...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <ion-item lines="none" class="ion-padding-top">
+      <ion-icon name="warning-outline" slot="start" color="danger"></ion-icon>
+      <ion-label color="danger">{{ errorMessage() }}</ion-label>
+    </ion-item>
+    <ion-button expand="block" fill="outline" (click)="loadData()" class="ion-margin-top">
+      Retry
+    </ion-button>
+  } @else {
+    @if (saleDetail(); as sale) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>{{ sale.item_name }}</ion-card-title>
+          <ion-card-subtitle>Sale ID: {{ sale.id }}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          @if (sale.image_url) {
+            <ion-img [src]="sale.image_url" alt="Image of {{ sale.item_name }}" class="sale-detail-image ion-margin-bottom"></ion-img>
+          } @else {
+            <div class="no-image-placeholder ion-text-center ion-margin-bottom">
+              <ion-icon name="image-outline" color="medium" size="large"></ion-icon>
+              <ion-text color="medium"><p>No image available</p></ion-text>
+            </div>
+          }
+
+          <ion-list lines="none">
+            <ion-item>
+              <ion-label position="stacked">Borrower</ion-label>
+              <p>{{ sale.borrower_name || 'N/A' }}</p>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Item Name</ion-label>
+              <p>{{ sale.item_name }}</p>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Price</ion-label>
+              <p>{{ sale.price | currency:'PHP':'symbol' }}</p>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Description</ion-label>
+              <p>{{ sale.description || 'N/A' }}</p>
+            </ion-item>
+            <ion-item>
+              <ion-label position="stacked">Sale Date</ion-label>
+              <p>{{ sale.created_at | date:'medium' }}</p>
+            </ion-item>
+            <!-- Add other relevant fields from Sale interface if needed -->
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    } @else {
+      <ion-item lines="none" class="ion-padding-top">
+        <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+        <ion-label color="medium">No sale details found or available.</ion-label>
+      </ion-item>
+    }
+  }
+</ion-content> 

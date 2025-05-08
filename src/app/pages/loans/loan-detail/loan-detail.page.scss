@@ -1,74 +1,11 @@
+ion-grid {
+  margin-bottom: 15px;
+}
+
 ion-card-title {
-    display: flex;
-    align-items: center;
-    font-size: 1.1em; // Slightly larger title
-    ion-icon {
-        margin-right: 10px;
-    }
-}
-
-ion-item p {
-    margin-top: 4px; // Add some space below the label
-    font-size: 1em;
-}
-
-ion-item ion-label[position="stacked"] {
-    font-size: 0.8em;
-    color: var(--ion-color-medium-shade);
-    margin-bottom: 2px;
-}
-
-/* Styles for the repayment schedule table (copied from loan-form.page.scss) */
-#repayment-schedule-grid {
-  border: 1px solid var(--ion-color-medium-shade);
-  font-size: 0.9em;
-  margin-top: 10px; // Add some space above the grid
-
-  ion-row {
-    border-bottom: 1px solid var(--ion-color-light-shade);
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  ion-col {
-    padding: 8px 5px;
-    border-right: 1px solid var(--ion-color-light-shade);
-    display: flex; // Helps vertical alignment if needed
-    align-items: center;
-
-    &:last-child {
-      border-right: none;
-    }
-  }
-
-  .header-row {
-    background-color: var(--ion-color-light-tint);
-    font-weight: bold;
-    border-bottom: 1px solid var(--ion-color-medium-shade); // Stronger border for header
-    color: var(--ion-color-dark-shade);
-  }
-  
-  /* Optional: Styles for total row if you add one */
-  /* .total-row {
-    background-color: var(--ion-color-light-tint);
-    border-top: 1px solid var(--ion-color-medium-shade); 
-    font-weight: bold;
-  } */
-
-  ion-badge {
-      font-size: 0.85em; // Adjust badge size
-      padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  ion-icon {
+    margin-right: 10px;
   }
 }
-
-/* Loading and Error States */
-.ion-text-center {
-    margin-top: 30px;
-}
-
-ion-item[lines="none"] {
-    --inner-padding-end: 0;
-    --padding-start: 0;
-} 

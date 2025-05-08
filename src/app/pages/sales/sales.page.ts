@@ -5,6 +5,7 @@ import { AlertController, NavController, ToastController, IonContent, IonGrid, I
 import { SalesService } from '../../services/sales.service';
 import { Sale } from '../../models/sale.interface';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sales',
@@ -31,6 +32,7 @@ export class SalesPage implements OnInit {
   private alertCtrl = inject(AlertController);
   private toastCtrl = inject(ToastController);
   private navCtrl = inject(NavController);
+  private router = inject(Router);
 
   isLoading = signal<boolean>(false);
   errorLoading = signal<string | null>(null);
@@ -114,8 +116,13 @@ export class SalesPage implements OnInit {
   }
 
   viewSale(sale: Sale): void {
-    console.log('View Sale:', sale);
-    this.presentToast(`Viewing sale for ${sale.item_name}. Details in console.`, 'tertiary');
+    if (!sale || typeof sale.id === 'undefined') {
+      console.error('Cannot view sale: Invalid sale data or missing ID.', sale);
+      this.presentToast('Cannot view sale: Invalid data.', 'danger');
+      return;
+    }
+    console.log('Navigating to view sale details for ID:', sale.id);
+    this.router.navigate(['/sales/detail', sale.id]);
   }
 
   async deleteSale(sale: Sale): Promise<void> {

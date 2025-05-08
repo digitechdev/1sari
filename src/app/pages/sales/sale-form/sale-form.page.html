@@ -1,9 +1,7 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header class="page-header">
+  <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="cancel()" fill="clear" color="light">
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-      </ion-button>
+      <ion-back-button defaultHref="/sales"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ pageTitle() }}</ion-title>
     <ion-buttons slot="end">
@@ -24,11 +22,29 @@
           color="light"
           style="width: 20px; height: 20px; margin-right: 5px"
         ></ion-spinner>
-        {{ isLoading() ? 'Saving...' : 'Save All Items' }}
+        {{ isLoading() ? 'Saving...' : 'Save' }}
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<!-- <ion-header class="page-header"> -->
+  <!-- <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/loans"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Add New Loan</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="saveLoan()"
+        [disabled]="isLoading() || loanForm.invalid"
+      >
+        <ion-icon slot="start" name="save-outline"></ion-icon>
+        Save
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header> -->
 
 <ion-content class="ion-padding">
   <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
@@ -226,7 +242,208 @@
       </ng-container>
     </div>
 
-    <ion-grid class="ion-margin-top submit-buttons">
+    <!-- Copied Loan Sections Start -->
+
+          <!-- Borrower & Loan Status Card (Copied from Loan Form) -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="people-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Borrower & Loan Status
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <!-- Status -->
+              <ion-select
+                class="ion-margin-bottom"
+                justify="space-between"
+                label="Loan Status"
+                placeholder="Select Status"
+                fill="solid"
+                formControlName="status"
+              >
+                <ion-select-option value="Pending">Pending</ion-select-option>
+                <ion-select-option value="Active">Active</ion-select-option>
+                <ion-select-option value="Paid Off">Paid Off</ion-select-option>
+                <ion-select-option value="Defaulted">Defaulted</ion-select-option>
+                <ion-select-option value="Cancelled">Cancelled</ion-select-option>
+              </ion-select>
+
+              <!-- Borrower Selection -->
+              <ion-select
+                fill="solid"
+                class="ion-margin-bottom"
+                label="Borrower"
+                formControlName="borrower_id"
+                placeholder="Select Borrower"
+                interface="modal"
+              >
+                @if (isBorrowersLoading()) {
+                  <ion-select-option disabled>Loading borrowers...</ion-select-option>
+                } @else if (errorLoadingBorrowers()) {
+                  <ion-select-option disabled>Error loading borrowers</ion-select-option>                  
+                } @else if (borrowers().length === 0) {
+                  <ion-select-option disabled>No borrowers found</ion-select-option>
+                } @else {
+                  @for (borrower of borrowers(); track borrower.id) {
+                    <ion-select-option [value]="borrower.id">
+                      {{ borrower.name_of_borrower }} (ID: {{ borrower.id }})
+                    </ion-select-option>
+                  }
+                }
+              </ion-select>
+
+              <!-- Disbursement Method -->
+              <ion-select
+                class="ion-margin-bottom"
+                justify="space-between"
+                label="Disbursement Method"
+                placeholder="Select Disbursement Method"
+                fill="solid"
+                formControlName="disbursement_method"
+              >
+                <ion-select-option value="cash">Cash</ion-select-option>
+                <ion-select-option value="bank">Bank</ion-select-option>
+              </ion-select>
+
+              <!-- Purpose -->
+              <ion-textarea
+                class="ion-margin-bottom"
+                label="Purpose"
+                labelPlacement="floating"
+                fill="solid"
+                placeholder="Enter Purpose"
+                formControlName="purpose"
+              ></ion-textarea>
+            </ion-card-content>
+          </ion-card>
+
+          <!-- Loan Terms & Financial Info Card (Copied from Loan Form) -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon
+                  name="cash-outline"
+                  class="card-title-icon"
+                ></ion-icon>
+                Loan Terms & Financial Info
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-grid fixed>
+                <ion-row>
+                  <ion-col size="12">
+                    <!-- Principal Amount -->
+                    <ion-input
+                      class="ion-margin-bottom"
+                      fill="solid"
+                      formControlName="principal"
+                      type="number"
+                      label="Principal Amount"
+                      labelPlacement="floating"
+                      placeholder="Enter Principal Amount"
+                      required
+                      (ionChange)="onPrincipalManuallyChanged()"
+                    ></ion-input>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="6">
+                    <!-- Interest Method -->
+                    <ion-select
+                      class="ion-margin-bottom"
+                      justify="space-between"
+                      label="Interest Method"
+                      placeholder="Select Interest Method"
+                      fill="solid"
+                      formControlName="interest_method"
+                    >
+                      <ion-select-option value="diminishing">Diminishing</ion-select-option>
+                      <ion-select-option value="straight">Straight</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                  <ion-col size="6">
+                    <!-- Loan Period -->
+                    <ion-select
+                      class="ion-margin-bottom"
+                      justify="space-between"
+                      label="Loan Period"
+                      placeholder="Select Loan Period"
+                      fill="solid"
+                      formControlName="loan_period"
+                    >
+                      <ion-select-option value="daily">Daily</ion-select-option>
+                      <ion-select-option value="weekly">Weekly</ion-select-option>
+                      <ion-select-option value="monthly">Monthly</ion-select-option>
+                      <ion-select-option value="bi-monthly">Bi-Monthly</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="4">
+                    <!-- Interest Rate -->
+                    <ion-input
+                      class="ion-margin-bottom"
+                      type="number"
+                      fill="solid"
+                      label="Interest Rate *"
+                      labelPlacement="floating"
+                      formControlName="interest_rate"
+                      placeholder="Enter Interest Rate"
+                    ></ion-input>
+                  </ion-col>
+                  <ion-col size="4">
+                    <!-- Tenure In Months -->
+                    <ion-input
+                      class="ion-margin-bottom"
+                      type="number"
+                      fill="solid"
+                      label="Tenure In Months *"
+                      labelPlacement="floating"
+                      formControlName="tenure_in_months"
+                      placeholder="Enter Tenure In Months"
+                    ></ion-input>
+                  </ion-col>
+                  <ion-col size="4">
+                    <!-- Repayment Period -->
+                    <ion-input
+                      class="ion-margin-bottom"
+                      type="number"
+                      fill="solid"
+                      label="Repayment Period *"
+                      labelPlacement="floating"
+                      formControlName="repayment_period"
+                      placeholder="Enter Repayment Period"
+                    ></ion-input>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="12">
+                    <!-- Loan Release Date -->
+                    <ion-item class="ion-margin-bottom">
+                      <ion-label position="stacked">Loan Release Date</ion-label>
+                      <ion-datetime-button datetime="loanReleaseDatetime"></ion-datetime-button>
+                      <ion-modal [keepContentsMounted]="true">
+                        <ng-template>
+                          <ion-datetime
+                            id="loanReleaseDatetime"
+                            formControlName="loan_release_date"
+                            presentation="date"
+                          ></ion-datetime>
+                        </ng-template>
+                      </ion-modal>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+    <!-- Copied Loan Sections End -->
+
+    <!-- <ion-grid class="ion-margin-top submit-buttons">
       <ion-row>
         <ion-col>
           <ion-button
@@ -254,7 +471,7 @@
           </ion-button>
         </ion-col>
       </ion-row>
-    </ion-grid>
+    </ion-grid> -->
   </form>
 
   <!-- Image Preview Modal -->
