@@ -130,7 +130,7 @@ export class SaleFormPage implements OnInit {
   private datePipe = inject(DatePipe);
 
   saleForm!: FormGroup;
-  pageTitle = signal('Add Sale Items');
+  pageTitle = signal('Add Jewelry Items');
   isLoading = signal(false);
   imageToShowInModal = signal<string | null>(null);
 

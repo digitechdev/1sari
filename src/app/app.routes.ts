@@ -103,12 +103,12 @@ export const routes: Routes = [
       {
         path: '', 
         loadComponent: () => import('./pages/sales/sales.page').then(m => m.SalesPage),
-        data: { title: 'Sales' }
+        data: { title: 'Jewelries' }
       },
       {
         path: 'new', 
         loadComponent: () => import('./pages/sales/sale-form/sale-form.page').then(m => m.SaleFormPage),
-        data: { title: 'Add New Sale' }
+        data: { title: 'Add New Jewelry' }
       },
       {
         path: 'detail/:id',

@@ -133,7 +133,7 @@ export class AppComponent implements OnInit {
     { title: 'Dashboard', url: '/dashboard', icon: 'grid-outline' }, // Example route
     { title: 'Borrowers', url: '/borrowers', icon: 'people-outline' }, // Example route
     { title: 'Loans', url: '/loans', icon: 'cash-outline' }, // Example route
-    { title: 'Sales', url: '/sales', icon: 'storefront-outline' },
+    { title: 'Jewelries', url: '/sales', icon: 'storefront-outline' },
     { title: 'Users', url: '/users', icon: 'people-outline' }, // Example route
     // { title: 'Analytics', url: '/analytics', icon: 'analytics-outline' },
     // { title: 'Transaction', url: '/transaction', icon: 'swap-horizontal-outline' },
