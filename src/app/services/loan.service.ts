@@ -4,6 +4,7 @@ import { PostgrestSingleResponse, PostgrestError, PostgrestResponse } from '@sup
 import { Loan } from '../interfaces/loan.interfaces';
 import { LoanPaymentSchedule } from '../interfaces/loan-payment-schedule.interfaces';
 
+
 @Injectable({
   providedIn: 'root'
 })

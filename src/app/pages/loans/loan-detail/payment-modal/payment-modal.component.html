@@ -1,0 +1,111 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Make Payment</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="12" class="ion-padding">
+          <!-- Payment Method -->
+          <ion-select
+            class="ion-margin-bottom"
+            justify="space-between"
+            label="Payment Method"
+            placeholder="Select payment method"
+            fill="solid"
+            formControlName="paymentMethod"
+            (ionChange)="onPaymentMethodChange($event.detail.value)"
+            [errorText]="paymentForm.controls['paymentMethod'].invalid && 
+            paymentForm.controls['paymentMethod'].touched ? 'Payment method is required.' : ''"
+            interface="popover"
+          >
+            <ion-select-option value="Gcash">Gcash</ion-select-option>
+            <ion-select-option value="Bank">Bank</ion-select-option>
+            <ion-select-option value="Check">Check</ion-select-option>
+          </ion-select>
+
+          <!-- Amount -->
+          <ion-input
+            class="ion-margin-bottom"
+            fill="solid"
+            label="Amount"
+            labelPlacement="floating"
+            type="number"
+            formControlName="amount"
+            placeholder="Enter amount"
+            [errorText]="paymentForm.controls['amount'].invalid && 
+            paymentForm.controls['amount'].touched ? 'Amount is required and must be greater than 0.' : ''"
+          ></ion-input>
+
+          <!-- Reference Number -->
+          <ion-input
+            class="ion-margin-bottom"
+            fill="solid"
+            label="Reference Number"
+            labelPlacement="floating"
+            formControlName="referenceNumber"
+            placeholder="Enter reference number"
+            [errorText]="paymentForm.controls['referenceNumber'].invalid && 
+            paymentForm.controls['referenceNumber'].touched ? 'Reference number is required.' : ''"
+          ></ion-input>
+
+          <!-- Additional Charges Card -->
+          @if (showAdditionalFees()) {
+           <h1>Additional Charges</h1>
+              <ion-input
+                fill="solid"
+                label="Convenience Fee"
+                labelPlacement="floating"
+                type="number"
+                formControlName="convenienceFee"
+                placeholder="Enter convenience fee"
+                [errorText]="paymentForm.controls['convenienceFee'].invalid && 
+                paymentForm.controls['convenienceFee'].touched ? 'Convenience fee must be 0 or greater.' : ''"
+              ></ion-input>
+          }
+          <h1>Payment Summary</h1>
+          <ion-list lines="none">
+            <ion-item>
+              <ion-label>Base Amount</ion-label>
+              <ion-note slot="end">{{ paymentForm.get('amount')?.value | currency:'PHP':'symbol':'1.2-2' }}</ion-note>
+            </ion-item>
+              <ion-item>
+                <ion-label>Late Payment Fee</ion-label>
+                <ion-note slot="end">{{ latePaymentFee() | currency:'PHP':'symbol':'1.2-2' }}</ion-note>
+              </ion-item>
+            @if (showAdditionalFees()) {
+              <ion-item>
+                <ion-label>Convenience Fee</ion-label>
+                <ion-note slot="end">{{ paymentForm.get('convenienceFee')?.value | currency:'PHP':'symbol':'1.2-2' }}</ion-note>
+              </ion-item>
+            }
+            <ion-item>
+              <ion-label><strong>Total Amount</strong></ion-label>
+              <ion-note slot="end">
+                <strong>
+                  {{ (paymentForm.get('amount')?.value + latePaymentFee() + paymentForm.get('convenienceFee')?.value) | currency:'PHP':'symbol':'1.2-2' }}
+                </strong>
+              </ion-note>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button expand="block" (click)="confirmPayment()" [disabled]="paymentForm.invalid">
+      Confirm Payment
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

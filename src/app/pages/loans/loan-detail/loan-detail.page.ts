@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { IonicModule, NavController, ToastController } from '@ionic/angular';
+import { IonicModule, NavController, ToastController, ModalController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { LoanService } from '../../../services/loan.service';
 import { Loan } from '../../../interfaces/loan.interfaces';
@@ -8,6 +8,7 @@ import { LoanPaymentSchedule } from '../../../interfaces/loan-payment-schedule.i
 import { PaymentStatus } from 'src/app/enums/payment-status.enum';
 import { Sale } from '../../../models/sale.interface';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
+import { PaymentModalComponent } from './payment-modal/payment-modal.component';
 
 @Component({
   selector: 'app-loan-detail',
@@ -35,6 +36,7 @@ export class LoanDetailPage implements OnInit {
   private toastCtrl = inject(ToastController);
   private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
+  private modalCtrl = inject(ModalController);
 
   // Using 'any' for loanDetail initially because Supabase join brings nested objects
   loanDetail = signal<any | null>(null); 
@@ -138,9 +140,23 @@ export class LoanDetailPage implements OnInit {
     await this.presentToast(`Processing interest payment for period ${row.period_number}`, 'success');
   }
 
-  async payAmortization(row: LoanPaymentSchedule) {
-    // TODO: Implement amortization payment logic
-    await this.presentToast(`Processing amortization payment for period ${row.period_number}`, 'success');
+  async payAmortization(schedule: LoanPaymentSchedule) {
+    const modal = await this.modalCtrl.create({
+      component: PaymentModalComponent,
+      componentProps: {
+        schedule: schedule
+      }
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    
+    if (role === 'confirm' && data) {
+      // Handle the payment data
+      console.log('Payment data:', data);
+      // TODO: Call your payment service to process the payment
+    }
   }
 
   onActivate(event: any) {

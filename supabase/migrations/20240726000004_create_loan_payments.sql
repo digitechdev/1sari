@@ -3,6 +3,7 @@ CREATE TABLE public.loan_payments (
     schedule_id INTEGER NOT NULL REFERENCES public.loan_payment_schedules(id) ON DELETE CASCADE,
     loan_id INTEGER NOT NULL REFERENCES public.loans(id) ON DELETE CASCADE,
     amount NUMERIC(15, 2) NOT NULL,
+    total_amount NUMERIC(15, 2) NOT NULL,
     payment_date DATE NOT NULL DEFAULT CURRENT_DATE,
     method TEXT, -- e.g., 'Cash', 'Bank Transfer', 'Gcash'
     reference TEXT, -- OR number/receipt

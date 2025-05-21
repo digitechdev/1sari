@@ -232,7 +232,8 @@
               </ngx-datatable-column>
               <ngx-datatable-column name="Actions" [width]="180">
                 <ng-template let-row="row" ngx-datatable-cell-template>
-                  <div class="action-buttons">
+                  @if (row.status === 'Open') {
+                    <div class="action-buttons">
                       <ion-button fill="clear" size="small" color="primary" (click)="payPrincipal(row)">
                         <ion-icon name="cash-outline"></ion-icon>
                       </ion-button>
@@ -242,7 +243,10 @@
                       <ion-button fill="clear" size="small" color="tertiary" (click)="payAmortization(row)">
                         <ion-icon name="calculator-outline"></ion-icon>
                       </ion-button>
-                  </div>
+                    </div>
+                  } @else {
+                    <ion-badge color="medium">No Actions</ion-badge>
+                  }
                 </ng-template>
               </ngx-datatable-column>              
             </ngx-datatable>
