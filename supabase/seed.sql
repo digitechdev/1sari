@@ -76,7 +76,7 @@ INSERT INTO public.loans (
 -- Loan 1 for Arlene Andaya Corook (borrower_id = 1)
 (1, NULL, NULL, 'D.S.A. Sari Sari Store', 
  30000.00, 0.03, 2, '2025-03-01', 'straight', 'Daily', 60, 'Gcash', -- Updated tenure_in_months=2, period=Daily, repayment=60, disbursement=Gcash
- 'Active', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan'
+ 'Paid', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan'
 ),
 -- Loan 2 for Edwin Lopez Mercado (borrower_id = 2)
 (2, NULL, NULL, 'Five (5) Commercial Space - E.L. Mercado', 
@@ -86,7 +86,7 @@ INSERT INTO public.loans (
 -- Loan 3 for Jenalyn Santiago Dy (borrower_id = 3)
 (3, NULL, NULL, 'Jenalyn Store', 
  50000.00, 0.025, 12, CURRENT_DATE, 'diminishing', 'Monthly', 12, 'Gcash', -- Updated tenure_in_months=12, period=Monthly, repayment=12, disbursement=Gcash
- 'Pending', CURRENT_DATE, NULL, 'Inventory Purchase', 'Sample pending loan'
+ 'Active', CURRENT_DATE, CURRENT_DATE, 'Inventory Purchase', 'Sample pending loan'
 );
 
 -- Section 3: Insert sample loan payment schedule data based on loan-payment-schedule.interfaces.ts
@@ -98,11 +98,11 @@ INSERT INTO public.loans (
 INSERT INTO public.loan_payment_schedules (
     loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
 ) VALUES
-(1, 1, '2025-03-02', 530.00, 500.00, 30.00, 29500.00, 'Pending'),
-(1, 2, '2025-03-03', 530.00, 500.00, 30.00, 29000.00, 'Pending'),
-(1, 3, '2025-03-04', 530.00, 500.00, 30.00, 28500.00, 'Pending'),
-(1, 4, '2025-03-05', 530.00, 500.00, 30.00, 28000.00, 'Pending'),
-(1, 5, '2025-03-06', 530.00, 500.00, 30.00, 27500.00, 'Pending');
+(1, 1, '2025-03-02', 530.00, 500.00, 30.00, 29500.00, 'Paid'),
+(1, 2, '2025-03-03', 530.00, 500.00, 30.00, 29000.00, 'Paid'),
+(1, 3, '2025-03-04', 530.00, 500.00, 30.00, 28500.00, 'Paid'),
+(1, 4, '2025-03-05', 530.00, 500.00, 30.00, 28000.00, 'Paid'),
+(1, 5, '2025-03-06', 530.00, 500.00, 30.00, 27500.00, 'Paid');
 -- ... Add rows for all 60 days if seeding completely
 
 -- Schedule for Loan 2 (ID=2, Diminishing Monthly, 6 months)
@@ -110,12 +110,12 @@ INSERT INTO public.loan_payment_schedules (
 INSERT INTO public.loan_payment_schedules (
     loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
 ) VALUES
-(2, 1, '2025-03-31', 18459.75, 15459.75, 3000.00, 84540.25, 'Pending'), 
-(2, 2, '2025-04-30', 18459.75, 15923.54, 2536.21, 68616.71, 'Pending'),
-(2, 3, '2025-05-31', 18459.75, 16401.25, 2058.50, 52215.46, 'Pending'),
-(2, 4, '2025-06-30', 18459.75, 16893.29, 1566.46, 35322.17, 'Pending'),
-(2, 5, '2025-07-31', 18459.75, 17400.08, 1059.67, 17922.09, 'Pending'),
-(2, 6, '2025-08-31', 18459.75, 17922.09, 537.66, 0.00, 'Pending');
+(2, 1, '2025-03-31', 18459.75, 15459.75, 3000.00, 84540.25, 'Paid'), 
+(2, 2, '2025-04-30', 18459.75, 15923.54, 2536.21, 68616.71, 'Paid'),
+(2, 3, '2025-05-31', 18459.75, 16401.25, 2058.50, 52215.46, 'Paid'),
+(2, 4, '2025-06-30', 18459.75, 16893.29, 1566.46, 35322.17, 'Open'),
+(2, 5, '2025-07-31', 18459.75, 17400.08, 1059.67, 17922.09, 'Open'),
+(2, 6, '2025-08-31', 18459.75, 17922.09, 537.66, 0.00, 'Open');
 
 -- Schedule for Loan 3 (ID=3, Diminishing Monthly, 12 months) 
 -- Only showing first few months for brevity
@@ -123,9 +123,9 @@ INSERT INTO public.loan_payment_schedules (
 INSERT INTO public.loan_payment_schedules (
     loan_id, period_number, due_date, amount_due, principal_paid, interest_paid, outstanding_balance, status
 ) VALUES
-(3, 1, (CURRENT_DATE + INTERVAL '1 month')::date, 4757.80, 3507.80, 1250.00, 46492.20, 'Pending'),
-(3, 2, (CURRENT_DATE + INTERVAL '2 month')::date, 4757.80, 3595.50, 1162.30, 42896.70, 'Pending'),
-(3, 3, (CURRENT_DATE + INTERVAL '3 month')::date, 4757.80, 3685.38, 1072.42, 39211.32, 'Pending');
+(3, 1, (CURRENT_DATE + INTERVAL '1 month')::date, 4757.80, 3507.80, 1250.00, 46492.20, 'Open'),
+(3, 2, (CURRENT_DATE + INTERVAL '2 month')::date, 4757.80, 3595.50, 1162.30, 42896.70, 'Open'),
+(3, 3, (CURRENT_DATE + INTERVAL '3 month')::date, 4757.80, 3685.38, 1072.42, 39211.32, 'Open');
 -- ... Add rows for all 12 months if seeding completely
 
 COMMIT;
@@ -157,4 +157,29 @@ INSERT INTO public.sales (borrower_name, item_name, description, price, image_ur
 ('Arlene Andaya Corook', 'Assorted Groceries Pack A', 'Weekly grocery supplies', 500.00, NULL, NULL),
 ('Edwin Lopez Mercado', 'Construction Materials Lot 1', 'Cement and steel bars for store improvement', 12000.00, 'https://example.com/cement.jpg', NULL),
 ('Jenalyn Santiago Dy', 'Retail Goods Batch 15', 'Restock of various retail items', 2500.00, NULL, NULL)
-ON CONFLICT (id) DO NOTHING; 
+ON CONFLICT (id) DO NOTHING;
+
+-- Section 5: Insert sample loan payments
+-- Assume schedule_id and loan_id from above (e.g., schedule_id 1-5 for loan_id 1, etc.)
+INSERT INTO public.loan_payments (schedule_id, loan_id, amount, payment_date, method, reference, notes, recorded_by)
+VALUES
+  (1, 1, 530.00, '2025-03-02', 'Gcash', 'GCASH-001', 'Paid via Gcash app', NULL),
+  (2, 1, 530.00, '2025-03-03', 'Cash', 'RCPT-002', 'Paid in cash at store', NULL),
+  (3, 1, 530.00, '2025-03-04', 'Bank', 'BANK-003', 'Paid via bank transfer', NULL),
+  (4, 1, 530.00, '2025-03-05', 'Gcash', 'GCASH-004', 'Paid via Gcash app', NULL),
+  (5, 1, 530.00, '2025-03-06', 'Cash', 'RCPT-005', 'Paid in cash at store', NULL),
+  (1, 2, 18459.75, '2025-03-31', 'Bank', 'BANK-101', 'Monthly payment via bank', NULL),
+  (2, 2, 18459.75, '2025-04-30', 'Gcash', 'GCASH-102', 'Monthly payment via Gcash', NULL),
+  (3, 2, 18459.75, '2025-05-31', 'Cash', 'RCPT-103', 'Paid in cash', NULL);
+
+-- Section 6: Insert sample loan payment charges
+-- Add a convenience fee for Gcash/Bank payments and a late payment fee for one payment
+INSERT INTO public.loan_payment_charges (schedule_id, charge_type, amount, description, added_by)
+VALUES
+  (1, 'Convenience Fee', 10.00, 'Convenience fee for Gcash payment', NULL),
+  (3, 'Convenience Fee', 15.00, 'Convenience fee for Bank payment', NULL),
+  (4, 'Convenience Fee', 10.00, 'Convenience fee for Gcash payment', NULL),
+  (1, 'Late Payment Fee', 25.00, 'Late payment for scheduled due date', NULL),
+  (2, 'Late Payment Fee', 20.00, 'Late payment for scheduled due date', NULL),
+  (2, 'Convenience Fee', 12.00, 'Convenience fee for Gcash payment', NULL),
+  (6, 'Convenience Fee', 20.00, 'Convenience fee for Bank payment', NULL); 
