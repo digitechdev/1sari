@@ -89,8 +89,9 @@
                 [errorText]="loanForm.controls['disbursement_method'].invalid &&
         loanForm.controls['disbursement_method'].touched ? 'Disbursement Method is required.' : ''"
               >
-                <ion-select-option value="cash">Cash</ion-select-option>
-                <ion-select-option value="bank">Bank</ion-select-option>
+              <ion-select-option value="bank">Bank</ion-select-option>
+              <ion-select-option value="check">Check</ion-select-option>
+              <ion-select-option value="gcash">GCash</ion-select-option>
               </ion-select>
 
               <!-- Purpose -->

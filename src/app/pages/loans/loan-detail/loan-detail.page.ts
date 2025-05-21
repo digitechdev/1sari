@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { IonicModule, NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
@@ -7,6 +7,7 @@ import { Loan } from '../../../interfaces/loan.interfaces';
 import { LoanPaymentSchedule } from '../../../interfaces/loan-payment-schedule.interfaces';
 import { PaymentStatus } from 'src/app/enums/payment-status.enum';
 import { Sale } from '../../../models/sale.interface';
+import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
 
 @Component({
   selector: 'app-loan-detail',
@@ -17,15 +18,23 @@ import { Sale } from '../../../models/sale.interface';
     IonicModule, 
     CommonModule, 
     CurrencyPipe, 
-    DatePipe
+    DatePipe,
+    NgxDatatableModule
   ],
   providers: [CurrencyPipe, DatePipe] // Provide pipes
 })
 export class LoanDetailPage implements OnInit {
+  @ViewChild('dateTemplate') dateTemplate!: TemplateRef<any>;
+  @ViewChild('currencyTemplate') currencyTemplate!: TemplateRef<any>;
+  @ViewChild('statusTemplate') statusTemplate!: TemplateRef<any>;
+  @ViewChild('actionsTemplate') actionsTemplate!: TemplateRef<any>;
+
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
   private loanService = inject(LoanService);
   private toastCtrl = inject(ToastController);
+  private datePipe = inject(DatePipe);
+  private currencyPipe = inject(CurrencyPipe);
 
   // Using 'any' for loanDetail initially because Supabase join brings nested objects
   loanDetail = signal<any | null>(null); 
@@ -33,6 +42,26 @@ export class LoanDetailPage implements OnInit {
   saleItems = signal<Sale[] | null>(null);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+
+  // ngx-datatable configuration
+  ColumnMode = ColumnMode;
+  scheduleColumns = [
+    { name: '#', prop: 'period_number', width: 50 },
+    { name: 'Due Date', prop: 'due_date', width: 120 },
+    { name: 'Payment', prop: 'amount_due', width: 120 },
+    { name: 'Interest', prop: 'interest_paid', width: 120 },
+    { name: 'Principal', prop: 'principal_paid', width: 120 },
+    { name: 'Balance', prop: 'outstanding_balance', width: 120 },
+    { name: 'Status', prop: 'status', width: 100 },
+    { 
+      name: 'Actions', 
+      prop: 'actions',
+      width: 150,
+      sortable: false,
+      canAutoResize: false,
+      cellClass: 'actions-cell'
+    }
+  ];
 
   ngOnInit() {
     this.loadData();
@@ -97,5 +126,35 @@ export class LoanDetailPage implements OnInit {
       color: color,
     });
     await toast.present();
+  }
+
+  async payPrincipal(row: LoanPaymentSchedule) {
+    // TODO: Implement principal payment logic
+    await this.presentToast(`Processing principal payment for period ${row.period_number}`, 'success');
+  }
+
+  async payInterest(row: LoanPaymentSchedule) {
+    // TODO: Implement interest payment logic
+    await this.presentToast(`Processing interest payment for period ${row.period_number}`, 'success');
+  }
+
+  async payAmortization(row: LoanPaymentSchedule) {
+    // TODO: Implement amortization payment logic
+    await this.presentToast(`Processing amortization payment for period ${row.period_number}`, 'success');
+  }
+
+  onActivate(event: any) {
+    if (event.type === 'click' && event.column.prop === 'actions') {
+      const row = event.row;
+      const target = event.event.target as HTMLElement;
+      
+      if (target.closest('.pay-principal')) {
+        this.payPrincipal(row);
+      } else if (target.closest('.pay-interest')) {
+        this.payInterest(row);
+      } else if (target.closest('.pay-amortization')) {
+        this.payAmortization(row);
+      }
+    }
   }
 } 

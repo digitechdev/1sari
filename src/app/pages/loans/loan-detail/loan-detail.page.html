@@ -135,7 +135,7 @@
     </ion-card>
 
     <!-- Associated Sale Items Card -->
-    <ion-card>
+    <!-- <ion-card>
       <ion-card-header>
         <ion-card-title>
           <ion-icon name="basket-outline" class="card-title-icon"></ion-icon>
@@ -145,10 +145,9 @@
       <ion-card-content>
         @if (saleItems(); as items) {
           @if (items.length > 0) {
-            <ion-list lines="inset"> <!-- Use inset lines for better visual separation -->
+            <ion-list lines="inset">
               @for (item of items; track item.id) {
                 <ion-item>
-                  <!-- Add thumbnail if image_url exists and is valid -->
                   @if (item.image_url) {
                     <ion-thumbnail slot="start">
                       <ion-img [src]="item.image_url" alt="Image of {{ item.item_name }}"></ion-img>
@@ -175,56 +174,90 @@
            </ion-item>
         }
       </ion-card-content>
-    </ion-card>
+    </ion-card> -->
 
     <!-- Repayment Schedule Card -->
     <ion-card>
-       <ion-card-header>
+      <ion-card-header>
         <ion-card-title>
-           <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
+          <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
           Repayment Schedule
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
-         @if (loanSchedule(); as schedule) {
-            @if(schedule.length > 0) {
-              <ion-grid fixed id="repayment-schedule-grid"> <!-- Use same ID for styling -->
-                <ion-row class="header-row">
-                  <ion-col size="1">#</ion-col>
-                  <ion-col size="2">Due Date</ion-col>
-                  <ion-col size="2" class="ion-text-right">Payment</ion-col>
-                  <ion-col size="2" class="ion-text-right">Interest</ion-col>
-                  <ion-col size="2" class="ion-text-right">Principal</ion-col>
-                  <ion-col size="2" class="ion-text-right">Balance</ion-col>
-                  <ion-col size="1">Status</ion-col>
-                </ion-row>
-                @for (item of schedule; track item.period_number) {
-                  <ion-row>
-                    <ion-col size="1">{{ item.period_number }}</ion-col>
-                    <ion-col size="2">{{ item.due_date | date:'yyyy-MM-dd' }}</ion-col>
-                    <ion-col size="2" class="ion-text-right">{{ item.amount_due | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
-                    <ion-col size="2" class="ion-text-right">{{ item.interest_paid | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
-                    <ion-col size="2" class="ion-text-right">{{ item.principal_paid | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
-                    <ion-col size="2" class="ion-text-right">{{ item.outstanding_balance | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
-                    <ion-col size="1">
-                       <ion-badge [color]="item.status === 'Paid' ? 'success' : (item.status === 'Pending' ? 'warning' : 'danger')">{{ item.status }}</ion-badge>
-                    </ion-col>
-                  </ion-row>
-                }
-                <!-- Optional: Add totals row if needed -->
-              </ion-grid>
-            } @else {
-               <ion-item lines="none">
-                 <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
-                 <ion-label>No repayment schedule found for this loan.</ion-label>
-               </ion-item>
-            }
-         } @else {
-           <ion-item lines="none">
-             <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
-             <ion-label>No repayment schedule available.</ion-label>
-           </ion-item>
-         }
+        @if (loanSchedule(); as schedule) {
+          @if(schedule.length > 0) {
+            <ngx-datatable
+              class="material expandable schedule-datatable"
+              [rows]="schedule"
+              [columnMode]="ColumnMode.force"
+              [headerHeight]="50"
+              [footerHeight]="50"
+              [rowHeight]="50"
+              [scrollbarH]="true"
+              [limit]="10"
+            >
+              <ngx-datatable-column name="#" prop="period_number" [width]="50"></ngx-datatable-column>
+              <ngx-datatable-column name="Due Date" prop="due_date" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  {{ row.due_date | date:'yyyy-MM-dd' }}
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Payment" prop="amount_due" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  {{ row.amount_due | currency:'PHP':'symbol':'1.2-2' }}
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Interest" prop="interest_paid" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  {{ row.interest_paid | currency:'PHP':'symbol':'1.2-2' }}
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Principal" prop="principal_paid" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  {{ row.principal_paid | currency:'PHP':'symbol':'1.2-2' }}
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Balance" prop="outstanding_balance" [width]="120">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  {{ row.outstanding_balance | currency:'PHP':'symbol':'1.2-2' }}
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Status" prop="status" [width]="100">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  <ion-badge [color]="row.status === 'Paid' ? 'success' : (row.status === 'Pending' ? 'warning' : 'danger')">
+                    {{ row.status }}
+                  </ion-badge>
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column name="Actions" [width]="180">
+                <ng-template let-row="row" ngx-datatable-cell-template>
+                  <div class="action-buttons">
+                      <ion-button fill="clear" size="small" color="primary" (click)="payPrincipal(row)">
+                        <ion-icon name="cash-outline"></ion-icon>
+                      </ion-button>
+                      <ion-button fill="clear" size="small" color="secondary" (click)="payInterest(row)">
+                        <ion-icon name="trending-up-outline"></ion-icon>
+                      </ion-button>
+                      <ion-button fill="clear" size="small" color="tertiary" (click)="payAmortization(row)">
+                        <ion-icon name="calculator-outline"></ion-icon>
+                      </ion-button>
+                  </div>
+                </ng-template>
+              </ngx-datatable-column>              
+            </ngx-datatable>
+          } @else {
+            <ion-item lines="none">
+              <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+              <ion-label>No repayment schedule found for this loan.</ion-label>
+            </ion-item>
+          }
+        } @else {
+          <ion-item lines="none">
+            <ion-icon name="information-circle-outline" slot="start" color="medium"></ion-icon>
+            <ion-label>No repayment schedule available.</ion-label>
+          </ion-item>
+        }
       </ion-card-content>
     </ion-card>
 
