@@ -1,0 +1,221 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ title() }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="paymentForm" (ngSubmit)="confirmPayment()">
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="12" class="ion-padding">
+          <h1>Payment Details</h1>
+          <ion-grid fixed>
+            <ion-row>
+              <ion-col size="12">
+                <!-- Payment Method -->
+                <ion-select
+                  class="ion-margin-bottom"
+                  justify="space-between"
+                  label="Payment Method"
+                  placeholder="Select payment method"
+                  fill="solid"
+                  formControlName="paymentMethod"
+                  [errorText]="
+                    paymentForm.controls['paymentMethod'].invalid &&
+                    paymentForm.controls['paymentMethod'].touched
+                      ? 'Payment method is required.'
+                      : ''
+                  "
+                  interface="popover"
+                >
+                  <ion-select-option value="Gcash">Gcash</ion-select-option>
+                  <ion-select-option value="Bank">Bank</ion-select-option>
+                  <ion-select-option value="Check">Check</ion-select-option>
+                </ion-select>
+
+                <!-- Amount -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  fill="solid"
+                  label="Payment Amount"
+                  labelPlacement="floating"
+                  type="number"
+                  formControlName="amount"
+                  placeholder="Enter principal amount"
+                  [errorText]="
+                    paymentForm.controls['amount'].invalid &&
+                    paymentForm.controls['amount'].touched
+                      ? amountError() || 'Amount is required and must be greater than 0.'
+                      : ''
+                  "
+                ></ion-input>
+
+                <!-- Reference Number -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  fill="solid"
+                  label="Reference Number"
+                  labelPlacement="floating"
+                  formControlName="referenceNumber"
+                  placeholder="Enter reference number"
+                  [errorText]="
+                    paymentForm.controls['referenceNumber'].invalid &&
+                    paymentForm.controls['referenceNumber'].touched
+                      ? 'Reference number is required.'
+                      : ''
+                  "
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
+          <!-- Payment Summary -->
+          <h1>Payment Summary</h1>
+          <ion-list>
+            <ion-item>
+              <ion-label>Original Principal</ion-label>
+              <ion-note slot="end">{{ originalPrincipal | currency:'PHP' }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>Total Principal Paid</ion-label>
+              <ion-note slot="end">{{ totalPrincipalPaid | currency:'PHP' }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>Current Remaining Principal</ion-label>
+              <ion-note slot="end">{{ remainingPrincipal() | currency:'PHP' }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>Payment Amount</ion-label>
+              <ion-note slot="end">{{ paymentForm.get('amount')?.value | currency:'PHP' }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>New Remaining Principal</ion-label>
+              <ion-note slot="end">{{ newRemainingPrincipal() | currency:'PHP' }}</ion-note>
+            </ion-item>
+            <ion-item>
+              <ion-label>Total Amount</ion-label>
+              <ion-note slot="end">{{ paymentForm.get('amount')?.value | currency:'PHP' }}</ion-note>
+            </ion-item>
+          </ion-list>
+
+          <h1>Loan Restructure Details</h1>
+
+          <!-- Loan Terms & Financial Info -->
+          <ion-grid fixed>
+            <ion-row>
+              <ion-col size="12">
+                <!-- Principal Amount -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  fill="solid"
+                  label="Principal Amount"
+                  labelPlacement="floating"
+                  type="number"
+                  placeholder="Enter Principal Amount"
+                  [readonly]="true"
+                  [value]="newRemainingPrincipal()"
+                  helperText="Automatically calculated based on the amount you entered"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <!-- Interest Method -->
+                <ion-select
+                  class="ion-margin-bottom"
+                  justify="space-between"
+                  label="Interest Method"
+                  placeholder="Select Interest Method"
+                  fill="solid"
+                  formControlName="interestMethod"
+                  interface="popover"
+                >
+                  <ion-select-option value="diminishing"
+                    >Diminishing</ion-select-option
+                  >
+                  <ion-select-option value="straight"
+                    >Straight</ion-select-option
+                  >
+                </ion-select>
+              </ion-col>
+              <ion-col size="6">
+                <!-- Loan Period -->
+                <ion-select
+                  class="ion-margin-bottom"
+                  justify="space-between"
+                  label="Loan Period"
+                  placeholder="Select Loan Period"
+                  fill="solid"
+                  formControlName="loanPeriod"
+                  interface="popover"
+                >
+                  <ion-select-option value="daily">Daily</ion-select-option>
+                  <ion-select-option value="weekly">Weekly</ion-select-option>
+                  <ion-select-option value="monthly"
+                    >Monthly</ion-select-option
+                  >
+                  <ion-select-option value="bi-monthly"
+                    >Bi-Monthly</ion-select-option
+                  >
+                </ion-select>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="4">
+                <!-- Interest Rate -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  type="number"
+                  fill="solid"
+                  label="Interest Rate"
+                  labelPlacement="floating"
+                  [value]="schedule.interest_rate"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="4">
+                <!-- Tenure In Months -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  type="number"
+                  fill="solid"
+                  label="Tenure In Months"
+                  labelPlacement="floating"
+                  [value]="schedule.tenure_in_months"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="4">
+                <!-- Repayment Period -->
+                <ion-input
+                  class="ion-margin-bottom"
+                  type="number"
+                  fill="solid"
+                  label="Repayment Period"
+                  labelPlacement="floating"
+                  [value]="schedule.repayment_period"
+                ></ion-input>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-button
+      expand="block"
+      (click)="confirmPayment()"
+      [disabled]="paymentForm.invalid"
+    >
+      Confirm Payment
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

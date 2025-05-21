@@ -13,4 +13,12 @@ export interface LoanPaymentSchedule {
   actual_payment_date?: string | null; // DATE
   status?: PaymentStatus; // TEXT DEFAULT 'Pending' -> Mapped to PaymentStatus enum
   created_at?: string; // TIMESTAMPTZ DEFAULT NOW()
+
+  // Loan terms fields
+  principal_due?: number; // The principal amount due for this period
+  interest_method?: 'straight' | 'diminishing'; // The interest calculation method
+  loan_period?: 'Daily' | 'Weekly' | 'Monthly' | 'Bi-Monthly'; // The loan period
+  interest_rate?: number; // The interest rate
+  tenure_in_months?: number; // The loan tenure in months
+  repayment_period?: number; // The repayment period
 }

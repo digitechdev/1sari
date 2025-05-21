@@ -9,6 +9,7 @@ import { PaymentStatus } from 'src/app/enums/payment-status.enum';
 import { Sale } from '../../../models/sale.interface';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
 import { PaymentModalComponent } from './payment-modal/payment-modal.component';
+import { PrincipalPaymentModalComponent } from './principal-payment-modal/principal-payment-modal.component';
 import { PaymentDetailsModalComponent } from './payment-details-modal/payment-details-modal.component';
 import { LoanPaymentService } from '../../../services/loan-payment.service';
 import { LoanPayment } from '../../../interfaces/loan-payment.interface';
@@ -131,8 +132,43 @@ export class LoanDetailPage implements OnInit {
   }
 
   async payPrincipal(row: LoanPaymentSchedule) {
-    // TODO: Implement principal payment logic
-    await this.presentToast(`Processing principal payment for period ${row.period_number}`, 'success');
+    // Calculate total principal paid from all paid schedules
+    const totalPrincipalPaid = this.loanSchedule()?.reduce((sum, schedule) => {
+      if (schedule.status === 'Paid') {
+        return sum + (schedule.principal_paid || 0);
+      }
+      return sum;
+    }, 0) || 0;
+
+    const modal = await this.modalCtrl.create({
+      component: PrincipalPaymentModalComponent,
+      componentProps: {
+        schedule: row,
+        totalPrincipalPaid: totalPrincipalPaid,
+        originalPrincipal: this.loanDetail()?.principal || 0
+      }
+    });
+
+    await modal.present();
+
+    const { data, role } = await modal.onWillDismiss();
+    
+    if (role === 'confirm' && data) {
+      try {
+        const response = await this.loanPaymentService.recordPayment(data as LoanPayment);
+        
+        if (response.error) {
+          await this.presentToast('Failed to record payment: ' + response.error.message, 'danger');
+          return;
+        }
+
+        // Refresh the loan details which includes the schedule
+        await this.loadLoanDetails(row.loan_id);
+        await this.presentToast('Principal payment recorded successfully', 'success');
+      } catch (error: any) {
+        await this.presentToast('An unexpected error occurred: ' + error.message, 'danger');
+      }
+    }
   }
 
   async payInterest(row: LoanPaymentSchedule) {
