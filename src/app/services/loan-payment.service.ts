@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
 import { LoanPayment } from '../interfaces/loan-payment.interface';
+import { LoanStatus } from '../enums/loan-status.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +76,31 @@ export class LoanPaymentService {
       if (scheduleError) {
         console.error('Error updating payment schedule:', scheduleError);
         return { data: null, error: scheduleError, status: 0, statusText: 'Schedule Update Error', count: null };
+      }
+
+      // Check if this is the last payment schedule for the loan
+      const { data: remainingSchedules, error: scheduleCheckError } = await this.supabase
+        .from('loan_payment_schedules')
+        .select('id')
+        .eq('loan_id', paymentData.loan_id)
+        .eq('status', 'Open');
+
+      if (scheduleCheckError) {
+        console.error('Error checking remaining schedules:', scheduleCheckError);
+        return { data: null, error: scheduleCheckError, status: 0, statusText: 'Schedule Check Error', count: null };
+      }
+
+      // If no pending schedules remain, update the loan status to 'Paid'
+      if (remainingSchedules.length === 0) {
+        const { error: loanUpdateError } = await this.supabase
+          .from('loans')
+          .update({ status: LoanStatus.Paid })
+          .eq('id', paymentData.loan_id);
+
+        if (loanUpdateError) {
+          console.error('Error updating loan status:', loanUpdateError);
+          return { data: null, error: loanUpdateError, status: 0, statusText: 'Loan Status Update Error', count: null };
+        }
       }
 
       return { data: payment, error: null, status: 200, statusText: 'OK', count: 1 };
