@@ -94,7 +94,7 @@ export class PaymentModalComponent implements OnInit {
             amount: formValue.convenienceFee
           }
         ],
-        totalAmount: formValue.amount + this.latePaymentFee() + formValue.convenienceFee
+        total_amount: formValue.amount + this.latePaymentFee() + formValue.convenienceFee
       };
 
       try {

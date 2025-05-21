@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Payment Details</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-list>
+          <!-- Payment Date -->
+          <ion-item>
+            <ion-label>Payment Date</ion-label>
+            <p slot="end">{{ payment.payment_date | date : "mediumDate" }}</p>
+          </ion-item>
+
+          <!-- Payment Method -->
+          <ion-item>
+            <ion-label>Payment Method</ion-label>
+            <p slot="end">{{ payment.method }}</p>
+          </ion-item>
+
+          <!-- Reference Number -->
+          <ion-item>
+            <ion-label>Reference Number</ion-label>
+            <p slot="end">{{ payment.reference }}</p>
+          </ion-item>
+
+          <!-- Amount -->
+          <ion-item>
+            <ion-label>Amount</ion-label>
+            <ion-text slot="end">{{
+              payment.amount | currency : "PHP" : "symbol" : "1.2-2"
+            }}</ion-text>
+          </ion-item>
+
+          <!-- Additional Charges -->
+          @if (payment.charges && payment.charges.length > 0) { @for (charge of
+          payment.charges; track charge.charge_type) {
+          <ion-item>
+            <ion-label>{{ charge.charge_type }}</ion-label>
+            <p slot="end">
+              {{ charge.amount | currency : "PHP" : "symbol" : "1.2-2" }}
+            </p>
+          </ion-item>
+          } }
+          <ion-item>
+            <ion-label>Total Amount Paid</ion-label>
+            <p>
+              <strong>{{
+                payment.total_amount| currency : "PHP" : "symbol" : "1.2-2"
+              }}</strong>
+            </p>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

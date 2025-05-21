@@ -38,7 +38,7 @@ export class LoanPaymentService {
           payment_date: paymentData.payment_date,
           method: paymentData.method,
           reference: paymentData.reference,
-          total_amount: paymentData.totalAmount
+          total_amount: paymentData.total_amount
         })
         .select()
         .single();
@@ -51,6 +51,7 @@ export class LoanPaymentService {
       // If there are charges, insert them
       if (paymentData.charges && paymentData.charges.length > 0) {
         const charges = paymentData.charges.map(charge => ({
+          // payment_id: payment.id,
           schedule_id: paymentData.schedule_id,
           charge_type: charge.charge_type,
           amount: charge.amount,
@@ -103,7 +104,28 @@ export class LoanPaymentService {
         }
       }
 
-      return { data: payment, error: null, status: 200, statusText: 'OK', count: 1 };
+      // Fetch the complete payment record with charges
+      const { data: completePayment, error: fetchError } = await this.supabase
+        .from(this.tableName)
+        .select(`
+          *,
+          schedule:loan_payment_schedules!schedule_id(
+            id,
+            due_date,
+            amount_due,
+            status,
+            charges:loan_payment_charges(*)
+          )
+        `)
+        .eq('id', payment.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching complete payment record:', fetchError);
+        return { data: null, error: fetchError, status: 0, statusText: 'Payment Fetch Error', count: null };
+      }
+
+      return { data: completePayment, error: null, status: 200, statusText: 'OK', count: 1 };
 
     } catch (error: any) {
       console.error('Unexpected error in recordPayment:', error);
@@ -132,7 +154,13 @@ export class LoanPaymentService {
         .from(this.tableName)
         .select(`
           *,
-          charges:loan_payment_charges(*)
+          schedule:loan_payment_schedules!schedule_id(
+            id,
+            due_date,
+            amount_due,
+            status,
+            charges:loan_payment_charges(*)
+          )
         `)
         .eq('loan_id', loanId)
         .order('payment_date', { ascending: false });

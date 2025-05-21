@@ -244,6 +244,10 @@
                         <ion-icon name="calculator-outline"></ion-icon>
                       </ion-button>
                     </div>
+                  } @else if (row.status === 'Paid') {
+                    <ion-button fill="clear" size="small" color="success" (click)="viewPaymentDetails(row)">
+                      <ion-icon name="eye-outline"></ion-icon>
+                    </ion-button>
                   } @else {
                     <ion-badge color="medium">No Actions</ion-badge>
                   }

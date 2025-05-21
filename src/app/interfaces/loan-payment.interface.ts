@@ -9,5 +9,5 @@ export interface LoanPayment {
     charge_type: string;
     amount: number;
   }[];
-  totalAmount: number;
+  total_amount: number;
 } 

@@ -9,6 +9,8 @@ import { PaymentStatus } from 'src/app/enums/payment-status.enum';
 import { Sale } from '../../../models/sale.interface';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
 import { PaymentModalComponent } from './payment-modal/payment-modal.component';
+import { PaymentDetailsModalComponent } from './payment-details-modal/payment-details-modal.component';
+import { LoanPaymentService } from '../../../services/loan-payment.service';
 
 @Component({
   selector: 'app-loan-detail',
@@ -33,6 +35,7 @@ export class LoanDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
   private loanService = inject(LoanService);
+  private loanPaymentService = inject(LoanPaymentService);
   private toastCtrl = inject(ToastController);
   private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
@@ -69,17 +72,13 @@ export class LoanDetailPage implements OnInit {
     this.loadData();
   }
 
-  loadData() {
-    // Get ID from route, converting to number
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const loanId = idParam ? +idParam : null;
-
-    if (loanId) {
-      this.loadLoanDetails(loanId);
+  private async loadData() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      await this.loadLoanDetails(parseInt(id, 10));
     } else {
-      console.error('Loan ID not found in route parameters');
-      this.errorMessage.set('Loan ID is missing.');
-      this.presentToast('Could not load loan details: ID missing.', 'danger');
+      this.errorMessage.set('No loan ID provided');
+      this.presentToast('No loan ID provided', 'warning');
     }
   }
 
@@ -120,12 +119,12 @@ export class LoanDetailPage implements OnInit {
     this.navCtrl.back();
   }
 
-  async presentToast(message: string, color: 'success' | 'danger' | 'warning') {
+  async presentToast(message: string, color: string = 'success') {
     const toast = await this.toastCtrl.create({
-      message: message,
+      message,
       duration: 3000,
-      position: 'bottom',
-      color: color,
+      color,
+      position: 'top'
     });
     await toast.present();
   }
@@ -153,9 +152,48 @@ export class LoanDetailPage implements OnInit {
     const { data, role } = await modal.onWillDismiss();
     
     if (role === 'confirm' && data) {
-      // Handle the payment data
-      console.log('Payment data:', data);
-      // TODO: Call your payment service to process the payment
+      // Refresh the loan details which includes the schedule
+      await this.loadLoanDetails(schedule.loan_id);
+      await this.presentToast('Payment recorded successfully', 'success');
+    }
+  }
+
+  async viewPaymentDetails(schedule: LoanPaymentSchedule) {
+    try {
+      // Fetch payment details for this schedule
+      const response = await this.loanPaymentService.getLoanPayments(schedule.loan_id);
+      
+      if (response.error) {
+        console.error('Error fetching payment details:', response.error);
+        await this.presentToast('Error fetching payment details: ' + response.error.message, 'danger');
+        return;
+      }
+
+      if (!response.data || response.data.length === 0) {
+        await this.presentToast('No payment records found for this loan', 'warning');
+        return;
+      }
+
+      // Find the payment for this specific schedule
+      const payment = response.data.find(p => p.schedule_id === schedule.id);
+      
+      if (!payment) {
+        await this.presentToast('No payment details found for this schedule', 'warning');
+        return;
+      }
+
+      // Open payment details modal
+      const modal = await this.modalCtrl.create({
+        component: PaymentDetailsModalComponent,
+        componentProps: {
+          payment: payment
+        }
+      });
+
+      await modal.present();
+    } catch (error: any) {
+      console.error('Error viewing payment details:', error);
+      await this.presentToast('Error viewing payment details: ' + (error.message || 'Unknown error'), 'danger');
     }
   }
 

@@ -179,7 +179,7 @@ export class LoanFormPage implements OnInit {
           principal_paid: item.principal,
           interest_paid: item.interest,
           outstanding_balance: item.balance,
-          status: PaymentStatus.Pending // Align with expected PaymentStatus enum
+          status: PaymentStatus.Open // Align with expected PaymentStatus enum
         }));
 
         // Assume loanService has a method addLoanSchedule
