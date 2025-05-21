@@ -164,25 +164,58 @@ export class LoanService {
   }
 
   // --- Add getLoanById Method ---
-  async getLoanById(id: number): Promise<PostgrestSingleResponse<any>> { // Use any for now due to joins
+  async getLoanById(id: number): Promise<PostgrestSingleResponse<any>> {
     this.isLoading.set(true);
+  
     try {
-      const response = await this.supabase
+      // Step 1: Fetch the main loan with borrower and sales
+      const loanResponse = await this.supabase
         .from(this.tableName)
         .select(`
           *,
           borrower:account_information!borrower_id(*),
-          schedule:loan_payment_schedules(*, status),
           sales:sales(*)
         `)
         .eq('id', id)
         .single(); // Expecting one result
-
-      console.log('getLoanById response:', response);
-      return response;
-
+  
+      if (loanResponse.error) {
+        return loanResponse;
+      }
+  
+      const loan = loanResponse.data;
+  
+      // Step 2: Fetch schedule (ordered by due_date ASC)
+      const scheduleResponse = await this.supabase
+        .from('loan_payment_schedules')
+        .select('*')
+        .eq('loan_id', id)
+        .order('due_date', { ascending: true });
+  
+      if (scheduleResponse.error) {
+        return {
+          data: null,
+          error: scheduleResponse.error,
+          status: scheduleResponse.status,
+          statusText: scheduleResponse.statusText,
+          count: null
+        };
+      }
+  
+      // Inject schedule into loan to preserve structure
+      loan.schedule = scheduleResponse.data;
+  
+      return {
+        data: loan,
+        error: null,
+        status: 200,
+        statusText: 'OK',
+        count: null
+      };
+  
     } catch (error: any) {
       console.error(`Unexpected error fetching loan with ID ${id}:`, error);
+  
       const pgError: PostgrestError = {
         message: error?.message || 'Client Loan Fetch Error',
         details: error?.details || '',
@@ -190,11 +223,19 @@ export class LoanService {
         code: error?.code || 'CLIENT_LOAN_FETCH_BY_ID_ERR',
         name: 'ClientLoanFetchByIdError'
       };
-      return { data: null, error: pgError, status: 0, statusText: 'Client Loan Fetch Error', count: null };
+  
+      return {
+        data: null,
+        error: pgError,
+        status: 0,
+        statusText: 'Client Loan Fetch Error',
+        count: null
+      };
     } finally {
       this.isLoading.set(false);
     }
   }
+  
   // --- End getLoanById Method ---
 
   // --- Add Delete Loan Method ---
