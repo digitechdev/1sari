@@ -97,19 +97,7 @@ export class PaymentModalComponent implements OnInit {
         total_amount: formValue.amount + this.latePaymentFee() + formValue.convenienceFee
       };
 
-      try {
-        const response = await this.loanPaymentService.recordPayment(paymentData as LoanPayment);
-        
-        if (response.error) {
-          await this.presentToast('Failed to record payment: ' + response.error.message, 'danger');
-          return;
-        }
-
-        await this.presentToast('Payment recorded successfully', 'success');
-        this.modalCtrl.dismiss(paymentData, 'confirm');
-      } catch (error: any) {
-        await this.presentToast('An unexpected error occurred: ' + error.message, 'danger');
-      }
+      this.modalCtrl.dismiss(paymentData, 'confirm');
     }
   }
 }

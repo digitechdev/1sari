@@ -11,6 +11,7 @@ import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
 import { PaymentModalComponent } from './payment-modal/payment-modal.component';
 import { PaymentDetailsModalComponent } from './payment-details-modal/payment-details-modal.component';
 import { LoanPaymentService } from '../../../services/loan-payment.service';
+import { LoanPayment } from '../../../interfaces/loan-payment.interface';
 
 @Component({
   selector: 'app-loan-detail',
@@ -152,9 +153,20 @@ export class LoanDetailPage implements OnInit {
     const { data, role } = await modal.onWillDismiss();
     
     if (role === 'confirm' && data) {
-      // Refresh the loan details which includes the schedule
-      await this.loadLoanDetails(schedule.loan_id);
-      await this.presentToast('Payment recorded successfully', 'success');
+      try {
+        const response = await this.loanPaymentService.recordPayment(data as LoanPayment);
+        
+        if (response.error) {
+          await this.presentToast('Failed to record payment: ' + response.error.message, 'danger');
+          return;
+        }
+
+        // Refresh the loan details which includes the schedule
+        await this.loadLoanDetails(schedule.loan_id);
+        await this.presentToast('Payment recorded successfully', 'success');
+      } catch (error: any) {
+        await this.presentToast('An unexpected error occurred: ' + error.message, 'danger');
+      }
     }
   }
 
