@@ -3,5 +3,6 @@ export enum LoanStatus {
   Paid = 'Paid',
   Defaulted = 'Defaulted',
   Pending = 'Pending',
-  PaidOff = 'Paid Off'
+  PaidOff = 'Paid Off',
+  Restructured = 'Restructured'
 } 

@@ -181,4 +181,192 @@ export class LoanPaymentService {
       this.isLoading.set(false);
     }
   }
+
+  /**
+   * Records a principal payment and restructures the loan if needed
+   * @param paymentData The payment data to insert
+   * @param newLoanTerms The terms for the restructured loan (if restructuring)
+   * @returns Promise resolving to the Supabase response containing the newly created payment or an error
+   */
+  async recordPrincipalPayment(
+    paymentData: LoanPayment,
+    newLoanTerms?: {
+      interest_rate: number;
+      tenure_in_months: number;
+      interest_method: 'straight' | 'diminishing';
+      loan_period: 'Daily' | 'Weekly' | 'Monthly' | 'Bi-Monthly';
+      repayment_period: number;
+    }
+  ): Promise<PostgrestSingleResponse<any>> {
+    this.isLoading.set(true);
+    try {
+      // 1. Record the principal payment
+      const { data: payment, error: paymentError } = await this.supabase
+        .from(this.tableName)
+        .insert({
+          schedule_id: paymentData.schedule_id,
+          loan_id: paymentData.loan_id,
+          amount: paymentData.amount,
+          payment_date: paymentData.payment_date,
+          method: paymentData.method,
+          reference: paymentData.reference,
+          total_amount: paymentData.total_amount
+        })
+        .select()
+        .single();
+
+      if (paymentError) {
+        console.error('Error recording principal payment:', paymentError);
+        return { data: null, error: paymentError, status: 0, statusText: 'Principal Payment Record Error', count: null };
+      }
+
+      // 2. If there are charges, insert them
+      if (paymentData.charges && paymentData.charges.length > 0) {
+        const charges = paymentData.charges.map(charge => ({
+          schedule_id: paymentData.schedule_id,
+          charge_type: charge.charge_type,
+          amount: charge.amount,
+          description: `${charge.charge_type} for principal payment reference: ${paymentData.reference}`
+        }));
+
+        const { error: chargesError } = await this.supabase
+          .from(this.chargesTableName)
+          .insert(charges);
+
+        if (chargesError) {
+          console.error('Error recording principal payment charges:', chargesError);
+          return { data: null, error: chargesError, status: 0, statusText: 'Principal Payment Charges Record Error', count: null };
+        }
+      }
+
+      // 3. Get the current loan details
+      const { data: currentLoan, error: loanError } = await this.supabase
+        .from('loans')
+        .select('*')
+        .eq('id', paymentData.loan_id)
+        .single();
+
+      if (loanError) {
+        console.error('Error fetching current loan:', loanError);
+        return { data: null, error: loanError, status: 0, statusText: 'Loan Fetch Error', count: null };
+      }
+
+      // 4. Calculate remaining principal
+      const { data: schedules, error: scheduleError } = await this.supabase
+        .from('loan_payment_schedules')
+        .select('outstanding_balance')
+        .eq('loan_id', paymentData.loan_id)
+        .order('due_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (scheduleError) {
+        console.error('Error fetching current balance:', scheduleError);
+        return { data: null, error: scheduleError, status: 0, statusText: 'Balance Fetch Error', count: null };
+      }
+
+      const remainingPrincipal = schedules.outstanding_balance - paymentData.amount;
+
+      // 5. Update current loan status to Restructured
+      const { error: updateError } = await this.supabase
+        .from('loans')
+        .update({ status: LoanStatus.Restructured })
+        .eq('id', paymentData.loan_id);
+
+      if (updateError) {
+        console.error('Error updating loan status:', updateError);
+        return { data: null, error: updateError, status: 0, statusText: 'Loan Status Update Error', count: null };
+      }
+
+      // 6. Create new loan if there's remaining principal
+      if (remainingPrincipal > 0 && newLoanTerms) {
+        const newLoan = {
+          borrower_id: currentLoan.borrower_id,
+          co_borrower_id: currentLoan.co_borrower_id,
+          co_maker_id: currentLoan.co_maker_id,
+          store_name: currentLoan.store_name,
+          principal: remainingPrincipal,
+          interest_rate: newLoanTerms.interest_rate,
+          tenure_in_months: newLoanTerms.tenure_in_months,
+          loan_release_date: new Date().toISOString().split('T')[0],
+          interest_method: newLoanTerms.interest_method,
+          loan_period: newLoanTerms.loan_period,
+          repayment_period: newLoanTerms.repayment_period,
+          status: LoanStatus.Active,
+          application_date: new Date().toISOString().split('T')[0],
+          approval_date: new Date().toISOString().split('T')[0],
+          purpose: `Restructured from loan #${currentLoan.id}`,
+          notes: `Original loan #${currentLoan.id} restructured after principal payment of ${paymentData.amount}`
+        };
+
+        const { data: newLoanData, error: newLoanError } = await this.supabase
+          .from('loans')
+          .insert(newLoan)
+          .select()
+          .single();
+
+        if (newLoanError) {
+          console.error('Error creating new loan:', newLoanError);
+          return { data: null, error: newLoanError, status: 0, statusText: 'New Loan Creation Error', count: null };
+        }
+
+        // 7. Create new payment schedule for the restructured loan
+        const scheduleResponse = await this.supabase
+          .from('loan_payment_schedules')
+          .insert({
+            loan_id: newLoanData.id,
+            period_number: 1,
+            due_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+            amount_due: remainingPrincipal / newLoanTerms.tenure_in_months,
+            principal_paid: 0,
+            interest_paid: 0,
+            outstanding_balance: remainingPrincipal,
+            status: 'Open'
+          })
+          .select()
+          .single();
+
+        if (scheduleResponse.error) {
+          console.error('Error creating new payment schedule:', scheduleResponse.error);
+          return { data: null, error: scheduleResponse.error, status: 0, statusText: 'New Schedule Creation Error', count: null };
+        }
+      }
+
+      // 8. Fetch the complete payment record with charges
+      const { data: completePayment, error: fetchError } = await this.supabase
+        .from(this.tableName)
+        .select(`
+          *,
+          schedule:loan_payment_schedules!schedule_id(
+            id,
+            due_date,
+            amount_due,
+            status,
+            charges:loan_payment_charges(*)
+          )
+        `)
+        .eq('id', payment.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching complete payment record:', fetchError);
+        return { data: null, error: fetchError, status: 0, statusText: 'Payment Fetch Error', count: null };
+      }
+
+      return { data: completePayment, error: null, status: 200, statusText: 'OK', count: 1 };
+
+    } catch (error: any) {
+      console.error('Unexpected error in recordPrincipalPayment:', error);
+      const pgError: PostgrestError = {
+        message: error?.message || 'Client Principal Payment Record Error',
+        details: error?.details || '',
+        hint: error?.hint || '',
+        code: error?.code || 'CLIENT_PRINCIPAL_PAYMENT_RECORD_ERR',
+        name: 'ClientPrincipalPaymentRecordError'
+      };
+      return { data: null, error: pgError, status: 0, statusText: 'Client Principal Payment Record Error', count: null };
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
 } 

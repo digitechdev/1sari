@@ -155,16 +155,47 @@ export class LoanDetailPage implements OnInit {
     
     if (role === 'confirm' && data) {
       try {
-        const response = await this.loanPaymentService.recordPayment(data as LoanPayment);
-        
-        if (response.error) {
-          await this.presentToast('Failed to record payment: ' + response.error.message, 'danger');
-          return;
+        // Calculate remaining principal
+        const remainingPrincipal = (this.loanDetail()?.principal || 0) - (totalPrincipalPaid + (data.amount || 0));
+
+        // If there's remaining principal, we need to restructure the loan
+        if (remainingPrincipal > 0) {
+          // Create new loan terms based on current loan
+          const newLoanTerms = {
+            interest_rate: this.loanDetail()?.interest_rate || 0,
+            tenure_in_months: this.loanDetail()?.tenure_in_months || 0,
+            interest_method: this.loanDetail()?.interest_method || 'straight',
+            loan_period: this.loanDetail()?.loan_period || 'Monthly',
+            repayment_period: this.loanDetail()?.repayment_period || 0
+          };
+
+          const response = await this.loanPaymentService.recordPrincipalPayment(
+            data as LoanPayment,
+            newLoanTerms
+          );
+
+          if (response.error) {
+            await this.presentToast('Failed to record principal payment: ' + response.error.message, 'danger');
+            return;
+          }
+
+          await this.presentToast('Principal payment recorded and loan restructured successfully', 'success');
+        } else {
+          // If no remaining principal, just record the payment
+          const response = await this.loanPaymentService.recordPrincipalPayment(
+            data as LoanPayment
+          );
+
+          if (response.error) {
+            await this.presentToast('Failed to record principal payment: ' + response.error.message, 'danger');
+            return;
+          }
+
+          await this.presentToast('Principal payment recorded successfully', 'success');
         }
 
         // Refresh the loan details which includes the schedule
         await this.loadLoanDetails(row.loan_id);
-        await this.presentToast('Principal payment recorded successfully', 'success');
       } catch (error: any) {
         await this.presentToast('An unexpected error occurred: ' + error.message, 'danger');
       }

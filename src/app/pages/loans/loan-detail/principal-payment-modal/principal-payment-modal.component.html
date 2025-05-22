@@ -119,7 +119,7 @@
                   type="number"
                   placeholder="Enter Principal Amount"
                   [readonly]="true"
-                  [value]="newRemainingPrincipal()"
+                  formControlName="principalDue"
                   helperText="Automatically calculated based on the amount you entered"
                 ></ion-input>
               </ion-col>
@@ -135,13 +135,11 @@
                   fill="solid"
                   formControlName="interestMethod"
                   interface="popover"
+                  [errorText]="paymentForm.controls['interestMethod'].invalid && 
+                  paymentForm.controls['interestMethod'].touched ? 'Interest Method is required.' : ''"
                 >
-                  <ion-select-option value="diminishing"
-                    >Diminishing</ion-select-option
-                  >
-                  <ion-select-option value="straight"
-                    >Straight</ion-select-option
-                  >
+                  <ion-select-option value="diminishing">Diminishing</ion-select-option>
+                  <ion-select-option value="straight">Straight</ion-select-option>
                 </ion-select>
               </ion-col>
               <ion-col size="6">
@@ -154,15 +152,13 @@
                   fill="solid"
                   formControlName="loanPeriod"
                   interface="popover"
+                  [errorText]="paymentForm.controls['loanPeriod'].invalid && 
+                  paymentForm.controls['loanPeriod'].touched ? 'Loan Period is required.' : ''"
                 >
                   <ion-select-option value="daily">Daily</ion-select-option>
                   <ion-select-option value="weekly">Weekly</ion-select-option>
-                  <ion-select-option value="monthly"
-                    >Monthly</ion-select-option
-                  >
-                  <ion-select-option value="bi-monthly"
-                    >Bi-Monthly</ion-select-option
-                  >
+                  <ion-select-option value="monthly">Monthly</ion-select-option>
+                  <ion-select-option value="bi-monthly">Bi-Monthly</ion-select-option>
                 </ion-select>
               </ion-col>
             </ion-row>
@@ -175,7 +171,10 @@
                   fill="solid"
                   label="Interest Rate"
                   labelPlacement="floating"
-                  [value]="schedule.interest_rate"
+                  formControlName="interestRate"
+                  placeholder="Enter Interest Rate"
+                  [errorText]="paymentForm.controls['interestRate'].invalid && 
+                  paymentForm.controls['interestRate'].touched ? 'Interest Rate is required and must be greater than 0.' : ''"
                 ></ion-input>
               </ion-col>
               <ion-col size="4">
@@ -186,7 +185,10 @@
                   fill="solid"
                   label="Tenure In Months"
                   labelPlacement="floating"
-                  [value]="schedule.tenure_in_months"
+                  formControlName="tenureInMonths"
+                  placeholder="Enter Tenure In Months"
+                  [errorText]="paymentForm.controls['tenureInMonths'].invalid && 
+                  paymentForm.controls['tenureInMonths'].touched ? 'Tenure In Months is required and must be greater than 0.' : ''"
                 ></ion-input>
               </ion-col>
               <ion-col size="4">
@@ -197,15 +199,98 @@
                   fill="solid"
                   label="Repayment Period"
                   labelPlacement="floating"
-                  [value]="schedule.repayment_period"
+                  formControlName="repaymentPeriod"
+                  placeholder="Enter Repayment Period"
+                  [errorText]="paymentForm.controls['repaymentPeriod'].invalid && 
+                  paymentForm.controls['repaymentPeriod'].touched ? 'Repayment Period is required and must be greater than 0.' : ''"
                 ></ion-input>
               </ion-col>
             </ion-row>
           </ion-grid>
+
+          <!-- Repayment Schedule Card -->
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>
+                <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
+                Repayment Schedule
+              </ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-button
+                expand="block"
+                (click)="openScheduleModal()"
+                [disabled]="!canCalculateSchedule()"
+              >
+                <ion-icon slot="start" name="eye-outline"></ion-icon>
+                View Repayment Schedule
+              </ion-button>
+              @if (!canCalculateSchedule()) {
+                <ion-text color="medium">
+                  <p class="ion-text-center ion-padding-top">
+                    Please fill required loan terms (Principal, Rate, Tenure, Repayment Period) to view schedule.
+                  </p>
+                </ion-text>
+              } 
+            </ion-card-content>
+          </ion-card>
+          <!-- End Repayment Schedule Card -->
+
         </ion-col>
       </ion-row>
     </ion-grid>
   </form>
+
+  <!-- Repayment Schedule Modal -->
+  <ion-modal [isOpen]="isModalOpen()" (didDismiss)="isModalOpen.set(false)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>Repayment Schedule</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="exportToCsv()">
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Export CSV
+            </ion-button>
+            <ion-button (click)="isModalOpen.set(false)">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        @if (repaymentSchedule().length > 0) {
+          <ion-grid fixed id="repayment-schedule-grid">
+            <ion-row class="header-row">
+              <ion-col size="1">#</ion-col>
+              <ion-col size="3">Due Date</ion-col>
+              <ion-col size="2" class="ion-text-right">Payment</ion-col>
+              <ion-col size="2" class="ion-text-right">Interest</ion-col>
+              <ion-col size="2" class="ion-text-right">Principal</ion-col>
+              <ion-col size="2" class="ion-text-right">Balance</ion-col>
+            </ion-row>
+            @for (item of repaymentSchedule(); track item.periodNumber) {
+              <ion-row>
+                <ion-col size="1">{{ item.periodNumber }}</ion-col>
+                <ion-col size="3">{{ item.dueDate | date:'yyyy-MM-dd' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.paymentAmount | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.interest | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.principal | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+                <ion-col size="2" class="ion-text-right">{{ item.balance | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              </ion-row>
+            }
+            <ion-row class="total-row">
+              <ion-col size="3" offset="1" class="ion-text-right ion-text-bold">Total:</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPayment() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalInterest() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="2" class="ion-text-right ion-text-bold">{{ totalPrincipal() | currency:'PHP':'symbol':'1.2-2' }}</ion-col>
+              <ion-col size="1"></ion-col>
+            </ion-row>
+          </ion-grid>
+        } @else {
+          <ion-text color="medium"><p>No schedule data available.</p></ion-text>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
 
 <ion-footer>
@@ -213,7 +298,7 @@
     <ion-button
       expand="block"
       (click)="confirmPayment()"
-      [disabled]="paymentForm.invalid"
+      [disabled]="!isFormValid()"
     >
       Confirm Payment
     </ion-button>
