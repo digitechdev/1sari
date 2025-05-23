@@ -14,6 +14,7 @@ export interface Loan {
   co_borrower_id?: number; // Foreign Key (Optional)
   co_maker_id?: number; // Foreign Key (Optional)
   store_name?: string; // TEXT
+  parent_loan_id?: number; // Foreign Key to original loan (for restructured loans)
 
   // Loan terms (previously in calculationParams)
   principal: number; // NUMERIC

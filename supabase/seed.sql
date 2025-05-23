@@ -71,22 +71,27 @@ INSERT INTO public.account_information (
 INSERT INTO public.loans (
     borrower_id, co_borrower_id, co_maker_id, store_name, 
     principal, interest_rate, tenure_in_months, loan_release_date, interest_method, loan_period, repayment_period, disbursement_method,
-    status, application_date, approval_date, purpose, notes
+    status, application_date, approval_date, purpose, notes, parent_loan_id
 ) VALUES
 -- Loan 1 for Arlene Andaya Corook (borrower_id = 1)
 (1, NULL, NULL, 'D.S.A. Sari Sari Store', 
  30000.00, 0.03, 2, '2025-03-01', 'straight', 'Daily', 60, 'Gcash', -- Updated tenure_in_months=2, period=Daily, repayment=60, disbursement=Gcash
- 'Paid', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan'
+ 'Paid', CURRENT_DATE - INTERVAL '2 days', CURRENT_DATE - INTERVAL '1 day', 'Working Capital', 'Sample straight daily loan', NULL
 ),
 -- Loan 2 for Edwin Lopez Mercado (borrower_id = 2)
 (2, NULL, NULL, 'Five (5) Commercial Space - E.L. Mercado', 
  100000.00, 0.03, 6, '2025-03-01', 'diminishing', 'Monthly', 6, 'Bank', -- Updated tenure_in_months=6, period=Monthly, repayment=6, disbursement=Bank
- 'Active', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '3 days', 'Store Expansion', 'Sample diminishing monthly loan'
+ 'Active', CURRENT_DATE - INTERVAL '5 days', CURRENT_DATE - INTERVAL '3 days', 'Store Expansion', 'Sample diminishing monthly loan', NULL
 ),
 -- Loan 3 for Jenalyn Santiago Dy (borrower_id = 3)
 (3, NULL, NULL, 'Jenalyn Store', 
  50000.00, 0.025, 12, CURRENT_DATE, 'diminishing', 'Monthly', 12, 'Gcash', -- Updated tenure_in_months=12, period=Monthly, repayment=12, disbursement=Gcash
- 'Active', CURRENT_DATE, CURRENT_DATE, 'Inventory Purchase', 'Sample pending loan'
+ 'Active', CURRENT_DATE, CURRENT_DATE, 'Inventory Purchase', 'Sample pending loan', NULL
+),
+-- Loan 4: Example of a restructured loan (from Loan 1)
+(1, NULL, NULL, 'D.S.A. Sari Sari Store', 
+ 15000.00, 0.025, 3, '2025-03-20', 'diminishing', 'Monthly', 3, 'Gcash',
+ 'Active', '2025-03-20', '2025-03-20', 'Restructured Loan', 'Restructured from Loan #1 after principal payment', 1
 );
 
 -- Section 3: Insert sample loan payment schedule data based on loan-payment-schedule.interfaces.ts
@@ -161,16 +166,18 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Section 5: Insert sample loan payments
 -- Assume schedule_id and loan_id from above (e.g., schedule_id 1-5 for loan_id 1, etc.)
-INSERT INTO public.loan_payments (schedule_id, loan_id, amount, payment_date, method, reference, notes, recorded_by)
+INSERT INTO public.loan_payments (schedule_id, loan_id, amount, payment_date, method, reference, notes, recorded_by, payment_type, total_amount)
 VALUES
-  (1, 1, 530.00, '2025-03-02', 'Gcash', 'GCASH-001', 'Paid via Gcash app', NULL),
-  (2, 1, 530.00, '2025-03-03', 'Cash', 'RCPT-002', 'Paid in cash at store', NULL),
-  (3, 1, 530.00, '2025-03-04', 'Bank', 'BANK-003', 'Paid via bank transfer', NULL),
-  (4, 1, 530.00, '2025-03-05', 'Gcash', 'GCASH-004', 'Paid via Gcash app', NULL),
-  (5, 1, 530.00, '2025-03-06', 'Cash', 'RCPT-005', 'Paid in cash at store', NULL),
-  (1, 2, 18459.75, '2025-03-31', 'Bank', 'BANK-101', 'Monthly payment via bank', NULL),
-  (2, 2, 18459.75, '2025-04-30', 'Gcash', 'GCASH-102', 'Monthly payment via Gcash', NULL),
-  (3, 2, 18459.75, '2025-05-31', 'Cash', 'RCPT-103', 'Paid in cash', NULL);
+  (1, 1, 530.00, '2025-03-02', 'Gcash', 'GCASH-001', 'Paid via Gcash app', NULL, 'regular', 530.00),
+  (2, 1, 530.00, '2025-03-03', 'Cash', 'RCPT-002', 'Paid in cash at store', NULL, 'regular', 530.00),
+  (3, 1, 530.00, '2025-03-04', 'Bank', 'BANK-003', 'Paid via bank transfer', NULL, 'regular', 530.00),
+  (4, 1, 530.00, '2025-03-05', 'Gcash', 'GCASH-004', 'Paid via Gcash app', NULL, 'regular', 530.00),
+  (5, 1, 530.00, '2025-03-06', 'Cash', 'RCPT-005', 'Paid in cash at store', NULL, 'regular', 530.00),
+  (1, 2, 18459.75, '2025-03-31', 'Bank', 'BANK-101', 'Monthly payment via bank', NULL, 'regular', 18459.75),
+  (2, 2, 18459.75, '2025-04-30', 'Gcash', 'GCASH-102', 'Monthly payment via Gcash', NULL, 'regular', 18459.75),
+  (3, 2, 18459.75, '2025-05-31', 'Cash', 'RCPT-103', 'Paid in cash', NULL, 'regular', 18459.75),
+  -- Example of a principal payment that led to loan restructuring
+  (5, 1, 15000.00, '2025-03-20', 'Bank', 'BANK-201', 'Principal payment for restructuring', NULL, 'principal', 15000.00);
 
 -- Section 6: Insert sample loan payment charges
 -- Add a convenience fee for Gcash/Bank payments and a late payment fee for one payment

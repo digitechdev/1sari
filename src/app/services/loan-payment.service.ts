@@ -316,6 +316,7 @@ export class LoanPaymentService {
           co_borrower_id: currentLoan.co_borrower_id,
           co_maker_id: currentLoan.co_maker_id,
           store_name: currentLoan.store_name,
+          parent_loan_id: currentLoan.id,
           principal: remainingPrincipal,
           interest_rate: newLoanTerms.interest_rate,
           tenure_in_months: newLoanTerms.tenure_in_months,
