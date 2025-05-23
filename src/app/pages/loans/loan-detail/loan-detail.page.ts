@@ -13,6 +13,8 @@ import { PrincipalPaymentModalComponent } from './principal-payment-modal/princi
 import { PaymentDetailsModalComponent } from './payment-details-modal/payment-details-modal.component';
 import { LoanPaymentService } from '../../../services/loan-payment.service';
 import { LoanPayment } from '../../../interfaces/loan-payment.interface';
+import { RouterLink } from '@angular/router';
+import { SupabaseService } from '../../../services/supabase.service';
 
 @Component({
   selector: 'app-loan-detail',
@@ -24,7 +26,8 @@ import { LoanPayment } from '../../../interfaces/loan-payment.interface';
     CommonModule, 
     CurrencyPipe, 
     DatePipe,
-    NgxDatatableModule
+    NgxDatatableModule,
+    RouterLink
   ],
   providers: [CurrencyPipe, DatePipe] // Provide pipes
 })
@@ -42,6 +45,7 @@ export class LoanDetailPage implements OnInit {
   private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
   private modalCtrl = inject(ModalController);
+  private supabaseService = inject(SupabaseService);
 
   // Using 'any' for loanDetail initially because Supabase join brings nested objects
   loanDetail = signal<any | null>(null); 
@@ -49,6 +53,7 @@ export class LoanDetailPage implements OnInit {
   saleItems = signal<Sale[] | null>(null);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
+  childLoans = signal<{id: number}[]>([]);
 
   // ngx-datatable configuration
   ColumnMode = ColumnMode;
@@ -90,6 +95,7 @@ export class LoanDetailPage implements OnInit {
     this.loanDetail.set(null); // Reset previous data
     this.loanSchedule.set(null);
     this.saleItems.set(null);
+    this.childLoans.set([]); // Reset child loans
 
     try {
       const response = await this.loanService.getLoanById(id);
@@ -104,6 +110,8 @@ export class LoanDetailPage implements OnInit {
         this.loanSchedule.set(response.data.schedule || []);
         // Extract sales items if they exist on the response data
         this.saleItems.set(response.data.sales || []);
+        // Fetch child loans (loans restructured from this one)
+        this.loadChildLoans(id);
       } else {
         this.errorMessage.set('Loan not found.');
         this.presentToast('Loan not found.', 'warning');
@@ -114,6 +122,29 @@ export class LoanDetailPage implements OnInit {
       this.presentToast(this.errorMessage()!, 'danger');
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Loads any loans that were restructured from this loan (have this loan's ID as parent_loan_id)
+   * @param loanId The ID of the current loan
+   */
+  async loadChildLoans(loanId: number) {
+    try {
+      const { data, error } = await this.supabaseService.supabase
+        .from('loans')
+        .select('id')
+        .eq('parent_loan_id', loanId);
+      
+      if (error) {
+        console.error('Error fetching child loans:', error);
+        return;
+      }
+      
+      this.childLoans.set(data || []);
+      console.log(`Found ${data?.length || 0} restructured loans from loan #${loanId}`);
+    } catch (error: any) {
+      console.error('Unexpected error loading child loans:', error);
     }
   }
 

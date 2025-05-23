@@ -61,6 +61,36 @@
         </ion-card-title>
       </ion-card-header>
       <ion-card-content>
+        <!-- Parent loan link (for restructured loans) -->
+        @if (loanDetail()?.parent_loan_id) {
+          <ion-item lines="none" class="parent-loan-link ion-margin-bottom">
+            <ion-icon name="git-branch-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h2>Restructured from original loan</h2>
+            </ion-label>
+            <ion-button slot="end" fill="clear" [routerLink]="['/loans/detail/', loanDetail()?.parent_loan_id]">
+              <ion-icon name="eye-outline" slot="start"></ion-icon>
+              View Original Loan #{{ loanDetail()?.parent_loan_id }}
+            </ion-button>
+          </ion-item>
+        }
+
+        <!-- Child loans (loans restructured from this one) -->
+        @if (childLoans().length > 0) {
+          <ion-item lines="none" class="child-loans-section ion-margin-bottom">
+            <ion-icon name="git-network-outline" slot="start" color="success"></ion-icon>
+            <ion-label>
+              <h2>This loan was restructured</h2>
+            </ion-label>
+            @for (childLoan of childLoans(); track childLoan.id) {
+              <ion-button slot="end" fill="clear" [routerLink]="['/loans/detail', childLoan.id]">
+                <ion-icon name="eye-outline" slot="start"></ion-icon>
+                View Restructured Loan #{{ childLoan.id }}
+              </ion-button>
+            }
+          </ion-item>
+        }
+
         <ion-grid fixed>
           <ion-row>
             <ion-col size="6">
