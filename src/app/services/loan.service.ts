@@ -185,10 +185,26 @@ export class LoanService {
   
       const loan = loanResponse.data;
   
-      // Step 2: Fetch schedule (ordered by due_date ASC)
+      // Step 2: Fetch schedule with payments and charges in a single query
       const scheduleResponse = await this.supabase
         .from('loan_payment_schedules')
-        .select('*')
+        .select(`
+          *,
+          payments:loan_payments(
+            id,
+            payment_type,
+            method,
+            payment_date,
+            amount,
+            reference,
+            loan_payment_charges(
+              id,
+              charge_type,
+              amount,
+              description
+            )
+          )
+        `)
         .eq('loan_id', id)
         .order('due_date', { ascending: true });
   
@@ -201,9 +217,60 @@ export class LoanService {
           count: null
         };
       }
+
+      console.log('Enhanced schedule data:', scheduleResponse.data);
+
+      // Process the joined data to create a clean schedule
+      const enhancedSchedule = scheduleResponse.data?.map(schedule => {
+        // Get the payment for this schedule if it exists
+        const payment = schedule.payments && schedule.payments.length > 0 
+          ? schedule.payments[0] 
+          : null;
+        
+        // Default values if no payment exists
+        let paymentDetails = {
+          actual_payment_date: null,
+          amount_paid: 0,
+          payment_method: '',
+          payment_reference: '',
+          payment_notes: '',
+          payment_type: '',
+          convenience_fee: 0,
+          late_fee: 0
+        };
+        
+        if (payment) {
+          // Get charges directly from the payment
+          const charges = payment.loan_payment_charges || [];
+          
+          // Calculate fees
+          const convenienceFee = charges.find((c: any) => c.charge_type === 'convenience_fee')?.amount || 0;
+          const lateFee = charges.find((c: any) => c.charge_type === 'late_fee')?.amount || 0;
+          
+          paymentDetails = {
+            actual_payment_date: payment.payment_date,
+            amount_paid: payment.amount,
+            payment_method: payment.method || 'Post Dated Check', // Default for existing records
+            payment_reference: payment.reference || '',
+            payment_notes: payment.notes || '',
+            payment_type: payment.payment_type || 'regular',
+            convenience_fee: convenienceFee,
+            late_fee: lateFee
+          };
+        }
+        
+        // Return clean schedule with payment details
+        return {
+          ...schedule,
+          ...paymentDetails,
+          // Remove nested objects to avoid confusion
+          payments: undefined,
+          charges: undefined
+        };
+      }) || [];
   
-      // Inject schedule into loan to preserve structure
-      loan.schedule = scheduleResponse.data;
+      // Inject enhanced schedule into loan to preserve structure
+      loan.schedule = enhancedSchedule;
   
       return {
         data: loan,

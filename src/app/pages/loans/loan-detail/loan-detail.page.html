@@ -213,6 +213,12 @@
           <ion-icon name="calendar-outline" class="card-title-icon"></ion-icon>
           Repayment Schedule
         </ion-card-title>
+        @if (loanSchedule() && loanSchedule()!.length > 0) {
+          <ion-button fill="outline" size="small" (click)="exportScheduleToCsv()">
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+            Export
+          </ion-button>
+        }
       </ion-card-header>
       <ion-card-content>
         @if (loanSchedule(); as schedule) {

@@ -181,12 +181,12 @@ VALUES
 
 -- Section 6: Insert sample loan payment charges
 -- Add a convenience fee for Gcash/Bank payments and a late payment fee for one payment
-INSERT INTO public.loan_payment_charges (schedule_id, charge_type, amount, description, added_by)
+INSERT INTO public.loan_payment_charges (schedule_id, payment_id, loan_id, charge_type, amount, description, added_by)
 VALUES
-  (1, 'Convenience Fee', 10.00, 'Convenience fee for Gcash payment', NULL),
-  (3, 'Convenience Fee', 15.00, 'Convenience fee for Bank payment', NULL),
-  (4, 'Convenience Fee', 10.00, 'Convenience fee for Gcash payment', NULL),
-  (1, 'Late Payment Fee', 25.00, 'Late payment for scheduled due date', NULL),
-  (2, 'Late Payment Fee', 20.00, 'Late payment for scheduled due date', NULL),
-  (2, 'Convenience Fee', 12.00, 'Convenience fee for Gcash payment', NULL),
-  (6, 'Convenience Fee', 20.00, 'Convenience fee for Bank payment', NULL); 
+  (1, 1, 1, 'convenience_fee', 10.00, 'Convenience fee for Gcash payment', NULL),
+  (3, 3, 1, 'convenience_fee', 15.00, 'Convenience fee for Bank payment', NULL),
+  (4, 4, 1, 'convenience_fee', 10.00, 'Convenience fee for Gcash payment', NULL),
+  (1, 1, 1, 'late_fee', 25.00, 'Late payment for scheduled due date', NULL),
+  (2, 2, 1, 'late_fee', 20.00, 'Late payment for scheduled due date', NULL),
+  (2, 2, 1, 'convenience_fee', 12.00, 'Convenience fee for Gcash payment', NULL),
+  (6, 6, 2, 'convenience_fee', 20.00, 'Convenience fee for Bank payment', NULL); 

@@ -302,4 +302,170 @@ export class LoanDetailPage implements OnInit {
       }
     }
   }
+
+  /**
+   * Exports the loan repayment schedule to a CSV file.
+   * Creates a file that matches the layout from the reference image.
+   */
+  exportScheduleToCsv(): void {
+    try {
+      if (!this.loanDetail() || !this.loanSchedule()) {
+        this.presentToast('Loan data not available for export', 'warning');
+        return;
+      }
+
+      // Get the loan and schedule data
+      const loan = this.loanDetail();
+      const schedules = this.loanSchedule() || [] as any[]; // Use any[] to accommodate the enhanced fields
+      
+      // Prepare CSV content with headers
+      let csvContent = '1SARI Financing Corp.\n';
+      csvContent += '236 Pablo Dela Cruz Street,\n';
+      csvContent += 'Novaliches, Quezon City\n\n';
+      csvContent += `${loan.loan_period?.toUpperCase() || 'BI-MONTHLY'} AMORTIZATION\n\n`;
+      
+      // Add borrower information
+      csvContent += `BORROWER,${loan.borrower?.name_of_borrower || 'N/A'}\n`;
+      csvContent += `CO-BORROWER,${loan.borrower?.co_borrower_name || ''}\n`;
+      csvContent += `STORE NAME,${loan.store_name || ''}\n`;
+      csvContent += `HOME ADDRESS,${loan.borrower?.address || ''}\n`;
+      csvContent += `STORE ADDRESS,${loan.store_address || ''}\n`;
+      csvContent += `PRINCIPAL,${this.formatCurrency(loan.principal)}\n`;
+      csvContent += `INTEREST RATE PER MONTH,${loan.interest_rate}%\n`;
+      csvContent += `TENOR (BI-MONTHLY),${loan.tenure_in_months}\n`;
+      csvContent += `VALUE DATE,${this.formatDate(loan.loan_release_date)}\n\n`;
+      
+      // Add table headers
+      csvContent += 'Date of Amortization,Daily Amortization,Interest,Principal,Outstanding Balance,Status,Payment Date,Total Amount Paid,Cash Convenience Fee,Late Payment Fee,Mode of Payment\n';
+      
+      // Add row data
+      schedules.forEach((schedule, index) => {
+        // Format date as in the image: "Saturday, March 01, 2025"
+        csvContent += `${this.formatDate(schedule.due_date)},`;
+        csvContent += `${this.formatCurrency(schedule.amount_due)},`;
+        csvContent += `${this.formatCurrency(schedule.interest_paid)},`;
+        csvContent += `${this.formatCurrency(schedule.principal_paid)},`;
+        csvContent += `${this.formatCurrency(schedule.outstanding_balance)},`;
+        
+        // Status
+        csvContent += `${schedule.status},`;
+        
+        // Payment Date - format like "5-Mar-25" for paid items
+        if (schedule.actual_payment_date) {
+          const paymentDate = new Date(schedule.actual_payment_date);
+          const formattedDate = this.datePipe.transform(paymentDate, 'd-MMM-yy') || '';
+          csvContent += `${formattedDate},`;
+        } else {
+          csvContent += ',';
+        }
+        
+        // Total Amount Paid
+        csvContent += `${schedule.amount_paid ? this.formatCurrency(schedule.amount_paid) : ''},`;
+        
+        // Cash Convenience Fee - use '-' if not applicable
+        csvContent += `${schedule.convenience_fee ? this.formatCurrency(schedule.convenience_fee) : '-'},`;
+        
+        // Late Payment Fee - use '-' if not applicable
+        csvContent += `${schedule.late_fee ? this.formatCurrency(schedule.late_fee) : '-'},`;
+        
+        // Mode of Payment - "Post Dated Check" for paid items as shown in image
+        if (schedule.status === 'Paid') {
+          csvContent += `Post Dated Check\n`;
+        } else {
+          csvContent += `\n`;
+        }
+      });
+      
+      // Calculate totals
+      const totalDailyAmortization = schedules.reduce((sum, item) => sum + (item.amount_due || 0), 0);
+      const totalInterest = schedules.reduce((sum, item) => sum + (item.interest_paid || 0), 0);
+      const totalPrincipal = schedules.reduce((sum, item) => sum + (item.principal_paid || 0), 0);
+      const totalAmountPaid = schedules.reduce((sum, item) => {
+        if (item.status === 'Paid') {
+          return sum + (item.amount_paid || 0);
+        }
+        return sum;
+      }, 0);
+      
+      // Add totals row
+      csvContent += `\nTOTAL,${this.formatCurrency(totalDailyAmortization)},${this.formatCurrency(totalInterest)},${this.formatCurrency(totalPrincipal)},,,,,,,\n\n`;
+      
+      // Calculate remaining balance
+      const remainingPrincipal = schedules.filter(s => s.status !== 'Paid').reduce((sum, item) => sum + (item.principal_paid || 0), 0);
+      const remainingInterest = schedules.filter(s => s.status !== 'Paid').reduce((sum, item) => sum + (item.interest_paid || 0), 0);
+      const remainingBalance = remainingPrincipal + remainingInterest;
+      
+      // Add total payments and remaining balance
+      csvContent += `,,,,,,,,${this.formatCurrency(totalAmountPaid)},Total Payments Made (less cash convenience fee & late payment fee if applicable)\n`;
+      csvContent += `,,,,,,,,${this.formatCurrency(remainingBalance)},Remaining Balance (Principal + Interest)\n\n`;
+      
+      // Add late payment information if applicable
+      if (loan.status !== 'Paid') {
+        // Get next unpaid schedule
+        const nextUnpaid = schedules.find(s => s.status !== 'Paid');
+        if (nextUnpaid) {
+          const dueDate = new Date(nextUnpaid.due_date);
+          const today = new Date();
+          const daysLate = Math.max(0, Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+          
+          if (daysLate > 0) {
+            // Calculate late payment charge at 300/week or fraction thereof
+            const weeksLate = Math.ceil(daysLate / 7);
+            const lateCharge = weeksLate * 300;
+            
+            // Format dates to match the image exactly
+            const formattedDueDate = this.formatDate(nextUnpaid.due_date);
+            const formattedToday = this.formatDate(today.toISOString());
+            
+            csvContent += `Late Payment Charges (300/week),PHP,${this.formatCurrency(lateCharge)},Note:(300 divided by 7 days multiply by number of arrears - ${formattedDueDate} - ${formattedToday} is ${daysLate} days)\n`;
+            csvContent += `Total Principal Due,PHP,${this.formatCurrency(nextUnpaid.principal_paid)},${formattedDueDate}\n`;
+            csvContent += `Total Interest Due,PHP,${this.formatCurrency(nextUnpaid.interest_paid)},${formattedDueDate}\n`;
+            
+            const totalDue = (nextUnpaid.principal_paid || 0) + (nextUnpaid.interest_paid || 0) + lateCharge;
+            csvContent += `TOTAL AMOUNT DUE as of,PHP,${this.formatCurrency(totalDue)},${formattedToday}\n`;
+          }
+        }
+      }
+      
+      // Create blob and trigger download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const fileName = `Loan_${loan.id}_Amortization_${this.formatDateFileName(new Date().toISOString())}.csv`;
+      
+      // Set up download link
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 100);
+      
+      this.presentToast('Export successful! Downloading file...', 'success');
+    } catch (error: any) {
+      console.error('Error exporting loan schedule:', error);
+      this.presentToast('Error exporting loan schedule: ' + (error.message || 'Unknown error'), 'danger');
+    }
+  }
+  
+  // Helper methods for CSV formatting
+  private formatDate(dateString?: string): string {
+    if (!dateString) return '';
+    return this.datePipe.transform(dateString, 'EEEE, MMMM d, yyyy') || '';
+  }
+  
+  private formatDateFileName(dateString: string): string {
+    return this.datePipe.transform(dateString, 'yyyyMMdd') || '';
+  }
+  
+  private formatCurrency(value?: number): string {
+    if (value === undefined || value === null) return '';
+    // Remove the PHP symbol when formatting for CSV
+    const formatted = this.currencyPipe.transform(value, 'PHP', 'symbol', '1.2-2');
+    return formatted ? formatted.replace('PHP', '').trim() : '';
+  }
 } 
