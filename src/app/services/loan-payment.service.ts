@@ -200,8 +200,13 @@ export class LoanPaymentService {
     },
     remainingPrincipal?: number
   ): Promise<PostgrestSingleResponse<any>> {
+    console.log('FROM PRINCIPAL PAYMENT');
+    console.log(paymentData);
+    console.log(newLoanTerms);
     console.log(remainingPrincipal);
+
     this.isLoading.set(true);
+    
     try {
       // 1. Record the principal payment
       const { data: payment, error: paymentError } = await this.supabase
@@ -340,32 +345,82 @@ export class LoanPaymentService {
 
         console.log('New loan created successfully:', newLoanData);
 
-        // 7. Create new payment schedule for the restructured loan
-        const scheduleData = {
-          loan_id: newLoanData.id,
-          period_number: 1,
-          due_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
-          amount_due: remainingPrincipal / newLoanTerms.tenure_in_months,
-          principal_paid: 0,
-          interest_paid: 0,
-          outstanding_balance: remainingPrincipal,
-          status: 'Open'
-        };
-
-        console.log('New schedule data to be inserted:', scheduleData);
-
+        // 7. Create new payment schedule for the restructured loan (multiple periods)
+        // Create multiple payment schedules based on loan terms
+        const scheduleItems = [];
+        const principal = remainingPrincipal;
+        const interestRate = newLoanTerms.interest_rate;
+        const tenureInMonths = newLoanTerms.tenure_in_months;
+        const interestMethod = newLoanTerms.interest_method;
+        const loanPeriod = newLoanTerms.loan_period;
+        let balance = principal;
+        const monthlyRate = interestRate / 100 / 12;
+        const numberOfPayments = tenureInMonths;
+        const today = new Date();
+        
+        console.log('Generating schedules with:', {interestMethod, interestRate, tenureInMonths, loanPeriod});
+        
+        if (interestMethod === 'diminishing') {
+          // Diminishing balance method
+          const monthlyPayment = (principal * monthlyRate * Math.pow(1 + monthlyRate, numberOfPayments)) /
+            (Math.pow(1 + monthlyRate, numberOfPayments) - 1);
+          
+          for (let i = 1; i <= numberOfPayments; i++) {
+            const interest = balance * monthlyRate;
+            const principalPayment = monthlyPayment - interest;
+            balance -= principalPayment;
+            
+            const dueDate = new Date(today);
+            dueDate.setMonth(today.getMonth() + i);
+            
+            scheduleItems.push({
+              loan_id: newLoanData.id,
+              period_number: i,
+              due_date: dueDate.toISOString().split('T')[0],
+              amount_due: monthlyPayment,
+              principal_paid: principalPayment,
+              interest_paid: interest,
+              outstanding_balance: Math.max(0, balance),
+              status: 'Open'
+            });
+          }
+        } else {
+          // Straight line method
+          const principalPayment = principal / numberOfPayments;
+          const interestPayment = (principal * interestRate / 100) / numberOfPayments;
+          const totalPayment = principalPayment + interestPayment;
+          
+          for (let i = 1; i <= numberOfPayments; i++) {
+            balance -= principalPayment;
+            
+            const dueDate = new Date(today);
+            dueDate.setMonth(today.getMonth() + i);
+            
+            scheduleItems.push({
+              loan_id: newLoanData.id,
+              period_number: i,
+              due_date: dueDate.toISOString().split('T')[0],
+              amount_due: totalPayment,
+              principal_paid: principalPayment,
+              interest_paid: interestPayment,
+              outstanding_balance: Math.max(0, balance),
+              status: 'Open'
+            });
+          }
+        }
+        
+        console.log(`Generated ${scheduleItems.length} schedule entries`);
+        
         const scheduleResponse = await this.supabase
           .from('loan_payment_schedules')
-          .insert(scheduleData)
-          .select()
-          .single();
+          .insert(scheduleItems);
 
         if (scheduleResponse.error) {
           console.error('Error creating new payment schedule:', scheduleResponse.error);
           return { data: null, error: scheduleResponse.error, status: 0, statusText: 'New Schedule Creation Error', count: null };
         }
 
-        console.log('New payment schedule created successfully:', scheduleResponse.data);
+        console.log('New payment schedules created successfully');
       } else {
         console.log('Skipping new loan creation:', {
           remainingPrincipal,
@@ -382,6 +437,20 @@ export class LoanPaymentService {
       if (updateError) {
         console.error('Error updating loan status:', updateError);
         return { data: null, error: updateError, status: 0, statusText: 'Loan Status Update Error', count: null };
+      }
+
+      // 8.1 Close all remaining payment schedules for this loan
+      const { error: closeSchedulesError } = await this.supabase
+        .from('loan_payment_schedules')
+        .update({ status: 'Closed' })
+        .eq('loan_id', paymentData.loan_id)
+        .neq('status', 'Paid');
+
+      if (closeSchedulesError) {
+        console.error('Error closing remaining payment schedules:', closeSchedulesError);
+        // Continue even if there was an error (non-critical)
+      } else {
+        console.log('Successfully closed remaining payment schedules for loan:', paymentData.loan_id);
       }
 
       // 9. Fetch the complete payment record with charges

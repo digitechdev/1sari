@@ -25,7 +25,7 @@ interface RepaymentScheduleItem {
   providers: [CurrencyPipe, DatePipe]
 })
 export class PrincipalPaymentModalComponent implements OnInit {
-  @Input() schedule!: LoanPaymentSchedule;
+  @Input() schedule!: any;
   @Input() totalPrincipalPaid!: number;
   @Input() originalPrincipal!: number;
   
@@ -74,9 +74,9 @@ export class PrincipalPaymentModalComponent implements OnInit {
       principalDue: this.newRemainingPrincipal(),
       interestMethod: '',
       loanPeriod: '',
-      interestRate: this.schedule.interest_rate || 0,
-      tenureInMonths: this.schedule.tenure_in_months || 0,
-      repaymentPeriod: this.schedule.repayment_period || 0
+      interestRate: 0,
+      tenureInMonths: 0,
+      repaymentPeriod: 0
     });
 
     // Subscribe to amount changes
@@ -153,7 +153,15 @@ export class PrincipalPaymentModalComponent implements OnInit {
         total_amount: formValue.amount
       };
 
-      this.modalCtrl.dismiss(paymentData, 'confirm');
+      const newLoanTerms = {
+        interest_rate: formValue.interestRate,
+        tenure_in_months: formValue.tenureInMonths,
+        interest_method: formValue.interestMethod,
+        loan_period: formValue.loanPeriod,
+        repayment_period: formValue.repaymentPeriod
+      };
+
+      this.modalCtrl.dismiss({ paymentData, newLoanTerms }, 'confirm');
     }
   }
 

@@ -156,44 +156,22 @@ export class LoanDetailPage implements OnInit {
     if (role === 'confirm' && data) {
       try {
         // Calculate remaining principal
-        const remainingPrincipal = (this.loanDetail()?.principal || 0) - (totalPrincipalPaid + (data.amount || 0));
+        const remainingPrincipal = (this.loanDetail()?.principal || 0) - (totalPrincipalPaid + (data.paymentData.amount || 0));
 
-        // If there's remaining principal, we need to restructure the loan
-        if (remainingPrincipal > 0) {
-          // Create new loan terms based on current loan
-          const newLoanTerms = {
-            interest_rate: this.loanDetail()?.interest_rate || 0,
-            tenure_in_months: this.loanDetail()?.tenure_in_months || 0,
-            interest_method: this.loanDetail()?.interest_method || 'straight',
-            loan_period: this.loanDetail()?.loan_period || 'Monthly',
-            repayment_period: this.loanDetail()?.repayment_period || 0
-          };
+        const response = await this.loanPaymentService.recordPrincipalPayment(
+          data.paymentData,
+          data.newLoanTerms,
+          remainingPrincipal
+        );
 
-          const response = await this.loanPaymentService.recordPrincipalPayment(
-            data as LoanPayment,
-            newLoanTerms,
-            remainingPrincipal
-          );
+        if (response.error) {
+          await this.presentToast('Failed to record principal payment: ' + response.error.message, 'danger');
+          return;
+        }
 
-          if (response.error) {
-            await this.presentToast('Failed to record principal payment: ' + response.error.message, 'danger');
-            return;
-          }
-
+        if (remainingPrincipal > 0 && data.newLoanTerms) {
           await this.presentToast('Principal payment recorded and loan restructured successfully', 'success');
         } else {
-          // If no remaining principal, just record the payment
-          const response = await this.loanPaymentService.recordPrincipalPayment(
-            data as LoanPayment,
-            undefined,
-            remainingPrincipal
-          );
-
-          if (response.error) {
-            await this.presentToast('Failed to record principal payment: ' + response.error.message, 'danger');
-            return;
-          }
-
           await this.presentToast('Principal payment recorded successfully', 'success');
         }
 
