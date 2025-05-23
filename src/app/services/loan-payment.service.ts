@@ -186,6 +186,7 @@ export class LoanPaymentService {
    * Records a principal payment and restructures the loan if needed
    * @param paymentData The payment data to insert
    * @param newLoanTerms The terms for the restructured loan (if restructuring)
+   * @param remainingPrincipal The remaining principal to be used for restructuring
    * @returns Promise resolving to the Supabase response containing the newly created payment or an error
    */
   async recordPrincipalPayment(
@@ -196,8 +197,10 @@ export class LoanPaymentService {
       interest_method: 'straight' | 'diminishing';
       loan_period: 'Daily' | 'Weekly' | 'Monthly' | 'Bi-Monthly';
       repayment_period: number;
-    }
+    },
+    remainingPrincipal?: number
   ): Promise<PostgrestSingleResponse<any>> {
+    console.log(remainingPrincipal);
     this.isLoading.set(true);
     try {
       // 1. Record the principal payment
@@ -239,7 +242,18 @@ export class LoanPaymentService {
         }
       }
 
-      // 3. Get the current loan details
+      // 3. Update the payment schedule status to 'Paid'
+      const { error: scheduleError } = await this.supabase
+        .from('loan_payment_schedules')
+        .update({ status: 'Paid' })
+        .eq('id', paymentData.schedule_id);
+
+      if (scheduleError) {
+        console.error('Error updating payment schedule:', scheduleError);
+        return { data: null, error: scheduleError, status: 0, statusText: 'Schedule Update Error', count: null };
+      }
+
+      // 4. Get the current loan details
       const { data: currentLoan, error: loanError } = await this.supabase
         .from('loans')
         .select('*')
@@ -251,35 +265,47 @@ export class LoanPaymentService {
         return { data: null, error: loanError, status: 0, statusText: 'Loan Fetch Error', count: null };
       }
 
-      // 4. Calculate remaining principal
-      const { data: schedules, error: scheduleError } = await this.supabase
-        .from('loan_payment_schedules')
-        .select('outstanding_balance')
-        .eq('loan_id', paymentData.loan_id)
-        .order('due_date', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (scheduleError) {
-        console.error('Error fetching current balance:', scheduleError);
-        return { data: null, error: scheduleError, status: 0, statusText: 'Balance Fetch Error', count: null };
+      // 5. Use the passed remainingPrincipal value
+      if (typeof remainingPrincipal !== 'number') {
+        console.error('Missing required remainingPrincipal parameter');
+        return {
+          data: null,
+          error: {
+            message: 'Remaining principal is required for restructuring.',
+            details: '',
+            hint: 'Pass the calculated remaining principal from the form/UI.',
+            code: 'MISSING_REMAINING_PRINCIPAL',
+            name: 'MissingRemainingPrincipalError'
+          },
+          status: 0,
+          statusText: 'Missing Remaining Principal',
+          count: null
+        };
       }
+      console.log('Remaining Principal (from param):', remainingPrincipal);
+      console.log('New Loan Terms:', newLoanTerms);
 
-      const remainingPrincipal = schedules.outstanding_balance - paymentData.amount;
-
-      // 5. Update current loan status to Restructured
-      const { error: updateError } = await this.supabase
-        .from('loans')
-        .update({ status: LoanStatus.Restructured })
-        .eq('id', paymentData.loan_id);
-
-      if (updateError) {
-        console.error('Error updating loan status:', updateError);
-        return { data: null, error: updateError, status: 0, statusText: 'Loan Status Update Error', count: null };
-      }
-
-      // 6. Create new loan if there's remaining principal
+      // 6. Create new loan if there's remaining principal and new terms are provided
       if (remainingPrincipal > 0 && newLoanTerms) {
+        console.log('Creating new loan with remaining principal:', remainingPrincipal);
+        // Validate new loan terms
+        if (!newLoanTerms.interest_rate || !newLoanTerms.tenure_in_months || !newLoanTerms.interest_method || !newLoanTerms.loan_period || !newLoanTerms.repayment_period) {
+          console.error('Missing required loan terms:', newLoanTerms);
+          return {
+            data: null,
+            error: {
+              message: 'Missing required loan terms for restructuring',
+              details: 'All loan terms must be provided for restructuring',
+              hint: 'Please provide all required loan terms',
+              code: 'MISSING_LOAN_TERMS',
+              name: 'MissingLoanTermsError'
+            },
+            status: 0,
+            statusText: 'Missing Loan Terms',
+            count: null
+          };
+        }
+
         const newLoan = {
           borrower_id: currentLoan.borrower_id,
           co_borrower_id: currentLoan.co_borrower_id,
@@ -299,6 +325,8 @@ export class LoanPaymentService {
           notes: `Original loan #${currentLoan.id} restructured after principal payment of ${paymentData.amount}`
         };
 
+        console.log('New loan data to be inserted:', newLoan);
+
         const { data: newLoanData, error: newLoanError } = await this.supabase
           .from('loans')
           .insert(newLoan)
@@ -310,19 +338,25 @@ export class LoanPaymentService {
           return { data: null, error: newLoanError, status: 0, statusText: 'New Loan Creation Error', count: null };
         }
 
+        console.log('New loan created successfully:', newLoanData);
+
         // 7. Create new payment schedule for the restructured loan
+        const scheduleData = {
+          loan_id: newLoanData.id,
+          period_number: 1,
+          due_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+          amount_due: remainingPrincipal / newLoanTerms.tenure_in_months,
+          principal_paid: 0,
+          interest_paid: 0,
+          outstanding_balance: remainingPrincipal,
+          status: 'Open'
+        };
+
+        console.log('New schedule data to be inserted:', scheduleData);
+
         const scheduleResponse = await this.supabase
           .from('loan_payment_schedules')
-          .insert({
-            loan_id: newLoanData.id,
-            period_number: 1,
-            due_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
-            amount_due: remainingPrincipal / newLoanTerms.tenure_in_months,
-            principal_paid: 0,
-            interest_paid: 0,
-            outstanding_balance: remainingPrincipal,
-            status: 'Open'
-          })
+          .insert(scheduleData)
           .select()
           .single();
 
@@ -330,9 +364,27 @@ export class LoanPaymentService {
           console.error('Error creating new payment schedule:', scheduleResponse.error);
           return { data: null, error: scheduleResponse.error, status: 0, statusText: 'New Schedule Creation Error', count: null };
         }
+
+        console.log('New payment schedule created successfully:', scheduleResponse.data);
+      } else {
+        console.log('Skipping new loan creation:', {
+          remainingPrincipal,
+          hasNewLoanTerms: !!newLoanTerms
+        });
       }
 
-      // 8. Fetch the complete payment record with charges
+      // 8. Update current loan status to Restructured
+      const { error: updateError } = await this.supabase
+        .from('loans')
+        .update({ status: LoanStatus.Restructured })
+        .eq('id', paymentData.loan_id);
+
+      if (updateError) {
+        console.error('Error updating loan status:', updateError);
+        return { data: null, error: updateError, status: 0, statusText: 'Loan Status Update Error', count: null };
+      }
+
+      // 9. Fetch the complete payment record with charges
       const { data: completePayment, error: fetchError } = await this.supabase
         .from(this.tableName)
         .select(`

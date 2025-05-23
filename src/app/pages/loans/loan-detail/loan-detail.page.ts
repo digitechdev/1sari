@@ -171,7 +171,8 @@ export class LoanDetailPage implements OnInit {
 
           const response = await this.loanPaymentService.recordPrincipalPayment(
             data as LoanPayment,
-            newLoanTerms
+            newLoanTerms,
+            remainingPrincipal
           );
 
           if (response.error) {
@@ -183,7 +184,9 @@ export class LoanDetailPage implements OnInit {
         } else {
           // If no remaining principal, just record the payment
           const response = await this.loanPaymentService.recordPrincipalPayment(
-            data as LoanPayment
+            data as LoanPayment,
+            undefined,
+            remainingPrincipal
           );
 
           if (response.error) {

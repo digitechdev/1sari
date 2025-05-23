@@ -56,8 +56,8 @@ export class PrincipalPaymentModalComponent implements OnInit {
       referenceNumber: ['', Validators.required],
       amount: [0, [Validators.required, Validators.min(0.01)]],
       principalDue: [0, [Validators.required, Validators.min(0)]],
-      interestMethod: ['diminishing', Validators.required],
-      loanPeriod: ['monthly', Validators.required],
+      interestMethod: ['', Validators.required],
+      loanPeriod: ['', Validators.required],
       interestRate: [0, [Validators.required, Validators.min(0.01)]],
       tenureInMonths: [0, [Validators.required, Validators.min(1)]],
       repaymentPeriod: [0, [Validators.required, Validators.min(1)]]
@@ -72,8 +72,8 @@ export class PrincipalPaymentModalComponent implements OnInit {
     this.paymentForm.patchValue({
       amount: 0,
       principalDue: this.newRemainingPrincipal(),
-      interestMethod: 'diminishing',
-      loanPeriod: 'monthly',
+      interestMethod: '',
+      loanPeriod: '',
       interestRate: this.schedule.interest_rate || 0,
       tenureInMonths: this.schedule.tenure_in_months || 0,
       repaymentPeriod: this.schedule.repayment_period || 0
@@ -95,6 +95,9 @@ export class PrincipalPaymentModalComponent implements OnInit {
         this.calculateSchedule();
       }
     });
+
+    // Calculate initial schedule
+    this.calculateSchedule();
   }
 
   validateAmount(value: number) {
@@ -159,6 +162,9 @@ export class PrincipalPaymentModalComponent implements OnInit {
     return !!(
       formValue.interestMethod &&
       formValue.loanPeriod &&
+      formValue.interestRate > 0 &&
+      formValue.tenureInMonths > 0 &&
+      formValue.repaymentPeriod > 0 &&
       this.newRemainingPrincipal() > 0
     );
   }
@@ -166,15 +172,15 @@ export class PrincipalPaymentModalComponent implements OnInit {
   calculateSchedule() {
     const formValue = this.paymentForm.value;
     const principal = this.newRemainingPrincipal();
-    const interestRate = this.schedule.interest_rate || 0;
-    const tenureInMonths = this.schedule.tenure_in_months || 0;
-    const repaymentPeriod = this.schedule.repayment_period || 0;
+    const interestRate = formValue.interestRate || 0;
+    const tenureInMonths = formValue.tenureInMonths || 0;
+    const repaymentPeriod = formValue.repaymentPeriod || 0;
 
     // Calculate schedule based on interest method
     const schedule: RepaymentScheduleItem[] = [];
     let balance = principal;
-    const monthlyRate = interestRate ? interestRate / 100 / 12 : 0;
-    const numberOfPayments = tenureInMonths || 0;
+    const monthlyRate = interestRate / 100 / 12;
+    const numberOfPayments = tenureInMonths;
 
     if (formValue.interestMethod === 'diminishing') {
       // Diminishing balance method
@@ -220,18 +226,26 @@ export class PrincipalPaymentModalComponent implements OnInit {
 
   calculateDueDate(period: number, loanPeriod: string): Date {
     const today = new Date();
+    const date = new Date(today);
+    
     switch (loanPeriod) {
       case 'daily':
-        return new Date(today.setDate(today.getDate() + period));
+        date.setDate(today.getDate() + period);
+        break;
       case 'weekly':
-        return new Date(today.setDate(today.getDate() + (period * 7)));
+        date.setDate(today.getDate() + (period * 7));
+        break;
       case 'monthly':
-        return new Date(today.setMonth(today.getMonth() + period));
+        date.setMonth(today.getMonth() + period);
+        break;
       case 'bi-monthly':
-        return new Date(today.setMonth(today.getMonth() + (period * 2)));
+        date.setMonth(today.getMonth() + (period * 2));
+        break;
       default:
-        return new Date(today.setMonth(today.getMonth() + period));
+        date.setMonth(today.getMonth() + period);
     }
+    
+    return date;
   }
 
   totalPayment = computed(() => {
@@ -251,15 +265,14 @@ export class PrincipalPaymentModalComponent implements OnInit {
   }
 
   exportToCsv() {
-    // Implementation for CSV export
     const headers = ['Period', 'Due Date', 'Payment', 'Interest', 'Principal', 'Balance'];
     const data = this.repaymentSchedule().map(item => [
       item.periodNumber,
       this.datePipe.transform(item.dueDate, 'yyyy-MM-dd'),
-      this.currencyPipe.transform(item.paymentAmount, 'PHP'),
-      this.currencyPipe.transform(item.interest, 'PHP'),
-      this.currencyPipe.transform(item.principal, 'PHP'),
-      this.currencyPipe.transform(item.balance, 'PHP')
+      this.csvSafe(this.formatNumber(item.paymentAmount)),
+      this.csvSafe(this.formatNumber(item.interest)),
+      this.csvSafe(this.formatNumber(item.principal)),
+      this.csvSafe(this.formatNumber(item.balance))
     ]);
 
     const csvContent = [
@@ -272,5 +285,15 @@ export class PrincipalPaymentModalComponent implements OnInit {
     link.href = URL.createObjectURL(blob);
     link.download = 'repayment-schedule.csv';
     link.click();
+  }
+
+  // Helper to format numbers like the UI (with peso symbol, comma, 2 decimals)
+  formatNumber(value: number): string {
+    return '₱' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Helper to wrap values with commas in double quotes for CSV
+  csvSafe(value: string): string {
+    return value.includes(',') ? `"${value}"` : value;
   }
 } 
