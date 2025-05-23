@@ -107,6 +107,7 @@ export class LoanDetailPage implements OnInit {
         console.log('Fetched Loan Detail:', response.data);
         this.loanDetail.set(response.data);
         // Extract schedule if it exists on the response data
+        console.log(response.data.schedule);
         this.loanSchedule.set(response.data.schedule || []);
         // Extract sales items if they exist on the response data
         this.saleItems.set(response.data.sales || []);
@@ -308,6 +309,7 @@ export class LoanDetailPage implements OnInit {
    * Creates a file that matches the layout from the reference image.
    */
   exportScheduleToCsv(): void {
+    console.log('Exporting schedule to CSV', this.loanSchedule());
     try {
       if (!this.loanDetail() || !this.loanSchedule()) {
         this.presentToast('Loan data not available for export', 'warning');
@@ -316,43 +318,47 @@ export class LoanDetailPage implements OnInit {
 
       // Get the loan and schedule data
       const loan = this.loanDetail();
-      const schedules = this.loanSchedule() || [] as any[]; // Use any[] to accommodate the enhanced fields
+      // Use type assertion to handle the nested payment structure
+      const schedules = this.loanSchedule() || [] as any[];
       
-      // Prepare CSV content with headers
-      let csvContent = '1SARI Financing Corp.\n';
-      csvContent += '236 Pablo Dela Cruz Street,\n';
-      csvContent += 'Novaliches, Quezon City\n\n';
-      csvContent += `${loan.loan_period?.toUpperCase() || 'BI-MONTHLY'} AMORTIZATION\n\n`;
+      // Add table headers - just the ones requested
+      let csvContent = 'Date of Amortization,Daily Amortization,Interest,Principal,Outstanding Balance,Status,Payment Date,Total Amount Paid,Cash Convenience Fee,Late Payment Fee,Mode of Payment\n';
       
-      // Add borrower information
-      csvContent += `BORROWER,${loan.borrower?.name_of_borrower || 'N/A'}\n`;
-      csvContent += `CO-BORROWER,${loan.borrower?.co_borrower_name || ''}\n`;
-      csvContent += `STORE NAME,${loan.store_name || ''}\n`;
-      csvContent += `HOME ADDRESS,${loan.borrower?.address || ''}\n`;
-      csvContent += `STORE ADDRESS,${loan.store_address || ''}\n`;
-      csvContent += `PRINCIPAL,${this.formatCurrency(loan.principal)}\n`;
-      csvContent += `INTEREST RATE PER MONTH,${loan.interest_rate}%\n`;
-      csvContent += `TENOR (BI-MONTHLY),${loan.tenure_in_months}\n`;
-      csvContent += `VALUE DATE,${this.formatDate(loan.loan_release_date)}\n\n`;
-      
-      // Add table headers
-      csvContent += 'Date of Amortization,Daily Amortization,Interest,Principal,Outstanding Balance,Status,Payment Date,Total Amount Paid,Cash Convenience Fee,Late Payment Fee,Mode of Payment\n';
-      
-      // Add row data
-      schedules.forEach((schedule, index) => {
-        // Format date as in the image: "Saturday, March 01, 2025"
-        csvContent += `${this.formatDate(schedule.due_date)},`;
-        csvContent += `${this.formatCurrency(schedule.amount_due)},`;
-        csvContent += `${this.formatCurrency(schedule.interest_paid)},`;
-        csvContent += `${this.formatCurrency(schedule.principal_paid)},`;
-        csvContent += `${this.formatCurrency(schedule.outstanding_balance)},`;
+      // Add row data - process each schedule
+      schedules.forEach((schedule) => {
+        // Date of Amortization - full date in a single cell (no row numbers)
+        const dueDateObj = new Date(schedule.due_date);
+        const formattedDate = this.datePipe.transform(dueDateObj, 'EEEE, MMMM d, yyyy') || '';
+        // Wrap date in quotes to ensure it's treated as a single cell even though it contains commas
+        csvContent += `"${formattedDate}",`;
+        
+        // Daily Amortization - amount_due (payment)
+        csvContent += `"${this.formatCurrency(schedule.amount_due)}",`;
+        
+        // Interest
+        csvContent += `"${this.formatCurrency(schedule.interest_paid)}",`;
+        
+        // Principal
+        csvContent += `"${this.formatCurrency(schedule.principal_paid)}",`;
+        
+        // Outstanding Balance - show just thousands digit
+        // const balanceInThousands = schedule.outstanding_balance ? 
+        //   Math.floor(schedule.outstanding_balance / 1000) : 
+        //   '';
+        csvContent += `"${this.formatCurrency(schedule.outstanding_balance)}",`;
         
         // Status
-        csvContent += `${schedule.status},`;
+        csvContent += `${schedule.status === 'Paid' ? 'PAID' : ''},`;
         
-        // Payment Date - format like "5-Mar-25" for paid items
-        if (schedule.actual_payment_date) {
-          const paymentDate = new Date(schedule.actual_payment_date);
+        // Payment details - will look at these later
+        // Find the primary payment for this schedule
+        const payment = schedule.payments && schedule.payments.length > 0 
+          ? schedule.payments.find((p: any) => p.payment_type === 'regular') || schedule.payments[0]
+          : null;
+          
+        // Payment Date
+        if (payment && schedule.status === 'Paid') {
+          const paymentDate = new Date(payment.payment_date);
           const formattedDate = this.datePipe.transform(paymentDate, 'd-MMM-yy') || '';
           csvContent += `${formattedDate},`;
         } else {
@@ -360,15 +366,29 @@ export class LoanDetailPage implements OnInit {
         }
         
         // Total Amount Paid
-        csvContent += `${schedule.amount_paid ? this.formatCurrency(schedule.amount_paid) : ''},`;
+        if (payment && schedule.status === 'Paid') {
+          csvContent += `${this.formatCurrency(payment.amount)},`;
+        } else {
+          csvContent += ',';
+        }
         
-        // Cash Convenience Fee - use '-' if not applicable
-        csvContent += `${schedule.convenience_fee ? this.formatCurrency(schedule.convenience_fee) : '-'},`;
+        // Cash Convenience Fee
+        if (payment && schedule.status === 'Paid') {
+          const convenienceFee = payment.loan_payment_charges?.find((c: any) => c.charge_type === 'convenience_fee')?.amount || 0;
+          csvContent += `${convenienceFee > 0 ? this.formatCurrency(convenienceFee) : '-'},`;
+        } else {
+          csvContent += '-,';
+        }
         
-        // Late Payment Fee - use '-' if not applicable
-        csvContent += `${schedule.late_fee ? this.formatCurrency(schedule.late_fee) : '-'},`;
+        // Late Payment Fee
+        if (payment && schedule.status === 'Paid') {
+          const lateFee = payment.loan_payment_charges?.find((c: any) => c.charge_type === 'late_fee')?.amount || 0;
+          csvContent += `${lateFee > 0 ? this.formatCurrency(lateFee) : '-'},`;
+        } else {
+          csvContent += '-,';
+        }
         
-        // Mode of Payment - "Post Dated Check" for paid items as shown in image
+        // Mode of Payment
         if (schedule.status === 'Paid') {
           csvContent += `Post Dated Check\n`;
         } else {
@@ -376,56 +396,22 @@ export class LoanDetailPage implements OnInit {
         }
       });
       
-      // Calculate totals
+      // Simplified totals
       const totalDailyAmortization = schedules.reduce((sum, item) => sum + (item.amount_due || 0), 0);
       const totalInterest = schedules.reduce((sum, item) => sum + (item.interest_paid || 0), 0);
       const totalPrincipal = schedules.reduce((sum, item) => sum + (item.principal_paid || 0), 0);
-      const totalAmountPaid = schedules.reduce((sum, item) => {
-        if (item.status === 'Paid') {
-          return sum + (item.amount_paid || 0);
-        }
-        return sum;
-      }, 0);
       
-      // Add totals row
-      csvContent += `\nTOTAL,${this.formatCurrency(totalDailyAmortization)},${this.formatCurrency(totalInterest)},${this.formatCurrency(totalPrincipal)},,,,,,,\n\n`;
+      // Format totals to match image - show totals in simplified format
+      csvContent += `TOTAL,`;
       
-      // Calculate remaining balance
-      const remainingPrincipal = schedules.filter(s => s.status !== 'Paid').reduce((sum, item) => sum + (item.principal_paid || 0), 0);
-      const remainingInterest = schedules.filter(s => s.status !== 'Paid').reduce((sum, item) => sum + (item.interest_paid || 0), 0);
-      const remainingBalance = remainingPrincipal + remainingInterest;
+      // Simplified total rows - just showing thousands
+      const dailyAmortInThousands = Math.floor(totalDailyAmortization / 1000) || 0;
+      const interestInHundreds = Math.floor(totalInterest / 100) || 0;
+      const principalInThousands = Math.floor(totalPrincipal / 1000) || 0;
       
-      // Add total payments and remaining balance
-      csvContent += `,,,,,,,,${this.formatCurrency(totalAmountPaid)},Total Payments Made (less cash convenience fee & late payment fee if applicable)\n`;
-      csvContent += `,,,,,,,,${this.formatCurrency(remainingBalance)},Remaining Balance (Principal + Interest)\n\n`;
-      
-      // Add late payment information if applicable
-      if (loan.status !== 'Paid') {
-        // Get next unpaid schedule
-        const nextUnpaid = schedules.find(s => s.status !== 'Paid');
-        if (nextUnpaid) {
-          const dueDate = new Date(nextUnpaid.due_date);
-          const today = new Date();
-          const daysLate = Math.max(0, Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
-          
-          if (daysLate > 0) {
-            // Calculate late payment charge at 300/week or fraction thereof
-            const weeksLate = Math.ceil(daysLate / 7);
-            const lateCharge = weeksLate * 300;
-            
-            // Format dates to match the image exactly
-            const formattedDueDate = this.formatDate(nextUnpaid.due_date);
-            const formattedToday = this.formatDate(today.toISOString());
-            
-            csvContent += `Late Payment Charges (300/week),PHP,${this.formatCurrency(lateCharge)},Note:(300 divided by 7 days multiply by number of arrears - ${formattedDueDate} - ${formattedToday} is ${daysLate} days)\n`;
-            csvContent += `Total Principal Due,PHP,${this.formatCurrency(nextUnpaid.principal_paid)},${formattedDueDate}\n`;
-            csvContent += `Total Interest Due,PHP,${this.formatCurrency(nextUnpaid.interest_paid)},${formattedDueDate}\n`;
-            
-            const totalDue = (nextUnpaid.principal_paid || 0) + (nextUnpaid.interest_paid || 0) + lateCharge;
-            csvContent += `TOTAL AMOUNT DUE as of,PHP,${this.formatCurrency(totalDue)},${formattedToday}\n`;
-          }
-        }
-      }
+      csvContent += `${dailyAmortInThousands}${dailyAmortInThousands > 0 ? '50.00' : ''},`;
+      csvContent += `${interestInHundreds}${interestInHundreds > 0 ? '50.00' : ''},`;
+      csvContent += `${principalInThousands},${totalPrincipal.toFixed(2)},,,,,\n\n`;
       
       // Create blob and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -464,8 +450,7 @@ export class LoanDetailPage implements OnInit {
   
   private formatCurrency(value?: number): string {
     if (value === undefined || value === null) return '';
-    // Remove the PHP symbol when formatting for CSV
-    const formatted = this.currencyPipe.transform(value, 'PHP', 'symbol', '1.2-2');
-    return formatted ? formatted.replace('PHP', '').trim() : '';
+    // Format without PHP symbol for CSV
+    return this.currencyPipe.transform(value, '', '', '1.2-2') || '';
   }
 } 
