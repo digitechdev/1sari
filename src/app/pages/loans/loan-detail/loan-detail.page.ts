@@ -348,7 +348,7 @@ export class LoanDetailPage implements OnInit {
         csvContent += `"${this.formatCurrency(schedule.outstanding_balance)}",`;
         
         // Status
-        csvContent += `${schedule.status === 'Paid' ? 'PAID' : ''},`;
+        csvContent += `"${schedule.status}",`;
         
         // Payment details - will look at these later
         // Find the primary payment for this schedule
