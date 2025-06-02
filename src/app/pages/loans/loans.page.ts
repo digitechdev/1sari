@@ -6,6 +6,7 @@ import { IonicModule, ModalController, ToastController, AlertController } from '
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
 
 import { LoanService } from '../../services/loan.service';
+import { LoanStatus } from '../../enums/loan-status.enum';
 
 @Component({
   selector: 'app-loans',
@@ -28,6 +29,9 @@ import { LoanService } from '../../services/loan.service';
 export class LoansPage implements OnInit, AfterViewInit {
   @ViewChild('loanActionsTemplate', { static: false }) loanActionsTemplate!: TemplateRef<any>;
   @ViewChild(DatatableComponent) table: DatatableComponent | undefined;
+
+  // Expose LoanStatus enum to the template
+  loanStatusValues = Object.values(LoanStatus);
 
   private loanService = inject(LoanService);
   private currencyPipe = inject(CurrencyPipe);

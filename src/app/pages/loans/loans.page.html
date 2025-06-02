@@ -50,22 +50,11 @@
               <ion-segment-button value="All">
                 <ion-label>All</ion-label>
               </ion-segment-button>
-              <ion-segment-button value="Active">
-                <ion-icon name="checkmark-circle-outline"></ion-icon>
-                <ion-label>Active</ion-label>
-              </ion-segment-button>
-              <ion-segment-button value="Pending">
-                <ion-icon name="time-outline"></ion-icon>
-                <ion-label>Pending</ion-label>
-              </ion-segment-button>
-              <ion-segment-button value="Rejected">
-                <ion-icon name="close-circle-outline"></ion-icon>
-                <ion-label>Rejected</ion-label>
-              </ion-segment-button>
-              <ion-segment-button value="Closed">
-                <ion-icon name="checkmark-done-outline"></ion-icon>
-                <ion-label>Closed</ion-label>
-              </ion-segment-button>
+              @for (status of loanStatusValues; track status) {
+                <ion-segment-button [value]="status">
+                  <ion-label>{{ status }}</ion-label>
+                </ion-segment-button>
+              }
             </ion-segment>
           </div>
 

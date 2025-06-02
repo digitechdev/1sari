@@ -174,7 +174,6 @@ export class AppComponent implements OnInit {
     { id: 'account', title: 'My Account', url: '/account', icon: 'person-circle-outline', expanded: false },
     { id: 'account-profile', title: 'Profile', url: '/account/profile', icon: 'person-outline', isSubItem: true, parentId: 'account' },
     { id: 'account-password', title: 'Change Password', url: '/account/password', icon: 'key-outline', isSubItem: true, parentId: 'account' },
-    { id: 'account-logout', title: 'Logout', url: '/logout', icon: 'log-out-outline', isSubItem: true, parentId: 'account' },
   ];
 
   // Computed signal to filter menu items based on search term

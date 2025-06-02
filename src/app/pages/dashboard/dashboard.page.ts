@@ -168,7 +168,7 @@ export class DashboardPage implements OnInit {
         case LoanStatus.Defaulted:
           defaultedCount++;
           break;
-        case LoanStatus.PaidOff: 
+        case LoanStatus.Paid: 
           paidOffCount++;
           break;
       }

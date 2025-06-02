@@ -1,8 +1,8 @@
 export enum LoanStatus {
   Active = 'Active',
+  Pending = 'Pending',
   Paid = 'Paid',
   Defaulted = 'Defaulted',
-  Pending = 'Pending',
-  PaidOff = 'Paid Off',
-  Restructured = 'Restructured'
+  Restructured = 'Restructured',
+  Cancelled = 'Cancelled'
 } 

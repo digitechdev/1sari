@@ -34,6 +34,15 @@ import { BorrowerService } from '../../services/borrower.service';
 import { AccountInformation } from '../../interfaces/account-information.interfaces';
 import { Router } from '@angular/router';
 import { BorrowerFormComponent } from '../../components/borrower-form/borrower-form.component';
+import { addIcons } from 'ionicons';
+import { 
+  refreshOutline, 
+  addOutline, 
+  eyeOutline, 
+  createOutline, 
+  trashOutline,
+  peopleOutline
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-borrowers',
@@ -122,6 +131,16 @@ export class BorrowersPage implements OnInit, AfterViewInit {
   ];
 
   constructor() {
+    // Register the icons needed for this page
+    addIcons({
+      refreshOutline,
+      addOutline,
+      eyeOutline,
+      createOutline,
+      trashOutline,
+      peopleOutline
+    });
+    
     effect(() => {
       console.log('Borrowers list updated:', this.borrowers().length);
       console.log('Filtered count:', this.filteredBorrowers().length);
