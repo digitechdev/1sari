@@ -137,25 +137,51 @@ COMMIT;
 
 -- Seed data for roles
 INSERT INTO roles (name, description) VALUES
-('admin', 'Full access to all features and settings.'),
-('editor', 'Can create and modify content.'),
-('viewer', 'Can view content but cannot make changes.')
+('admin', 'Full access to all features and settings, including user management.'),
+('loan_officer', 'Can create and manage loans, review applications, and generate reports.'),
+('collector', 'Can record payments, manage collection schedules, and update payment statuses.'),
+('borrower', 'Can view their own loans, payment schedules, and make online payments.')
 ON CONFLICT (name) DO NOTHING;
 
 -- Seed data for permissions
 INSERT INTO permissions (name, description) VALUES
-('content:create', 'Allows creating new content.'),
-('content:read', 'Allows viewing content.'),
-('content:update', 'Allows updating existing content.'),
-('content:delete', 'Allows deleting content.'),
+('loans:create', 'Allows creating new loans.'),
+('loans:read', 'Allows viewing loan details.'),
+('loans:update', 'Allows updating existing loans.'),
+('loans:delete', 'Allows deleting loans.'),
+('borrowers:create', 'Allows creating new borrower accounts.'),
+('borrowers:read', 'Allows viewing borrower details.'),
+('borrowers:update', 'Allows updating borrower information.'),
+('borrowers:delete', 'Allows deleting borrower accounts.'),
+('payments:create', 'Allows recording new payments.'),
+('payments:read', 'Allows viewing payment details.'),
+('payments:update', 'Allows updating payment information.'),
+('payments:delete', 'Allows deleting payments.'),
+('reports:generate', 'Allows generating reports.'),
 ('users:manage', 'Allows managing users and their roles.'),
 ('settings:view', 'Allows viewing application settings.'),
 ('settings:edit', 'Allows editing application settings.')
 ON CONFLICT (name) DO NOTHING;
 
--- Note: Seeding for user_roles and role_permissions would typically happen
--- after users are created and you have specific role-permission assignments.
--- For now, we are just seeding the roles and permissions themselves. 
+-- Role-Permission assignments
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id
+FROM roles r, permissions p
+WHERE 
+  (r.name = 'admin') OR
+  (r.name = 'loan_officer' AND p.name IN (
+    'loans:create', 'loans:read', 'loans:update', 
+    'borrowers:create', 'borrowers:read', 'borrowers:update',
+    'payments:read', 'reports:generate', 'settings:view'
+  )) OR
+  (r.name = 'collector' AND p.name IN (
+    'loans:read', 'borrowers:read', 
+    'payments:create', 'payments:read', 'payments:update'
+  )) OR
+  (r.name = 'borrower' AND p.name IN (
+    'loans:read', 'payments:create', 'payments:read'
+  ))
+ON CONFLICT ON CONSTRAINT role_permissions_role_id_permission_id_key DO NOTHING;
 
 -- Seed data for sales (Updated to match Sale interface with 'price' and 'image_url')
 INSERT INTO public.sales (borrower_name, item_name, description, price, image_url, created_by) VALUES
