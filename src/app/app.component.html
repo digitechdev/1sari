@@ -20,31 +20,56 @@
           ></ion-searchbar>
 
           <ion-list id="menu-list">
-            <!-- Use @for to iterate over filtered menu items -->
-            @for (item of filteredMenuItems(); track item.title) {
-              @if (item.isHeader) {
-                <ion-item lines="none" class="menu-header ion-margin-top">
-                  <ion-label class="ion-text-uppercase menu-header-label">{{ item.title }}</ion-label>
-                </ion-item>
-              } @else {
-                <ion-item
-                  button
-                  detail="false"
-                  [routerLink]="item.url"
-                  routerDirection="root"
-                  [ngClass]="{ 'selected': router.url === item.url }"
-                  lines="none"
-                >
-                  @if (item.icon) {
-                    <ion-icon [name]="item.icon" slot="start"></ion-icon>
+            <!-- Group menu items by sections -->
+            @for (item of filteredMenuItems(); track item.id) {
+              @if (!item.isSubItem) {
+                <!-- Create a menu section for each parent -->
+                <div class="menu-section">
+                  <!-- Parent menu item -->
+                  <ion-item
+                    button
+                    detail="false"
+                    [routerLink]="hasChildren(item) ? null : item.url"
+                    routerDirection="root"
+                    [ngClass]="{ 
+                      'selected': router.url === item.url || router.url.startsWith(item.url + '/'), 
+                      'menu-parent': true,
+                      'has-children': hasChildren(item),
+                      'expanded': shouldShowChildren(item)
+                    }"
+                    lines="none"
+                    (click)="hasChildren(item) ? toggleMenuExpand(item, $event) : null"
+                  >
+                    @if (item.icon) {
+                      <ion-icon [name]="item.icon" slot="start"></ion-icon>
+                    }
+                    <ion-label>{{ item.title }}</ion-label>
+                    @if (hasChildren(item)) {
+                      <ion-icon [name]="shouldShowChildren(item) ? 'chevron-up-outline' : 'chevron-down-outline'" class="chevron-icon" slot="end"></ion-icon>
+                    }
+                  </ion-item>
+                  
+                  <!-- Sub-menu container -->
+                  @if (hasChildren(item)) {
+                    <div class="submenu-container" [ngClass]="{'expanded': shouldShowChildren(item)}">
+                      @for (childItem of getChildren(item); track childItem.id) {
+                        <ion-item
+                          button
+                          detail="false"
+                          [routerLink]="childItem.url"
+                          routerDirection="root"
+                          [ngClass]="{ 'selected': router.url === childItem.url || router.url.startsWith(childItem.url + '/'), 'sub-item': true }"
+                          lines="none"
+                        >
+                          @if (childItem.icon) {
+                            <ion-icon [name]="childItem.icon" slot="start"></ion-icon>
+                          }
+                          <ion-label>{{ childItem.title }}</ion-label>
+                        </ion-item>
+                      }
+                    </div>
                   }
-                  <ion-label>{{ item.title }}</ion-label>
-                  @if (item.badge) {
-                    <ion-badge slot="end" color="primary">{{ item.badge }}</ion-badge>
-                  }
-                   <!-- Example for conditional chevron, if nesting is added later -->
-                  <!-- @if (item.children) { <ion-icon name="chevron-down-outline" slot="end"></ion-icon> } -->
-                </ion-item>
+                </div>
               }
             }
           </ion-list>
@@ -76,34 +101,20 @@
             <ion-title class="ion-hide-md-down">{{ currentPageTitle() }}</ion-title>
 
             <ion-buttons slot="end">
-              <!-- Search Bar -->
-              <!-- <ion-searchbar
-                class="ion-hide-md-down header-searchbar"
-                placeholder="Search..."
-                (click)="openSearch()"
-              ></ion-searchbar>  -->
-              <!-- Add keybinding display later if needed -->
-
               <!-- Action Buttons -->
               <ion-button fill="clear" (click)="openMessages()">
                 <ion-icon slot="icon-only" name="mail-outline"></ion-icon>
-                <!-- Add badge if needed -->
               </ion-button>
               <ion-button fill="clear" (click)="openNotifications()">
                 <ion-icon slot="icon-only" name="notifications-outline"></ion-icon>
-                <!-- Add badge if needed -->
               </ion-button>
 
               <!-- Profile Avatar & Menu Trigger -->
               <ion-button fill="clear" class="avatar-button" (click)="openProfileMenu($event)">
                 <ion-avatar>
-                  <!-- Placeholder, replace with actual image -->
                   <img alt="User avatar" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
                 </ion-avatar>
-                 <!-- Optional: Add dropdown indicator -->
-                 <!-- <ion-icon name="ellipsis-horizontal" class="ion-margin-start"></ion-icon> -->
               </ion-button>
-
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -112,7 +123,6 @@
           <router-outlet></router-outlet>
         </ion-content>
       </div>
-
     </ion-split-pane>
   } @else {
     <!-- If not authenticated, provide minimal structure with ion-content -->

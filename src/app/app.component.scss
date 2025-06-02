@@ -2,8 +2,8 @@
 
 .searchbar-menu {
   background: #fff!important;
-
 } 
+
 // Ensure header items are vertically centered
 ion-header ion-toolbar {
   ion-buttons {
@@ -33,29 +33,94 @@ ion-header ion-toolbar {
   }
 }
 
-// Set split pane width for the menu
+// Split pane width for the menu
 ion-split-pane {
-  --side-width: 250px;
-  --side-min-width: 250px;
-  --side-max-width: 250px;
-  --background: white
+  --side-width: 280px;
+  --side-min-width: 280px;
+  --side-max-width: 280px;
+  --background: white;
 }
 
 // Style for selected menu item
 ion-menu ion-item.selected {
-  --background: rgba(var(--ion-color-primary-rgb), 0.2); // Use primary color for background
+  --background: rgba(var(--ion-color-primary-rgb), 0.1); // Use primary color for background
   --color: var(--ion-color-primary, #0054e9) !important; // Use contrast color for text/icon
-  // border-top-right-radius: 20px; // Adjust radius as needed
-  // border-bottom-right-radius: 20px;
-  // Ensure the radius is visible by adjusting item padding/margin if needed
-  // margin-inline-start: 10px; // Add some margin to make radius visible
-  // margin-inline-end: 0;
-  // margin-top: 5px;
-  // margin-bottom: 5px;
-  border-left: 5px solid var(--ion-color-primary);
+  font-weight: 500;
 
   ion-icon {
     color: var(--ion-color-primary, #0054e9) !important;
+  }
+}
+
+// Menu parent items - section headers
+ion-menu ion-item.menu-parent {
+  font-weight: 500;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --min-height: 56px;
+  --background: white;
+  position: relative;
+  
+  ion-label {
+    font-size: 16px;
+  }
+  
+  &.has-children {
+    cursor: pointer;
+    
+    .chevron-icon {
+      font-size: 18px;
+      transition: transform 0.3s ease;
+      color: #5f6670;
+    }
+    
+    &.expanded {
+      .chevron-icon {
+        transform: rotate(180deg); // Up arrow when expanded
+      }
+    }
+  }
+  
+  ion-icon[slot="start"] {
+    color: #5f6670;
+    font-size: 22px;
+    margin-right: 16px;
+  }
+}
+
+// Sub-menu container - accordion animation
+.submenu-container {
+  background: white;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+  
+  &.expanded {
+    max-height: 500px; // Arbitrary large value, will be clamped to actual content
+    transition: max-height 0.5s ease-in;
+  }
+}
+
+// Sub-menu items
+ion-menu ion-item.sub-item {
+  --padding-start: 54px; // Indent sub-items
+  --background: white;
+  --color: #333;
+  font-size: 0.95em;
+  --min-height: 48px; // Make sub-items a bit smaller
+  
+  ion-icon {
+    font-size: 18px; // Slightly smaller icons for sub-items
+    margin-right: 12px;
+    color: #5f6670;
+  }
+  
+  &.selected {
+    --background: rgba(var(--ion-color-primary-rgb), 0.1);
+    
+    ion-icon {
+      color: var(--ion-color-primary);
+    }
   }
 }
 
@@ -69,11 +134,11 @@ ion-menu ion-searchbar {
     padding-bottom: 10px; // Add some space below search
 }
 
-
 .menu-header-label {
   font-size: 12px;
   font-weight: 600;
   color: var(--ion-color-medium);
+  margin-left: 8px;
 }
 
 ion-list {
@@ -85,5 +150,21 @@ ion-content {
   --padding-bottom: 0;
   --padding-start: 0;
   --padding-end: 0;
+}
+
+// Make the menu scrollable
+ion-menu ion-content {
+  --overflow: auto;
+}
+
+// Menu items container
+#menu-list {
+  padding-top: 8px;
+}
+
+// Menu section
+.menu-section {
+  margin-bottom: 0;
+  overflow: hidden;
 }
 

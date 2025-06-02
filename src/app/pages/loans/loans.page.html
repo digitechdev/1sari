@@ -43,6 +43,32 @@
               </ion-grid>
             </ion-card-title>
           </ion-card-header>
+
+          <!-- Segment Filter for Loan Status -->
+          <div class="status-segment-container ion-padding-horizontal">
+            <ion-segment [value]="selectedStatus()" (ionChange)="segmentChanged($event)">
+              <ion-segment-button value="All">
+                <ion-label>All</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="Active">
+                <ion-icon name="checkmark-circle-outline"></ion-icon>
+                <ion-label>Active</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="Pending">
+                <ion-icon name="time-outline"></ion-icon>
+                <ion-label>Pending</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="Rejected">
+                <ion-icon name="close-circle-outline"></ion-icon>
+                <ion-label>Rejected</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="Closed">
+                <ion-icon name="checkmark-done-outline"></ion-icon>
+                <ion-label>Closed</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+
           <ion-card-content>
             @if (isLoading()) {
               <div class="state-message"><ion-spinner name="crescent"></ion-spinner> Loading Loans...</div>

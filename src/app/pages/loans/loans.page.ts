@@ -40,20 +40,33 @@ export class LoansPage implements OnInit, AfterViewInit {
   isLoading = signal<boolean>(true);
   errorLoading = signal<string | null>(null);
   searchTerm = signal<string>('');
+  selectedStatus = signal<string>('All');
   displayableLoans = signal<any[]>([]);
   private actionsTemplateAssigned = false;
 
   filteredLoans = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    if (!term) {
-      return this.allLoans();
+    const status = this.selectedStatus();
+    
+    // First filter by status
+    let filtered = this.allLoans();
+    if (status !== 'All') {
+      filtered = filtered.filter(loan => 
+        loan.status && loan.status === status
+      );
     }
-    return this.allLoans().filter(loan =>
-      loan.id?.toString().includes(term) ||
-      (loan.borrower?.name_of_borrower && loan.borrower.name_of_borrower.toLowerCase().includes(term)) ||
-      loan.status?.toLowerCase().includes(term) ||
-      loan.purpose?.toLowerCase().includes(term)
-    );
+    
+    // Then filter by search term
+    if (term) {
+      filtered = filtered.filter(loan =>
+        loan.id?.toString().includes(term) ||
+        (loan.borrower?.name_of_borrower && loan.borrower.name_of_borrower.toLowerCase().includes(term)) ||
+        loan.status?.toLowerCase().includes(term) ||
+        loan.purpose?.toLowerCase().includes(term)
+      );
+    }
+    
+    return filtered;
   });
 
   ColumnMode = ColumnMode;
@@ -102,6 +115,11 @@ export class LoansPage implements OnInit, AfterViewInit {
     this.tryAssignTemplateAndData();
   }
 
+  segmentChanged(event: any) {
+    const value = event.detail.value;
+    this.selectedStatus.set(value);
+  }
+
   async loadLoans(showLoading: boolean = true) {
     if (showLoading) {
       this.isLoading.set(true);
@@ -110,6 +128,7 @@ export class LoansPage implements OnInit, AfterViewInit {
     this.displayableLoans.set([]);
     this.actionsTemplateAssigned = false;
     this.searchTerm.set('');
+    this.selectedStatus.set('All');
 
     try {
       const response = await this.loanService.getAllLoans();

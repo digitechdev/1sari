@@ -44,3 +44,22 @@ ion-skeleton-text {
   height: 35px !important;
   margin-bottom: 21px !important;
 }
+
+.status-segment-container {
+  margin-bottom: 16px;
+  
+  ion-segment {
+    --background: #f5f7fa;
+    
+    ion-segment-button {
+      --color: #6b7280;
+      --color-checked: var(--ion-color-primary);
+      --indicator-color: rgba(var(--ion-color-primary-rgb), 0.2);
+      --indicator-height: 4px;
+      
+      ion-icon {
+        margin-right: 6px;
+      }
+    }
+  }
+}
