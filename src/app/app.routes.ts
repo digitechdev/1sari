@@ -149,6 +149,11 @@ export const routes: Routes = [
         path: 'disbursement',
         loadComponent: () => import('./pages/reports/disbursement-report/disbursement-report.page').then(m => m.DisbursementReportPage),
         data: { title: 'Loan Disbursement Report' }
+      },
+      {
+        path: 'collection',
+        loadComponent: () => import('./pages/reports/collection/collection.page').then(m => m.CollectionPage),
+        data: { title: 'Collection Report' }
       }
       // Add more report routes here as needed
     ]

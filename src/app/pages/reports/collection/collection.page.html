@@ -1,13 +1,182 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>collection</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Collection Report</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCSV()">
+        <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">collection</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <!-- Date Range Selector -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Date Range</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">Start Date</ion-label>
+              <ion-datetime
+                presentation="date"
+                [value]="startDate()"
+                (ionChange)="onStartDateChange($event)"
+              ></ion-datetime>
+            </ion-item>
+          </ion-col>
+          
+          <ion-col size="12" size-md="6">
+            <ion-item>
+              <ion-label position="stacked">End Date</ion-label>
+              <ion-datetime
+                presentation="date"
+                [value]="endDate()"
+                (ionChange)="onEndDateChange($event)"
+              ></ion-datetime>
+            </ion-item>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Report Summary -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Summary</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row>
+          <ion-col size="6" size-md="4">
+            <div class="summary-box">
+              <div class="summary-label">Total Collected</div>
+              <div class="summary-value">{{ formatCurrency(summary().totalCollected) }}</div>
+            </div>
+          </ion-col>
+          
+          <ion-col size="6" size-md="4">
+            <div class="summary-box">
+              <div class="summary-label">Transactions</div>
+              <div class="summary-value">{{ summary().totalTransactions }}</div>
+            </div>
+          </ion-col>
+          
+          <ion-col size="6" size-md="4">
+            <div class="summary-box">
+              <div class="summary-label">Avg. Transaction Size</div>
+              <div class="summary-value">{{ formatCurrency(summary().avgTransactionSize) }}</div>
+            </div>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Daily Collection Table -->
+  <ion-card class="data-card">
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="calendar-outline" class="header-icon"></ion-icon>
+        Daily Collection Totals
+      </ion-card-title>
+    </ion-card-header>
+    
+    <ion-card-content>
+      <!-- Loading State -->
+      @if (isLoading()) {
+        <div class="state-message">
+          <ion-spinner name="crescent"></ion-spinner> Loading daily data...
+        </div>
+      }
+      
+      <!-- Empty State -->
+      @if (!isLoading() && dailyCollections().length === 0) {
+        <div class="state-message">
+          <ion-text color="medium">No daily collection data available for the selected period.</ion-text>
+        </div>
+      }
+      
+      <!-- Data Table -->
+      @if (!isLoading() && dailyCollections().length > 0) {
+        <ngx-datatable
+          class="material expandable"
+          [rows]="dailyCollections()"
+          [columns]="dailyColumns"
+          [columnMode]="ColumnMode.force"
+          [headerHeight]="50"
+          [footerHeight]="50"
+          [rowHeight]="50"
+          [scrollbarH]="true"
+          [limit]="10"
+          [sorts]="[{prop: 'date', dir: 'desc'}]"
+        >
+          <!-- Date Column -->
+          <ngx-datatable-column name="Date" prop="date" [width]="150">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              {{ formatDate(value) }}
+            </ng-template>
+          </ngx-datatable-column>
+          
+          <!-- Total Amount Column -->
+          <ngx-datatable-column name="Total Collected" prop="total_amount" [width]="150">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              {{ formatCurrency(value) }}
+            </ng-template>
+          </ngx-datatable-column>
+          
+          <!-- Transaction Count Column -->
+          <ngx-datatable-column name="Transactions" prop="transaction_count" [width]="120">
+            <ng-template let-value="value" ngx-datatable-cell-template>
+              <ion-badge color="secondary">{{ value }}</ion-badge>
+            </ng-template>
+          </ngx-datatable-column>
+        </ngx-datatable>
+      }
+    </ion-card-content>
+  </ion-card>
 </ion-content>
+
+<style>
+  .summary-box {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    padding: 12px;
+    height: 100%;
+  }
+  
+  .summary-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+  
+  .summary-value {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .state-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 0.5rem;
+  }
+  
+  .header-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  
+  .data-card {
+    margin-bottom: 20px;
+  }
+</style>
