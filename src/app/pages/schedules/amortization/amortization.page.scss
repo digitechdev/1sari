@@ -1,1 +1,119 @@
+ion-card {
+  margin: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.loading-container, .no-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: var(--ion-color-medium);
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+.summary-item {
+  margin-bottom: 16px;
+  
+  .label {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin-bottom: 4px;
+  }
+  
+  .value {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+  }
+  
+  &.highlight {
+    .value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+hr {
+  background-color: var(--ion-color-light);
+  height: 1px;
+  margin: 8px 0;
+}
+
+.amortization-table {
+  margin-top: 16px;
+  
+  ::ng-deep {
+    .ngx-datatable.material {
+      box-shadow: none;
+      border: 1px solid var(--ion-color-light);
+      
+      .datatable-header {
+        .datatable-header-cell {
+          background-color: var(--ion-color-light);
+          font-weight: 500;
+          padding: 8px;
+        }
+      }
+      
+      .datatable-body {
+        .datatable-row-odd {
+          background-color: rgba(var(--ion-color-light-rgb), 0.3);
+        }
+        
+        .datatable-body-cell {
+          padding: 8px;
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+@media print {
+  ion-header, ion-footer, ion-fab, ion-button {
+    display: none !important;
+  }
+  
+  ion-content {
+    --padding-top: 0;
+    --padding-bottom: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+  }
+  
+  ion-card {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+  
+  .export-buttons {
+    display: none !important;
+  }
+}

@@ -145,8 +145,8 @@ export class AppComponent implements OnInit {
     // Schedules section
     { id: 'schedules', title: 'Schedules', url: '/schedules', icon: 'calendar-outline', expanded: false },
     { id: 'schedules-amortization', title: 'Amortization Tables', url: '/schedules/amortization', icon: 'calculator-outline', isSubItem: true, parentId: 'schedules' },
-    { id: 'schedules-calendar', title: 'Payment Calendar', url: '/schedules/calendar', icon: 'calendar-outline', isSubItem: true, parentId: 'schedules' },
-    { id: 'schedules-reminders', title: 'Due Reminders', url: '/schedules/reminders', icon: 'notifications-outline', isSubItem: true, parentId: 'schedules' },
+    { id: 'schedules-calendar', title: 'Payment Calendar', url: '/schedules/payment-calendar', icon: 'calendar-outline', isSubItem: true, parentId: 'schedules' },
+    { id: 'schedules-reminders', title: 'Due Reminders', url: '/schedules/due-reminders', icon: 'notifications-outline', isSubItem: true, parentId: 'schedules' },
     
     // Reports section
     { id: 'reports', title: 'Reports', url: '/reports', icon: 'analytics-outline', expanded: false },

@@ -111,6 +111,32 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'schedules',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'payment-calendar',
+        pathMatch: 'full'
+      },
+      {
+        path: 'amortization',
+        loadComponent: () => import('./pages/schedules/amortization/amortization.page').then(m => m.AmortizationPage),
+        data: { title: 'Amortization Tables' }
+      },
+      {
+        path: 'payment-calendar',
+        loadComponent: () => import('./pages/schedules/payment-calendar/payment-calendar.page').then(m => m.PaymentCalendarPage),
+        data: { title: 'Payment Calendar' }
+      },
+      {
+        path: 'due-reminders',
+        loadComponent: () => import('./pages/schedules/due-reminders/due-reminders.page').then(m => m.DueRemindersPage),
+        data: { title: 'Due Reminders' }
+      }
+    ]
+  },
+  {
     path: 'users',
     canActivate: [authGuard],
     children: [
