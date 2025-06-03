@@ -1,13 +1,90 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>payment-form</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/payments/history"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Record Payment</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">payment-form</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Payment Details</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Loan ID <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input type="number" formControlName="loanId" placeholder="Enter loan ID"></ion-input>
+          @if (formErrors.loanId) {
+            <ion-note color="danger">{{ formErrors.loanId }}</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Amount <ion-text color="danger">*</ion-text></ion-label>
+          <ion-input type="number" formControlName="amount" placeholder="Enter payment amount"></ion-input>
+          @if (formErrors.amount) {
+            <ion-note color="danger">{{ formErrors.amount }}</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Payment Date <ion-text color="danger">*</ion-text></ion-label>
+          <ion-datetime-button datetime="paymentDate"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime 
+                id="paymentDate" 
+                formControlName="paymentDate"
+                [preferWheel]="true"
+                [showDefaultButtons]="true"
+                presentation="date"
+                firstDayOfWeek="1">
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+          @if (formErrors.paymentDate) {
+            <ion-note color="danger">{{ formErrors.paymentDate }}</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Payment Method <ion-text color="danger">*</ion-text></ion-label>
+          <ion-select formControlName="paymentMethod" placeholder="Select payment method">
+            <ion-select-option value="Cash">Cash</ion-select-option>
+            <ion-select-option value="Bank Transfer">Bank Transfer</ion-select-option>
+            <ion-select-option value="Mobile Money">Mobile Money</ion-select-option>
+            <ion-select-option value="Check">Check</ion-select-option>
+            <ion-select-option value="Other">Other</ion-select-option>
+          </ion-select>
+          @if (formErrors.paymentMethod) {
+            <ion-note color="danger">{{ formErrors.paymentMethod }}</ion-note>
+          }
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Receipt Number</ion-label>
+          <ion-input type="text" formControlName="receiptNumber" placeholder="Enter receipt number (optional)"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">Notes</ion-label>
+          <ion-textarea formControlName="notes" rows="3" placeholder="Add payment notes (optional)"></ion-textarea>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <div class="ion-padding">
+      <ion-button type="submit" expand="block" [disabled]="isSubmitting() || !paymentForm.valid">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Save Payment
+      </ion-button>
+      <ion-button type="button" expand="block" fill="outline" color="medium" routerLink="/payments/history" class="ion-margin-top">
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        Cancel
+      </ion-button>
+    </div>
+  </form>
 </ion-content>

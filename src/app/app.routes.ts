@@ -75,6 +75,42 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'payments',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'history',
+        pathMatch: 'full'
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./pages/payments/payment-history/payment-history.page').then(m => m.PaymentHistoryPage),
+        data: { title: 'Payment History' }
+      },
+      {
+        path: 'new',
+        loadComponent: () => import('./pages/payments/payment-form/payment-form.page').then(m => m.PaymentFormPage),
+        data: { title: 'Record Payment' }
+      },
+      {
+        path: 'missed',
+        loadComponent: () => import('./pages/payments/missed-payments/missed-payments.page').then(m => m.MissedPaymentsPage),
+        data: { title: 'Missed Payments' }
+      },
+      {
+        path: 'upcoming',
+        loadComponent: () => import('./pages/payments/upcoming-payments/upcoming-payments.page').then(m => m.UpcomingPaymentsPage),
+        data: { title: 'Upcoming Payments' }
+      },
+      {
+        path: 'detail/:id',
+        loadComponent: () => import('./pages/payments/payment-form/payment-form.page').then(m => m.PaymentFormPage),
+        data: { title: 'Payment Details' }
+      }
+    ]
+  },
+  {
     path: 'users',
     canActivate: [authGuard],
     children: [
