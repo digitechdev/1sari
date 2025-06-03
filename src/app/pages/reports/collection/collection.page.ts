@@ -35,6 +35,7 @@ import {
   IonProgressBar,
   LoadingController,
   ToastController,
+  ActionSheetController,
   DatetimeCustomEvent
 } from '@ionic/angular/standalone';
 import { NgxDatatableModule, ColumnMode } from '@swimlane/ngx-datatable';
@@ -50,10 +51,12 @@ import {
   statsChartOutline,
   arrowUpOutline,
   arrowDownOutline,
-  eyeOutline
+  eyeOutline,
+  ellipsisVerticalOutline
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { LoanPaymentService } from '../../../services/loan-payment.service';
+import { ReportExportService, ExportColumn } from '../../../services/report-export.service';
 
 interface CollectionSummary {
   totalCollected: number;
@@ -117,6 +120,8 @@ export class CollectionPage implements OnInit {
   private loadingCtrl = inject(LoadingController);
   private toastCtrl = inject(ToastController);
   private router = inject(Router);
+  private exportService = inject(ReportExportService);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   // Datatable properties
   ColumnMode = ColumnMode;
@@ -124,6 +129,13 @@ export class CollectionPage implements OnInit {
     { name: 'Date', prop: 'date' },
     { name: 'Total Collected', prop: 'total_amount' },
     { name: 'Transactions', prop: 'transaction_count' }
+  ];
+
+  // Export columns definition
+  exportColumns: ExportColumn[] = [
+    { header: 'Date', property: 'date', formatter: (value) => this.formatDate(value) },
+    { header: 'Total Collected', property: 'total_amount', formatter: (value) => this.formatCurrency(value) },
+    { header: 'Transactions', property: 'transaction_count' }
   ];
 
   // State signals
@@ -152,7 +164,8 @@ export class CollectionPage implements OnInit {
       statsChartOutline,
       arrowUpOutline,
       arrowDownOutline,
-      eyeOutline
+      eyeOutline,
+      ellipsisVerticalOutline
     });
   }
 
@@ -319,11 +332,42 @@ export class CollectionPage implements OnInit {
   }
 
   /**
-   * Export report as CSV
+   * Show export options action sheet
    */
-  exportCSV() {
+  async showExportOptions() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Export Options',
+      buttons: [
+        {
+          text: 'Export to CSV',
+          icon: 'document-outline',
+          handler: () => {
+            this.exportData('csv');
+          }
+        },
+        {
+          text: 'Export to PDF',
+          icon: 'document-text-outline',
+          handler: () => {
+            this.exportData('pdf');
+          }
+        },
+        {
+          text: 'Cancel',
+          icon: 'close-outline',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  /**
+   * Export data to selected format
+   */
+  async exportData(format: 'csv' | 'pdf') {
     try {
-      // Prepare data
       const dailyData = this.dailyCollections();
       
       if (dailyData.length === 0) {
@@ -331,41 +375,39 @@ export class CollectionPage implements OnInit {
         return;
       }
       
-      // Convert daily collections to CSV
-      const headers = ['Date', 'Total Collected', 'Transactions'];
-      const rows = dailyData.map(day => [
-        this.formatDate(day.date),
-        day.total_amount,
-        day.transaction_count
-      ]);
-      
-      // Create CSV content
-      let csvContent = headers.join(',') + '\n';
-      rows.forEach(row => {
-        csvContent += row.join(',') + '\n';
-      });
-      
-      // Create download link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      
       // Get date range for filename
       const startStr = this.formatDate(this.startDate());
       const endStr = this.formatDate(this.endDate());
-      link.setAttribute('download', `collection_report_${startStr}_to_${endStr}.csv`);
+      const filename = `collection_report_${startStr}_to_${endStr}`;
       
-      // Trigger download
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (format === 'csv') {
+        this.exportService.exportToCSV(
+          dailyData,
+          this.exportColumns,
+          filename
+        );
+      } else {
+        this.exportService.exportToPDF(
+          dailyData,
+          this.exportColumns,
+          filename,
+          'Collection Report',
+          'landscape'
+        );
+      }
       
-      this.presentToast('Report exported successfully', 'success');
+      this.presentToast(`Report exported successfully as ${format.toUpperCase()}`, 'success');
     } catch (error) {
-      console.error('Error exporting CSV:', error);
-      this.presentToast('Failed to export report', 'danger');
+      console.error(`Error exporting to ${format}:`, error);
+      this.presentToast(`Failed to export report as ${format.toUpperCase()}`, 'danger');
     }
+  }
+
+  /**
+   * Legacy export CSV method (redirects to new exportData method)
+   */
+  exportCSV() {
+    this.exportData('csv');
   }
 
   /**

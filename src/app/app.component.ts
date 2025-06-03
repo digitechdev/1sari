@@ -154,7 +154,7 @@ export class AppComponent implements OnInit {
     { id: 'reports-collection', title: 'Collection Report', url: '/reports/collection', icon: 'card-outline', isSubItem: true, parentId: 'reports' },
     { id: 'reports-overdue', title: 'Overdue Loans', url: '/reports/overdue', icon: 'alert-circle-outline', isSubItem: true, parentId: 'reports' },
     // { id: 'reports-performance', title: 'Performance by Officer', url: '/reports/performance', icon: 'trending-up-outline', isSubItem: true, parentId: 'reports' },
-    { id: 'reports-export', title: 'Export CSV/PDF', url: '/reports/export', icon: 'download-outline', isSubItem: true, parentId: 'reports' },
+    // { id: 'reports-export', title: 'Export CSV/PDF', url: '/reports/export', icon: 'download-outline', isSubItem: true, parentId: 'reports' },
     
     // Users & Roles section
     { id: 'users', title: 'Users & Roles', url: '/users', icon: 'people-outline', expanded: false },

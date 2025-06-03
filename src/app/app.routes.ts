@@ -154,6 +154,11 @@ export const routes: Routes = [
         path: 'collection',
         loadComponent: () => import('./pages/reports/collection/collection.page').then(m => m.CollectionPage),
         data: { title: 'Collection Report' }
+      },
+      {
+        path: 'overdue',
+        loadComponent: () => import('./pages/reports/overdue/overdue.page').then(m => m.OverduePage),
+        data: { title: 'Overdue Loans Report' }
       }
       // Add more report routes here as needed
     ]

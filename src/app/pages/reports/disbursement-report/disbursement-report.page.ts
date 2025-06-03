@@ -37,6 +37,7 @@ import {
   IonProgressBar,
   LoadingController,
   ToastController,
+  ActionSheetController,
   RangeCustomEvent,
   DatetimeCustomEvent,
   SearchbarCustomEvent
@@ -63,10 +64,12 @@ import {
   shareOutline,
   arrowUpOutline,
   arrowDownOutline,
-  eyeOutline
+  eyeOutline,
+  ellipsisVerticalOutline
 } from 'ionicons/icons';
 import { Router } from '@angular/router';
 import { LoanService } from '../../../services/loan.service';
+import { ReportExportService, ExportColumn } from '../../../services/report-export.service';
 
 interface LoanDisbursement {
   id: number;
@@ -156,6 +159,8 @@ export class DisbursementReportPage implements OnInit {
   private loadingCtrl = inject(LoadingController);
   private toastCtrl = inject(ToastController);
   private router = inject(Router);
+  private exportService = inject(ReportExportService);
+  private actionSheetCtrl = inject(ActionSheetController);
 
   // Datatable properties
   ColumnMode = ColumnMode;
@@ -212,6 +217,18 @@ export class DisbursementReportPage implements OnInit {
   // For performance optimization
   private debounceTimer: any;
   
+  // Export columns definition
+  exportColumns: ExportColumn[] = [
+    { header: 'Loan Number', property: 'loanNumber' },
+    { header: 'Borrower Name', property: 'borrowerName' },
+    { header: 'Disbursement Date', property: 'disbursementDate', formatter: (value) => this.formatDate(value) },
+    { header: 'Loan Amount', property: 'loanAmount', formatter: (value) => this.formatAmount(value) },
+    { header: 'Interest Rate', property: 'interestRate', formatter: (value) => `${value}%` },
+    { header: 'Term', property: 'term', formatter: (value, row) => `${value} ${row.termUnit}` },
+    { header: 'Loan Type', property: 'loanType' },
+    { header: 'Status', property: 'status' }
+  ];
+  
   constructor() {
     addIcons({
       calendarOutline,
@@ -233,7 +250,8 @@ export class DisbursementReportPage implements OnInit {
       shareOutline,
       arrowUpOutline,
       arrowDownOutline,
-      eyeOutline
+      eyeOutline,
+      ellipsisVerticalOutline
     });
   }
 
@@ -663,69 +681,92 @@ export class DisbursementReportPage implements OnInit {
   }
   
   /**
-   * Export report as CSV
+   * Show export options action sheet
    */
-  exportCSV() {
+  async showExportOptions() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: 'Export Options',
+      buttons: [
+        {
+          text: 'Export to CSV',
+          icon: 'document-outline',
+          handler: () => {
+            this.exportData('csv');
+          }
+        },
+        {
+          text: 'Export to PDF',
+          icon: 'document-text-outline',
+          handler: () => {
+            this.exportData('pdf');
+          }
+        },
+        {
+          text: 'Cancel',
+          icon: 'close-outline',
+          role: 'cancel'
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  /**
+   * Export data to selected format
+   */
+  async exportData(format: 'csv' | 'pdf') {
     try {
       const loans = this.filteredLoans();
       if (!loans.length) {
-        this.presentToast('No data to export', 'warning');
+        this.presentToast('No data available to export', 'warning');
         return;
       }
       
-      // Create CSV header
-      const headers = [
-        'Loan Number', 
-        'Borrower Name', 
-        'Disbursement Date', 
-        'Loan Amount', 
-        'Interest Rate', 
-        'Term',
-        'Loan Type',
-        'Status'
-      ];
-      
-      // Create CSV rows - process in batches for better performance
-      const batchSize = 100;
-      let csvRows = [headers.join(',')];
-      
-      for (let i = 0; i < loans.length; i += batchSize) {
-        const batch = loans.slice(i, i + batchSize);
-        const batchRows = batch.map(loan => {
-          const row = [
-            `"${loan.loanNumber}"`,
-            `"${loan.borrowerName}"`,
-            `"${this.formatDate(loan.disbursementDate)}"`,
-            loan.loanAmount,
-            `${loan.interestRate}%`,
-            `${loan.term} ${loan.termUnit}`,
-            `"${loan.loanType}"`,
-            `"${loan.status}"`
-          ];
-          return row.join(',');
+      // Show loading indicator for large datasets
+      let loader;
+      if (loans.length > 100) {
+        loader = await this.loadingCtrl.create({
+          message: `Preparing ${format.toUpperCase()} export...`,
+          spinner: 'circles'
         });
-        csvRows = csvRows.concat(batchRows);
+        await loader.present();
+      }
+
+      const filename = `loan_disbursement_report_${this.formatDateFilename(new Date())}`;
+      
+      if (format === 'csv') {
+        this.exportService.exportToCSV(
+          loans,
+          this.exportColumns,
+          filename
+        );
+      } else {
+        this.exportService.exportToPDF(
+          loans,
+          this.exportColumns,
+          filename,
+          'Loan Disbursement Report',
+          'landscape'
+        );
       }
       
-      // Create the CSV content
-      const csvContent = csvRows.join('\n');
+      if (loader) {
+        await loader.dismiss();
+      }
       
-      // Create a blob and download link
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `loan_disbursement_report_${this.formatDateFilename(new Date())}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      this.presentToast('Report exported successfully', 'success');
+      this.presentToast(`Report exported successfully as ${format.toUpperCase()}`, 'success');
     } catch (error) {
-      console.error('Error exporting CSV:', error);
-      this.presentToast('Failed to export report', 'danger');
+      console.error(`Error exporting to ${format}:`, error);
+      this.presentToast(`Failed to export report as ${format.toUpperCase()}`, 'danger');
     }
+  }
+
+  /**
+   * Legacy export CSV method (redirects to new exportData method)
+   */
+  exportCSV() {
+    this.exportData('csv');
   }
   
   /**
