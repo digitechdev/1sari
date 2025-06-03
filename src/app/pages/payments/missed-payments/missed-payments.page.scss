@@ -1,0 +1,91 @@
+/* Datatable styles */
+.datatable-content {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.payments-card-list {
+  margin: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.payments-card-header {
+  padding-bottom: 0;
+}
+
+.controls-searchbar {
+  padding: 0;
+  --background: #f8f9fa;
+  --border-radius: 4px;
+}
+
+.payments-datatable {
+  width: 100%;
+  box-shadow: none;
+}
+
+.state-message {
+  padding: 40px;
+  text-align: center;
+  color: var(--ion-color-medium);
+}
+
+.action-buttons-container {
+  display: flex;
+  gap: 8px;
+}
+
+.action-button {
+  margin: 0;
+}
+
+.load-more-container {
+  text-align: center;
+  padding: 10px;
+}
+
+.load-more-button {
+  margin: 0 auto;
+}
+
+/* Overdue status classes */
+.severe-overdue {
+  color: var(--ion-color-danger);
+  font-weight: bold;
+}
+
+.high-overdue {
+  color: var(--ion-color-warning);
+  font-weight: bold;
+}
+
+.medium-overdue {
+  color: var(--ion-color-tertiary);
+  font-weight: bold;
+}
+
+.low-overdue {
+  color: var(--ion-color-medium);
+}
+
+/* Make datatable fit the card */
+:host ::ng-deep .ngx-datatable {
+  overflow: hidden;
+  
+  .datatable-body {
+    overflow-x: auto !important;
+  }
+  
+  .datatable-header-cell {
+    font-weight: bold;
+    font-size: 14px;
+    color: var(--ion-color-dark);
+    padding: 10px;
+  }
+
+  .datatable-body-cell {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+  }
+}
