@@ -29,7 +29,8 @@ import {
   IonItem,
   IonBadge,
   ToastController,
-  AlertController
+  AlertController,
+  LoadingController
 } from '@ionic/angular/standalone';
 import { NgClass } from '@angular/common';
 import { addIcons } from 'ionicons';
@@ -40,7 +41,8 @@ import {
   notificationsOutline,
   refreshOutline,
   cashOutline,
-  downloadOutline
+  downloadOutline,
+  checkmarkOutline
 } from 'ionicons/icons';
 import { 
   LoanPaymentScheduleService, 
@@ -48,6 +50,9 @@ import {
   DueDateFilterType 
 } from '../../../services/loan-payment-schedule.service';
 import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { Device } from '@capacitor/device';
 
 @Component({
   selector: 'app-upcoming-payments',
@@ -99,6 +104,7 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
   private currencyPipe = inject(CurrencyPipe);
   private cdRef = inject(ChangeDetectorRef);
   private paymentScheduleService = inject(LoanPaymentScheduleService);
+  private loadingCtrl = inject(LoadingController);
 
   // Data for the upcoming payments
   isLoading = signal<boolean>(true);
@@ -166,7 +172,8 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
       notificationsOutline,
       refreshOutline,
       cashOutline,
-      downloadOutline
+      downloadOutline,
+      checkmarkOutline
     });
 
     effect(() => {
@@ -388,14 +395,7 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
         {
           text: 'CSV',
           handler: async () => {
-            // TODO: Implement CSV export functionality
-            const toast = await this.toastCtrl.create({
-              message: 'Payment schedule exported as CSV.',
-              duration: 2000,
-              position: 'bottom',
-              color: 'success',
-            });
-            await toast.present();
+            this.exportToCSV();
           }
         },
         {
@@ -415,6 +415,117 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
     });
     
     await alert.present();
+  }
+
+  async exportToCSV() {
+    try {
+      const loading = await this.loadingCtrl.create({
+        message: 'Generating CSV file...',
+        spinner: 'circles'
+      });
+      await loading.present();
+
+      // Get all payments for export - might need to fetch all data if pagination is active
+      let paymentsToExport = this.upcomingPayments();
+      
+      // If we're only showing a subset of data, fetch all data for export
+      if (this.totalCount() > paymentsToExport.length) {
+        try {
+          const allPayments = await this.paymentScheduleService.getUpcomingPayments(
+            this.dueDateFilter(),
+            1,
+            this.totalCount(), // Request all payments
+            this.searchTerm()
+          );
+          paymentsToExport = allPayments.data;
+        } catch (error) {
+          console.error('Error fetching all payments for export:', error);
+          // Continue with what we have if we can't fetch all
+        }
+      }
+
+      // Generate CSV content
+      const headers = [
+        'ID', 'Loan ID', 'Borrower', 'Amount Due', 'Due Date', 'Days Until Due'
+      ];
+      
+      let csvContent = headers.join(',') + '\n';
+      
+      // Add data rows
+      csvContent += paymentsToExport.map(payment => {
+        const formattedAmount = payment.amount.toFixed(2);
+        const formattedDate = this.datePipe.transform(payment.dueDate, 'yyyy-MM-dd') || payment.dueDate;
+        
+        // Escape any commas in the borrower name
+        const escapedBorrowerName = payment.borrower.name_of_borrower.includes(',') 
+          ? `"${payment.borrower.name_of_borrower}"` 
+          : payment.borrower.name_of_borrower;
+        
+        return [
+          payment.id,
+          payment.loanId,
+          escapedBorrowerName,
+          formattedAmount,
+          formattedDate,
+          payment.daysUntilDue
+        ].join(',');
+      }).join('\n');
+
+      // Get current date for filename
+      const date = new Date();
+      const dateStr = date.toISOString().split('T')[0];
+      const fileName = `upcoming-payments-${dateStr}.csv`;
+      
+      // Get device info to determine platform
+      const deviceInfo = await Device.getInfo();
+
+      // Save the file based on platform
+      if (deviceInfo.platform === 'web') {
+        // For web, create a download
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', fileName);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        await loading.dismiss();
+        this.presentToast('CSV file downloaded successfully.', 'success');
+      } else {
+        // For mobile platforms, save to filesystem and share
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: csvContent,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8
+        });
+        
+        await loading.dismiss();
+        
+        // Show success toast
+        this.presentToast('CSV file created successfully.', 'success');
+        
+        // Share the file
+        try {
+          await Share.share({
+            title: 'Upcoming Payments',
+            text: 'Upcoming Payments Export',
+            url: result.uri,
+            dialogTitle: 'Share CSV file'
+          });
+        } catch (shareError) {
+          console.error('Error sharing the file:', shareError);
+          this.presentToast('File created but sharing failed.', 'warning');
+        }
+      }
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      this.presentToast('Failed to export CSV. Please try again.', 'danger');
+    }
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {
