@@ -216,14 +216,20 @@ export class MissedPaymentsPage implements OnInit, AfterViewInit {
   }
 
   handleSearch(event: any) {
-    const term = event.target.value || '';
-    this.searchTerm.set(term);
+    // Get the search term from the event
+    const term = event.detail.value || '';
     
-    // Reset page to 1 when searching
-    this.currentPage.set(1);
-    
-    // Reload with the search term
-    this.loadMissedPayments(false);
+    // Only update and search if the term has actually changed
+    if (term !== this.searchTerm()) {
+      console.log('Search term changed to:', term);
+      this.searchTerm.set(term);
+      
+      // Reset to page 1 when searching
+      this.currentPage.set(1);
+      
+      // Reload with the search term (the debounce is handled by the ionInput event with debounce="300")
+      this.loadMissedPayments(false);
+    }
   }
 
   async loadMissedPayments(showLoading: boolean = true) {

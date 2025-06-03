@@ -92,49 +92,69 @@ export class LoanPaymentScheduleService {
           )
         `, { count: 'exact' })
         .eq('status', 'Open')
-        .lt('due_date', todayStr)
-        .order('due_date', { ascending: true });
+        .lt('due_date', todayStr);
       
       // Add search filtering if term provided
-      if (searchTerm) {
-        query = query.or(`loan_id.eq.${searchTerm},loans.account_information.name_of_borrower.ilike.%${searchTerm}%`);
+      if (searchTerm && searchTerm.trim()) {
+        const trimmedTerm = searchTerm.trim();
+        
+        // Check if search term is a number (likely an ID)
+        if (/^\d+$/.test(trimmedTerm)) {
+          // For numeric search, use either id or loan_id
+          const numValue = parseInt(trimmedTerm, 10);
+          query = query.or(`id.eq.${numValue},loan_id.eq.${numValue}`);
+        } else {
+          // For text search, we need to ensure we only get records that actually match the borrower name
+          // and that the borrower relationship exists
+          query = query
+            .filter('loans.borrower.name_of_borrower', 'ilike', `%${trimmedTerm}%`)
+            .not('loans.borrower.id', 'is', null); // Ensure borrower exists
+        }
       }
+      
+      // Apply ordering
+      query = query.order('due_date', { ascending: true });
       
       // Apply pagination
       const from = (page - 1) * limit;
       const to = from + limit - 1;
       
       // Execute the query
-      const { data, error, count } = await query
-        .range(from, to);
+      const { data, error, count } = await query.range(from, to);
       
       if (error) {
+        console.error('Supabase query error:', error);
         throw error;
       }
       
       // Transform the data to the frontend format
-      const missedPayments: MissedPayment[] = (data || []).map((item: any) => {
-        // Calculate days overdue
-        const dueDate = new Date(item.due_date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const timeDiff = today.getTime() - dueDate.getTime();
-        const daysOverdue = Math.floor(timeDiff / (1000 * 3600 * 24));
-        
-        return {
-          id: item.id,
-          loanId: item.loan_id,
-          scheduleId: item.id,
-          borrower: {
-            id: item.loans?.borrower?.id || 0,
-            name_of_borrower: item.loans?.borrower?.name_of_borrower || 'Unknown',
-            contact_no_borrower: item.loans?.borrower?.contact_no_borrower
-          },
-          amount: item.amount_due,
-          dueDate: item.due_date,
-          daysOverdue: daysOverdue
-        };
-      });
+      const missedPayments: MissedPayment[] = (data || [])
+        .filter((item: any) => item.loans?.borrower) // Only include items with valid borrower data
+        .map((item: any) => {
+          // Calculate days overdue
+          const dueDate = new Date(item.due_date);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const timeDiff = today.getTime() - dueDate.getTime();
+          const daysOverdue = Math.floor(timeDiff / (1000 * 3600 * 24));
+          
+          // Make sure borrower name is never null or undefined
+          const borrowerName = item.loans?.borrower?.name_of_borrower;
+          
+          return {
+            id: item.id,
+            loanId: item.loan_id,
+            scheduleId: item.id,
+            borrower: {
+              id: item.loans?.borrower?.id || 0,
+              name_of_borrower: borrowerName || '[No Name]', // Use a more descriptive placeholder
+              contact_no_borrower: item.loans?.borrower?.contact_no_borrower || ''
+            },
+            amount: item.amount_due,
+            dueDate: item.due_date,
+            daysOverdue: daysOverdue
+          };
+        });
       
       return {
         data: missedPayments,
@@ -218,8 +238,21 @@ export class LoanPaymentScheduleService {
       }
       
       // Add search filtering if term provided
-      if (searchTerm) {
-        query = query.or(`loan_id.eq.${searchTerm},loans.account_information.name_of_borrower.ilike.%${searchTerm}%`);
+      if (searchTerm && searchTerm.trim()) {
+        const trimmedTerm = searchTerm.trim();
+        
+        // Check if search term is a number (likely an ID)
+        if (/^\d+$/.test(trimmedTerm)) {
+          // For numeric search, use either id or loan_id
+          const numValue = parseInt(trimmedTerm, 10);
+          query = query.or(`id.eq.${numValue},loan_id.eq.${numValue}`);
+        } else {
+          // For text search, we need to ensure we only get records that actually match the borrower name
+          // and that the borrower relationship exists
+          query = query
+            .filter('loans.borrower.name_of_borrower', 'ilike', `%${trimmedTerm}%`)
+            .not('loans.borrower.id', 'is', null); // Ensure borrower exists
+        }
       }
       
       // Apply pagination and ordering
@@ -232,30 +265,36 @@ export class LoanPaymentScheduleService {
         .range(from, to);
       
       if (error) {
+        console.error('Supabase query error:', error);
         throw error;
       }
       
       // Transform the data to the frontend format
-      const upcomingPayments: UpcomingPayment[] = (data || []).map((item: any) => {
-        // Calculate days until due
-        const dueDate = new Date(item.due_date);
-        const timeDiff = dueDate.getTime() - today.getTime();
-        const daysUntilDue = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
-        
-        return {
-          id: item.id,
-          loanId: item.loan_id,
-          scheduleId: item.id,
-          borrower: {
-            id: item.loans?.borrower?.id || 0,
-            name_of_borrower: item.loans?.borrower?.name_of_borrower || 'Unknown',
-            contact_no_borrower: item.loans?.borrower?.contact_no_borrower
-          },
-          amount: item.amount_due,
-          dueDate: item.due_date,
-          daysUntilDue: daysUntilDue
-        };
-      });
+      const upcomingPayments: UpcomingPayment[] = (data || [])
+        .filter((item: any) => item.loans?.borrower) // Only include items with valid borrower data
+        .map((item: any) => {
+          // Calculate days until due
+          const dueDate = new Date(item.due_date);
+          const timeDiff = dueDate.getTime() - today.getTime();
+          const daysUntilDue = Math.max(0, Math.floor(timeDiff / (1000 * 3600 * 24)));
+          
+          // Make sure borrower name is never null or undefined
+          const borrowerName = item.loans?.borrower?.name_of_borrower;
+          
+          return {
+            id: item.id,
+            loanId: item.loan_id,
+            scheduleId: item.id,
+            borrower: {
+              id: item.loans?.borrower?.id || 0,
+              name_of_borrower: borrowerName || '[No Name]', // Use a more descriptive placeholder
+              contact_no_borrower: item.loans?.borrower?.contact_no_borrower || ''
+            },
+            amount: item.amount_due,
+            dueDate: item.due_date,
+            daysUntilDue: daysUntilDue
+          };
+        });
       
       return {
         data: upcomingPayments,
