@@ -42,7 +42,8 @@ import {
   refreshOutline,
   cashOutline,
   downloadOutline,
-  checkmarkOutline
+  checkmarkOutline,
+  documentOutline
 } from 'ionicons/icons';
 import { 
   LoanPaymentScheduleService, 
@@ -53,6 +54,8 @@ import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ng
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Device } from '@capacitor/device';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-upcoming-payments',
@@ -173,7 +176,8 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
       refreshOutline,
       cashOutline,
       downloadOutline,
-      checkmarkOutline
+      checkmarkOutline,
+      documentOutline
     });
 
     effect(() => {
@@ -401,14 +405,7 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
         {
           text: 'PDF',
           handler: async () => {
-            // TODO: Implement PDF export functionality
-            const toast = await this.toastCtrl.create({
-              message: 'Payment schedule exported as PDF.',
-              duration: 2000,
-              position: 'bottom',
-              color: 'success',
-            });
-            await toast.present();
+            this.exportToPDF();
           }
         }
       ]
@@ -526,6 +523,196 @@ export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
       console.error('Error exporting to CSV:', error);
       this.presentToast('Failed to export CSV. Please try again.', 'danger');
     }
+  }
+
+  async exportToPDF() {
+    try {
+      const loading = await this.loadingCtrl.create({
+        message: 'Generating PDF file...',
+        spinner: 'circles'
+      });
+      await loading.present();
+
+      // Get all payments for export - might need to fetch all data if pagination is active
+      let paymentsToExport = this.upcomingPayments();
+      
+      // If we're only showing a subset of data, fetch all data for export
+      if (this.totalCount() > paymentsToExport.length) {
+        try {
+          const allPayments = await this.paymentScheduleService.getUpcomingPayments(
+            this.dueDateFilter(),
+            1,
+            this.totalCount(), // Request all payments
+            this.searchTerm()
+          );
+          paymentsToExport = allPayments.data;
+        } catch (error) {
+          console.error('Error fetching all payments for export:', error);
+          // Continue with what we have if we can't fetch all
+        }
+      }
+
+      // Create PDF document (A4 format)
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Add title and metadata
+      const title = 'Upcoming Payments Schedule';
+      const date = new Date();
+      const dateStr = this.datePipe.transform(date, 'medium') || date.toISOString();
+      
+      // Set PDF metadata
+      doc.setProperties({
+        title: title,
+        subject: 'Loan Payment Schedule',
+        author: '1Sari Lending System',
+        keywords: 'payments, loans, schedule',
+        creator: '1Sari Lending System'
+      });
+      
+      // Add title
+      doc.setFontSize(18);
+      doc.text(title, 14, 20);
+      
+      // Add date and filter info
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${dateStr}`, 14, 28);
+      doc.text(`Filter: ${this.getDueDateFilterName(this.dueDateFilter())}`, 14, 34);
+      doc.text(`Total records: ${paymentsToExport.length}`, 14, 40);
+      
+      // Company info (top right)
+      doc.setFontSize(12);
+      doc.text('1Sari Lending System', 170, 20, { align: 'right' });
+      
+      // Format data for PDF table
+      const tableData = paymentsToExport.map(payment => {
+        const formattedAmount = this.currencyPipe.transform(payment.amount, 'PHP', 'symbol');
+        const formattedDate = this.datePipe.transform(payment.dueDate, 'mediumDate');
+        
+        return [
+          payment.id,
+          payment.loanId,
+          payment.borrower.name_of_borrower,
+          formattedAmount,
+          formattedDate,
+          this.formatDaysUntilDue(payment.daysUntilDue)
+        ];
+      });
+      
+      // Add table to PDF
+      autoTable(doc, {
+        startY: 45,
+        head: [['ID', 'Loan ID', 'Borrower', 'Amount Due', 'Due Date', 'Days Until Due']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [71, 119, 140],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 18 },
+          2: { cellWidth: 60 },
+          3: { cellWidth: 30, halign: 'right' },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 25 }
+        }
+      });
+      
+      // Add footer with page numbers
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(
+          `Page ${i} of ${pageCount}`, 
+          doc.internal.pageSize.width / 2, 
+          doc.internal.pageSize.height - 10, 
+          { align: 'center' }
+        );
+      }
+      
+      // File name for export
+      const fileName = `upcoming-payments-${date.toISOString().split('T')[0]}.pdf`;
+      
+      // Get device info to determine platform
+      const deviceInfo = await Device.getInfo();
+
+      // Save or share the file based on platform
+      if (deviceInfo.platform === 'web') {
+        // For web, download the PDF
+        doc.save(fileName);
+        
+        await loading.dismiss();
+        this.presentToast('PDF file downloaded successfully.', 'success');
+      } else {
+        // For mobile platforms, save to filesystem and share
+        const pdfOutput = doc.output('arraybuffer');
+        const base64Data = this.arrayBufferToBase64(pdfOutput);
+        
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache
+        });
+        
+        await loading.dismiss();
+        
+        // Show success toast
+        this.presentToast('PDF file created successfully.', 'success');
+        
+        // Share the file
+        try {
+          await Share.share({
+            title: 'Upcoming Payments',
+            text: 'Upcoming Payments Schedule',
+            url: result.uri,
+            dialogTitle: 'Share PDF file'
+          });
+        } catch (shareError) {
+          console.error('Error sharing the file:', shareError);
+          this.presentToast('File created but sharing failed.', 'warning');
+        }
+      }
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      this.presentToast('Failed to export PDF. Please try again.', 'danger');
+    }
+  }
+  
+  // Helper method to convert ArrayBuffer to Base64 string
+  private arrayBufferToBase64(buffer: ArrayBuffer): string {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    
+    return window.btoa(binary);
+  }
+  
+  // Helper method to get a readable filter name
+  private getDueDateFilterName(filter: DueDateFilterType): string {
+    switch(filter) {
+      case 'today': return 'Due Today';
+      case 'this-week': return 'Due This Week';
+      case 'this-month': return 'Due This Month';
+      case 'all': return 'All Upcoming Payments';
+      default: return 'Custom Filter';
+    }
+  }
+  
+  // Helper method to format days until due
+  private formatDaysUntilDue(days: number): string {
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    return `${days} days`;
   }
 
   async presentToast(message: string, color: 'success' | 'danger' | 'warning' | 'medium') {
