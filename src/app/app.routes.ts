@@ -137,6 +137,23 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'reports',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'disbursement',
+        pathMatch: 'full'
+      },
+      {
+        path: 'disbursement',
+        loadComponent: () => import('./pages/reports/disbursement-report/disbursement-report.page').then(m => m.DisbursementReportPage),
+        data: { title: 'Loan Disbursement Report' }
+      }
+      // Add more report routes here as needed
+    ]
+  },
+  {
     path: 'users',
     canActivate: [authGuard],
     children: [

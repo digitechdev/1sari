@@ -34,7 +34,7 @@
     "@ionic/angular": "^8.0.0",
     "@ionic/pwa-elements": "^3.3.0",
     "@supabase/supabase-js": "^2.49.4",
-    "@swimlane/ngx-datatable": "^21.0.0-alpha.1",
+    "@swimlane/ngx-datatable": "^21.0.0",
     "date-fns": "^4.1.0",
     "echarts": "^5.6.0",
     "file-saver": "^2.0.5",

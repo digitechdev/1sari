@@ -368,4 +368,108 @@ export class LoanService {
     }
   }
   // --- End Delete Loan Method ---
+
+  /**
+   * Fetches loans disbursed between the given date range
+   * @param startDate Start date in ISO format (YYYY-MM-DD)
+   * @param endDate End date in ISO format (YYYY-MM-DD)
+   * @returns Promise resolving to the Supabase response containing an array of loans with borrower info
+   */
+  async getLoansByDisbursementDate(startDate: string, endDate: string): Promise<PostgrestSingleResponse<any[]>> {
+    this.isLoading.set(true);
+    
+    try {
+      // Format the date range for the query
+      const formattedStartDate = `${startDate}T00:00:00.000Z`;
+      const formattedEndDate = `${endDate}T23:59:59.999Z`;
+      
+      // Fetch loans within the date range
+      const loansResponse = await this.supabase
+        .from(this.tableName)
+        .select('*')
+        .gte('disbursement_date', formattedStartDate)
+        .lte('disbursement_date', formattedEndDate)
+        .order('disbursement_date', { ascending: false });
+      
+      if (loansResponse.error) {
+        console.error('Error fetching loans by disbursement date:', loansResponse.error);
+        return loansResponse;
+      }
+      
+      // Then fetch relevant borrowers
+      const borrowerIds = loansResponse.data?.map(loan => loan.borrower_id) || [];
+      
+      if (borrowerIds.length === 0) {
+        // No loans found, return empty data
+        return {
+          ...loansResponse,
+          data: []
+        };
+      }
+      
+      const borrowersResponse = await this.supabase
+        .from(this.borrowerTableName)
+        .select('id, name_of_borrower, contact_no_borrower')
+        .in('id', borrowerIds);
+      
+      if (borrowersResponse.error) {
+        console.error('Error fetching borrowers for disbursement report:', borrowersResponse.error);
+        return borrowersResponse;
+      }
+      
+      // Fetch collateral items for these loans
+      const collateralResponse = await this.supabase
+        .from('collateral_items')
+        .select('loan_id, item_description, item_value')
+        .in('loan_id', loansResponse.data?.map(loan => loan.id) || []);
+      
+      // Create lookup maps
+      const borrowersMap = new Map(
+        borrowersResponse.data?.map(b => [b.id, b]) || []
+      );
+      
+      // Group collateral items by loan_id
+      const collateralMap = new Map();
+      collateralResponse.data?.forEach(item => {
+        if (!collateralMap.has(item.loan_id)) {
+          collateralMap.set(item.loan_id, []);
+        }
+        collateralMap.get(item.loan_id).push(item);
+      });
+      
+      // Combine the data
+      const combinedData = loansResponse.data?.map(loan => ({
+        ...loan,
+        borrower: borrowersMap.get(loan.borrower_id),
+        collateral_items: collateralMap.get(loan.id) || []
+      })) || [];
+      
+      console.log('Loans filtered by disbursement date:', combinedData);
+      
+      return {
+        ...loansResponse,
+        data: combinedData,
+        error: null
+      };
+      
+    } catch (error: any) {
+      console.error('Unexpected error in getLoansByDisbursementDate:', error);
+      const pgError: PostgrestError = {
+        message: error?.message || 'Client Disbursement Report Error',
+        details: error?.details || '',
+        hint: error?.hint || '',
+        code: error?.code || 'CLIENT_DISBURSEMENT_REPORT_ERR',
+        name: 'ClientDisbursementReportError'
+      };
+      return { 
+        data: null, 
+        error: pgError, 
+        status: 0, 
+        statusText: 'Client Disbursement Report Error', 
+        count: null 
+      };
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
 } 

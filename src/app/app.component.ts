@@ -137,23 +137,23 @@ export class AppComponent implements OnInit {
     
     // Payments section
     { id: 'payments', title: 'Payments', url: '/payments', icon: 'card-outline', expanded: false },
-    { id: 'payments-record', title: 'Record Payment', url: '/payments/new', icon: 'add-outline', isSubItem: true, parentId: 'payments' },
+    // { id: 'payments-record', title: 'Record Payment', url: '/payments/new', icon: 'add-outline', isSubItem: true, parentId: 'payments' },
     { id: 'payments-history', title: 'Payment History', url: '/payments/history', icon: 'time-outline', isSubItem: true, parentId: 'payments' },
-    { id: 'payments-missed', title: 'Missed Payments', url: '/payments/missed', icon: 'alert-circle-outline', isSubItem: true, parentId: 'payments' },
     { id: 'payments-upcoming', title: 'Upcoming Dues', url: '/payments/upcoming', icon: 'calendar-outline', isSubItem: true, parentId: 'payments' },
+    { id: 'payments-missed', title: 'Missed Payments', url: '/payments/missed', icon: 'alert-circle-outline', isSubItem: true, parentId: 'payments' },
     
     // Schedules section
     { id: 'schedules', title: 'Schedules', url: '/schedules', icon: 'calendar-outline', expanded: false },
     { id: 'schedules-amortization', title: 'Amortization Tables', url: '/schedules/amortization', icon: 'calculator-outline', isSubItem: true, parentId: 'schedules' },
-    { id: 'schedules-calendar', title: 'Payment Calendar', url: '/schedules/payment-calendar', icon: 'calendar-outline', isSubItem: true, parentId: 'schedules' },
-    { id: 'schedules-reminders', title: 'Due Reminders', url: '/schedules/due-reminders', icon: 'notifications-outline', isSubItem: true, parentId: 'schedules' },
+    // { id: 'schedules-calendar', title: 'Payment Calendar', url: '/schedules/payment-calendar', icon: 'calendar-outline', isSubItem: true, parentId: 'schedules' },
+    // { id: 'schedules-reminders', title: 'Due Reminders', url: '/schedules/due-reminders', icon: 'notifications-outline', isSubItem: true, parentId: 'schedules' },
     
     // Reports section
     { id: 'reports', title: 'Reports', url: '/reports', icon: 'analytics-outline', expanded: false },
     { id: 'reports-disbursement', title: 'Loan Disbursement Report', url: '/reports/disbursement', icon: 'cash-outline', isSubItem: true, parentId: 'reports' },
     { id: 'reports-collection', title: 'Collection Report', url: '/reports/collection', icon: 'cash-outline', isSubItem: true, parentId: 'reports' },
     { id: 'reports-overdue', title: 'Overdue Loans', url: '/reports/overdue', icon: 'alert-circle-outline', isSubItem: true, parentId: 'reports' },
-    { id: 'reports-performance', title: 'Performance by Officer', url: '/reports/performance', icon: 'trending-up-outline', isSubItem: true, parentId: 'reports' },
+    // { id: 'reports-performance', title: 'Performance by Officer', url: '/reports/performance', icon: 'trending-up-outline', isSubItem: true, parentId: 'reports' },
     { id: 'reports-export', title: 'Export CSV/PDF', url: '/reports/export', icon: 'download-outline', isSubItem: true, parentId: 'reports' },
     
     // Users & Roles section
@@ -164,11 +164,11 @@ export class AppComponent implements OnInit {
     { id: 'users-logs', title: 'Activity Logs', url: '/users/logs', icon: 'list-outline', isSubItem: true, parentId: 'users' },
     
     // Settings section
-    { id: 'settings', title: 'Settings', url: '/settings', icon: 'settings-outline', expanded: false },
-    { id: 'settings-products', title: 'Loan Products & Terms', url: '/settings/loan-products', icon: 'document-text-outline', isSubItem: true, parentId: 'settings' },
-    { id: 'settings-interest', title: 'Interest Settings', url: '/settings/interest', icon: 'trending-up-outline', isSubItem: true, parentId: 'settings' },
-    { id: 'settings-penalties', title: 'Penalties & Grace Periods', url: '/settings/penalties', icon: 'warning-outline', isSubItem: true, parentId: 'settings' },
-    { id: 'settings-notifications', title: 'Notification Preferences', url: '/settings/notifications', icon: 'notifications-outline', isSubItem: true, parentId: 'settings' },
+    // { id: 'settings', title: 'Settings', url: '/settings', icon: 'settings-outline', expanded: false },
+    // { id: 'settings-products', title: 'Loan Products & Terms', url: '/settings/loan-products', icon: 'document-text-outline', isSubItem: true, parentId: 'settings' },
+    // { id: 'settings-interest', title: 'Interest Settings', url: '/settings/interest', icon: 'trending-up-outline', isSubItem: true, parentId: 'settings' },
+    // { id: 'settings-penalties', title: 'Penalties & Grace Periods', url: '/settings/penalties', icon: 'warning-outline', isSubItem: true, parentId: 'settings' },
+    // { id: 'settings-notifications', title: 'Notification Preferences', url: '/settings/notifications', icon: 'notifications-outline', isSubItem: true, parentId: 'settings' },
     
     // My Account section
     { id: 'account', title: 'My Account', url: '/account', icon: 'person-circle-outline', expanded: false },
