@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef, AfterViewInit, ChangeDetectorRef, effect } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -17,6 +17,7 @@ import {
   IonCard,
   IonCardHeader,
   IonCardTitle,
+  IonCardSubtitle,
   IonCardContent,
   IonGrid,
   IonRow,
@@ -28,7 +29,8 @@ import {
   IonItem,
   IonBadge,
   ToastController,
-  AlertController, IonCardSubtitle } from '@ionic/angular/standalone';
+  AlertController
+} from '@ionic/angular/standalone';
 import { NgClass } from '@angular/common';
 import { addIcons } from 'ionicons';
 import { 
@@ -45,17 +47,19 @@ import {
   UpcomingPayment, 
   DueDateFilterType 
 } from '../../../services/loan-payment-schedule.service';
+import { NgxDatatableModule, ColumnMode, DatatableComponent } from '@swimlane/ngx-datatable';
 
 @Component({
   selector: 'app-upcoming-payments',
   templateUrl: './upcoming-payments.page.html',
-  styleUrls: ['./upcoming-payments.page.scss'],
+  styleUrls: ['./upcoming-payments.page.scss', '../../../../../node_modules/@swimlane/ngx-datatable/themes/material.scss'],
   standalone: true,
-  imports: [IonCardSubtitle, 
+  imports: [
     CommonModule,
     FormsModule,
     RouterLink,
     NgClass,
+    NgxDatatableModule,
     IonContent, 
     IonHeader, 
     IonTitle, 
@@ -70,6 +74,7 @@ import {
     IonCard,
     IonCardHeader,
     IonCardTitle,
+    IonCardSubtitle,
     IonCardContent,
     IonGrid,
     IonRow,
@@ -83,10 +88,16 @@ import {
   ],
   providers: [DatePipe, CurrencyPipe]
 })
-export class UpcomingPaymentsPage implements OnInit {
+export class UpcomingPaymentsPage implements OnInit, AfterViewInit {
+  @ViewChild('paymentActionsTemplate', { static: false }) paymentActionsTemplate!: TemplateRef<any>;
+  @ViewChild(DatatableComponent) table: DatatableComponent | undefined;
+
   private router = inject(Router);
   private toastCtrl = inject(ToastController);
   private alertCtrl = inject(AlertController);
+  private datePipe = inject(DatePipe);
+  private currencyPipe = inject(CurrencyPipe);
+  private cdRef = inject(ChangeDetectorRef);
   private paymentScheduleService = inject(LoanPaymentScheduleService);
 
   // Data for the upcoming payments
@@ -99,6 +110,48 @@ export class UpcomingPaymentsPage implements OnInit {
   currentPage = signal(1);
   hasMore = signal(true);
   totalCount = signal(0);
+  private actionsTemplateAssigned = false;
+
+  ColumnMode = ColumnMode;
+  tableColumns: any[] = [
+    { prop: 'id', name: 'ID', width: 60 },
+    { prop: 'loanId', name: 'Loan ID', width: 80 },
+    {
+      prop: 'borrower.name_of_borrower',
+      name: 'Borrower',
+      width: 150
+    },
+    { 
+      prop: 'amount', 
+      name: 'Amount Due', 
+      width: 120,
+      pipe: { transform: (value: number) => this.currencyPipe.transform(value, 'PHP', 'symbol') } 
+    },
+    {
+      prop: 'dueDate',
+      name: 'Due Date',
+      width: 120,
+      pipe: {
+        transform: (value: string) => this.datePipe.transform(value, 'mediumDate'),
+      },
+    },
+    {
+      prop: 'daysUntilDue',
+      name: 'Days Until Due',
+      width: 120,
+      cellClass: ({ value }: any) => this.getDueDateClass(value)
+    },
+    {
+      name: 'Actions',
+      prop: 'id',
+      sortable: false,
+      canAutoResize: false,
+      draggable: false,
+      resizable: false,
+      width: 120,
+      cellTemplate: undefined
+    }
+  ];
 
   displayableUpcomingPayments = computed(() => {
     return this.upcomingPayments();
@@ -115,10 +168,37 @@ export class UpcomingPaymentsPage implements OnInit {
       cashOutline,
       downloadOutline
     });
+
+    effect(() => {
+      if (this.actionsTemplateAssigned) {
+        // Refresh the table when data changes
+        if (this.table) {
+          this.table.recalculate();
+        }
+      }
+    });
   }
 
   ngOnInit() {
     this.loadUpcomingPayments();
+  }
+
+  ngAfterViewInit() {
+    this.cdRef.detectChanges();
+    this.tryAssignTemplateAndData();
+  }
+
+  tryAssignTemplateAndData() {
+    if (this.paymentActionsTemplate && !this.actionsTemplateAssigned) {
+      const actionsCol = this.tableColumns.find(col => col.name === 'Actions');
+      if (actionsCol) { 
+        actionsCol.cellTemplate = this.paymentActionsTemplate;
+        this.tableColumns = [...this.tableColumns];
+        this.actionsTemplateAssigned = true;
+        console.log('Upcoming payment actions template assigned.');
+        this.cdRef.detectChanges();
+      }
+    }
   }
 
   navigateToPaymentSection(event: any) {
@@ -139,14 +219,20 @@ export class UpcomingPaymentsPage implements OnInit {
   }
 
   handleSearch(event: any) {
-    const term = event.target.value || '';
-    this.searchTerm.set(term);
+    // Get the search term from the event
+    const term = event.detail.value || '';
     
-    // Reset to page 1 when searching
-    this.currentPage.set(1);
-    
-    // Reload with search term
-    this.loadUpcomingPayments(false);
+    // Only update and search if the term has actually changed
+    if (term !== this.searchTerm()) {
+      console.log('Search term changed to:', term);
+      this.searchTerm.set(term);
+      
+      // Reset to page 1 when searching
+      this.currentPage.set(1);
+      
+      // Reload with the search term (the debounce is handled by the ionInput event with debounce="300")
+      this.loadUpcomingPayments(false);
+    }
   }
 
   setDueDateFilter(event: any) {
@@ -186,6 +272,11 @@ export class UpcomingPaymentsPage implements OnInit {
       this.totalCount.set(result.count);
       this.hasMore.set(result.hasMore);
       this.isLoading.set(false);
+      
+      // Try to assign the template after data is loaded
+      setTimeout(() => {
+        this.tryAssignTemplateAndData();
+      }, 0);
     } catch (error) {
       console.error('Error loading upcoming payments:', error);
       this.errorLoading.set('Failed to load upcoming payments. Please try again.');
@@ -196,6 +287,7 @@ export class UpcomingPaymentsPage implements OnInit {
   async refreshData() {
     // Reset to page 1 when refreshing
     this.currentPage.set(1);
+    this.actionsTemplateAssigned = false;
     await this.loadUpcomingPayments(true);
     
     const toast = await this.toastCtrl.create({

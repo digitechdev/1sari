@@ -1,1 +1,120 @@
+.datatable-content {
+  --background: var(--ion-color-light);
+}
 
+.payments-card-list {
+  margin: 1rem 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.payments-card-header {
+  background-color: var(--ion-color-light);
+  border-bottom: 1px solid var(--ion-color-light-shade);
+}
+
+.payments-datatable {
+  box-shadow: none !important;
+  
+  .datatable-header {
+    background-color: var(--ion-color-light);
+    font-weight: 600;
+  }
+  
+  .datatable-row-center {
+    align-items: center !important;
+  }
+}
+
+.controls-searchbar {
+  --border-radius: 8px;
+  --background: white;
+  padding: 0;
+  max-width: 100%;
+  
+  &::part(icon) {
+    color: var(--ion-color-medium);
+  }
+  
+  &::part(cancel-button) {
+    display: flex;
+  }
+  
+  &::part(search-icon) {
+    color: var(--ion-color-medium);
+  }
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  
+  .action-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    margin: 0;
+  }
+}
+
+.state-message {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1rem;
+  color: var(--ion-color-medium);
+  
+  ion-spinner {
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+}
+
+/* Due date status classes */
+.due-today {
+  color: var(--ion-color-danger);
+  font-weight: bold;
+}
+
+.due-soon {
+  color: var(--ion-color-warning);
+  font-weight: bold;
+}
+
+.due-this-week {
+  color: var(--ion-color-tertiary);
+  font-weight: bold;
+}
+
+.due-later {
+  color: var(--ion-color-medium);
+}
+
+/* Load more button styling */
+.load-more-container {
+  text-align: center;
+  padding: 1rem 0;
+  
+  .load-more-button {
+    --color: var(--ion-color-primary);
+    font-weight: 500;
+  }
+}
+
+/* Filter segment styling */
+ion-segment {
+  margin-top: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
+  
+  ion-segment-button {
+    --color-checked: var(--ion-color-primary);
+    --indicator-color: var(--ion-color-primary);
+    min-width: auto;
+    
+    ion-label {
+      font-size: 0.8rem;
+      margin: 0;
+      padding: 0 4px;
+    }
+  }
+}
