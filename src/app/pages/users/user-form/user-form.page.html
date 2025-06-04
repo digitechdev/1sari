@@ -66,10 +66,14 @@
                 placeholder="Select Role"
                 fill="solid"
                 formControlName="role"
+                [errorText]="userForm.controls['role'].invalid &&
+                userForm.controls['role'].touched ? 'Role is required.' : ''"
               >
-                <ion-select-option value="Admin">Admin</ion-select-option>
-                <ion-select-option value="User">User</ion-select-option>
-                <ion-select-option value="Manager">Manager</ion-select-option>
+                @for (role of availableRoles(); track role.name) {
+                  <ion-select-option [value]="role.name">
+                    {{ role.name | titlecase }}
+                  </ion-select-option>
+                }
               </ion-select>
 
               @if (!isEditMode()) {

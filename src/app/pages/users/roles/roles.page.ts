@@ -56,6 +56,7 @@ import {
   eyeOutline
 } from 'ionicons/icons';
 import { PermissionsService, Role, Permission } from '../../../services/permissions.service';
+import { RoleService } from '../../../services/role.service';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { RoleFormModalComponent } from './role-form-modal/role-form-modal.component';
 import { RoleDetailsModalComponent } from './role-details-modal/role-details-modal.component';
@@ -108,6 +109,7 @@ import { RoleDetailsModalComponent } from './role-details-modal/role-details-mod
 })
 export class RolesPage implements OnInit {
   private permissionsService = inject(PermissionsService);
+  private roleService = inject(RoleService);
   private alertController = inject(AlertController);
   private modalController = inject(ModalController);
   private toastController = inject(ToastController);
@@ -152,7 +154,7 @@ export class RolesPage implements OnInit {
   }
 
   loadData() {
-    this.roles.set(this.permissionsService.getRoles());
+    this.roles.set(this.roleService.getRoles());
     this.permissions.set(this.permissionsService.getPermissions());
     this.permissionsByCategory.set(this.permissionsService.getPermissionsByCategory());
     
@@ -336,17 +338,17 @@ export class RolesPage implements OnInit {
   }
 
   deleteRole(role: Role) {
-    this.permissionsService.deleteRole(role.name);
+    this.roleService.deleteRole(role.name);
     this.loadData();
   }
 
   saveRole(role: Role, originalName?: string) {
     if (originalName) {
       // Update existing role
-      this.permissionsService.updateRole(originalName, role);
+      this.roleService.updateRole(originalName, role);
     } else {
       // Add new role
-      this.permissionsService.addRole(role);
+      this.roleService.addRole(role);
     }
     
     this.loadData();

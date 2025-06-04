@@ -44,6 +44,8 @@ import {
 } from '@ionic/angular/standalone';
 import { UserProfile } from '../../../interfaces/user-profile.interface';
 import { UserService } from 'src/app/services/user.service';
+import { RoleService } from 'src/app/services/role.service';
+import { Role } from 'src/app/services/permissions.service';
 
 // Custom Validator for Passwords (keep it here or move to a shared validators file)
 export const passwordsMatchValidator = (
@@ -104,18 +106,23 @@ export class UserFormPage implements OnInit {
   private readonly navController = inject(NavController);
   private readonly platform = inject(Platform);
   private readonly userService = inject(UserService);
+  private readonly roleService = inject(RoleService);
   private readonly toastCtrl = inject(ToastController);
 
   userForm!: FormGroup;
   userId: WritableSignal<string | null> = signal(null);
   isLoading = signal(false);
+  
+  // Available roles for the select dropdown
+  availableRoles = signal<Role[]>([]);
 
   // Computed signal determines mode based on userId signal
   isEditMode = computed(() => !!this.userId());
 
-  // No constructor needed for initialization if done in ngOnInit
-
   ngOnInit() {
+    // Load available roles
+    this.loadRoles();
+    
     const id = this.route.snapshot.paramMap.get('id');
     this.initializeForm(); // Initialize first
 
@@ -130,6 +137,10 @@ export class UserFormPage implements OnInit {
     }
   }
 
+  loadRoles() {
+    this.availableRoles.set(this.roleService.getRoles());
+  }
+
   initializeForm() {
     const isEditing = this.isEditMode();
 
@@ -137,7 +148,7 @@ export class UserFormPage implements OnInit {
         // id is not needed in the form itself, managed by userId signal
         full_name: ['', Validators.required],
         email: ['', [Validators.required, Validators.email]],
-        role: ['viewer', Validators.required], // Default role, adjust as needed
+        role: ['', Validators.required], // Default to empty, will select first available role if any
     };
 
     // Add password fields only if creating a new user
@@ -150,6 +161,11 @@ export class UserFormPage implements OnInit {
         // Apply the passwordsMatchValidator only when creating
         validators: isEditing ? [] : passwordsMatchValidator,
     });
+
+    // Set default role if available
+    if (this.availableRoles().length > 0) {
+      this.userForm.get('role')?.setValue(this.availableRoles()[0].name);
+    }
 
     // Disable email input in edit mode after form is created
     if (isEditing && this.userForm.controls['email']) {
@@ -166,7 +182,7 @@ export class UserFormPage implements OnInit {
         this.userForm.patchValue({
             full_name: user.full_name || '',
             email: user.email, // Email will be disabled, but good to patch value
-            role: user.role || 'viewer',
+            role: user.role || '',
         });
          // Email is already disabled in initializeForm for edit mode
       } else {
@@ -234,14 +250,14 @@ export class UserFormPage implements OnInit {
     }
   }
 
-  async showToast(message: string, color: 'success' | 'warning' | 'danger') {
-      const toast = await this.toastCtrl.create({
-          message,
-          duration: 3000,
-          color,
-          position: 'bottom'
-      });
-      toast.present();
+  async showToast(message: string, color: string = 'primary') {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 2000,
+      color,
+      position: 'bottom',
+    });
+    await toast.present();
   }
 
   goBack() {
