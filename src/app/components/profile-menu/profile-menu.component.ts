@@ -21,8 +21,8 @@ export class ProfileMenuComponent {
   }
 
   goToProfile() {
-    console.log('Navigate to Profile');
     this.popoverCtrl.dismiss();
+    this.router.navigate(['/profile']);
   }
 
   logout() {

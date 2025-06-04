@@ -1,13 +1,48 @@
-<ion-header [translucent]="true">
+<ion-header class="page-header">
   <ion-toolbar>
-    <ion-title>profile</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/account"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Account Profile</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">profile</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12" size-md="10" offset-md="1" size-lg="8" offset-lg="2">
+        <!-- Quick Access Card -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="person-circle-outline" class="card-title-icon"></ion-icon>
+              Profile Management
+            </ion-card-title>
+            <ion-card-subtitle>Access and manage your profile information</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list lines="full">
+              <!-- Link to Main Profile Page -->
+              <ion-item routerLink="/profile" detail="true">
+                <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+                <ion-label>
+                  <h2>My Profile</h2>
+                  <p>View and edit your personal information</p>
+                </ion-label>
+              </ion-item>
+
+              <!-- Link to Change Password -->
+              <ion-item routerLink="/account/password" detail="true">
+                <ion-icon name="key-outline" slot="start" color="warning"></ion-icon>
+                <ion-label>
+                  <h2>Change Password</h2>
+                  <p>Update your account password</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

@@ -125,6 +125,9 @@ export class AppComponent implements OnInit {
   private allMenuItems: MenuItem[] = [
     { id: 'dashboard', title: 'Dashboard', url: '/dashboard', icon: 'home-outline' },
     
+    // Profile section
+    { id: 'profile', title: 'My Profile', url: '/profile', icon: 'person-circle-outline' },
+    
     // Borrowers section
     { id: 'borrowers', title: 'Borrowers', url: '/borrowers', icon: 'people-outline', expanded: false },
     { id: 'borrowers-all', title: 'All Borrowers', url: '/borrowers', icon: 'people-outline', isSubItem: true, parentId: 'borrowers' },

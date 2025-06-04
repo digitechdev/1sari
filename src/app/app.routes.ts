@@ -216,4 +216,31 @@ export const routes: Routes = [
       // }
     ]
   },
+  {
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.page').then(m => m.ProfilePage),
+    data: { title: 'My Profile' },
+    canActivate: [authGuard]
+  },
+  {
+    path: 'account',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/account/profile/profile.page').then(m => m.ProfilePage),
+        data: { title: 'Account Profile' }
+      },
+      {
+        path: 'password',
+        loadComponent: () => import('./pages/account/password/password.page').then(m => m.PasswordPage),
+        data: { title: 'Change Password' }
+      }
+    ]
+  },
 ];

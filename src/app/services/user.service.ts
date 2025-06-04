@@ -4,6 +4,7 @@ import { SupabaseService } from './supabase.service';
 import { UserProfile } from '../interfaces/user-profile.interface';
 import { Router } from '@angular/router';
 import { from } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +12,15 @@ import { from } from 'rxjs';
 export class UserService {
   private supabase: SupabaseClient;
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   constructor(private supabaseService: SupabaseService) {
     this.supabase = this.supabaseService.supabase;
+  }
+
+  // Get current authenticated user
+  async getCurrentUser(): Promise<User | null> {
+    return this.authService.currentUser();
   }
 
   // --- User Profile CRUD --- (Interacting with 'profiles' table)
