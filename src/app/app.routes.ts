@@ -182,6 +182,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/users/user-form/user-form.page').then( m => m.UserFormPage),
         data: { title: 'Edit User' }
       },
+      {
+        path: 'roles',
+        loadComponent: () => import('./pages/users/roles/roles.page').then( m => m.RolesPage),
+        data: { title: 'Roles & Permissions' }
+      },
       // Add other user-related child routes here if needed (e.g., user detail)
     ]
   },

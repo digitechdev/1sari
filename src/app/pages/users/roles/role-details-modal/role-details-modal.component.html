@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      <ion-icon name="key-outline" class="ion-margin-end"></ion-icon>
+      {{ role.name | titlecase }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Role Description</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p>{{ role.description || 'No description provided' }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Assigned Permissions</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      @if (role.permissions.length === 0) {
+        <p class="no-permissions">No permissions assigned to this role</p>
+      } @else {
+        @for (category of getRolePermissionsByCategory() | keyvalue; track category.key) {
+          <div class="permission-category">
+            <div class="category-header">
+              <ion-icon [name]="getCategoryIcon(category.key)" [color]="getCategoryColor(category.key)"></ion-icon>
+              <h3>{{ category.key }}</h3>
+            </div>
+            <ion-list>
+              @for (permission of category.value; track permission.name) {
+                <ion-item lines="full">
+                  <ion-label class="ion-text-wrap">
+                    <div class="permission-name">{{ permission.name }}</div>
+                    <div class="permission-description">{{ permission.description }}</div>
+                  </ion-label>
+                </ion-item>
+              }
+            </ion-list>
+          </div>
+        }
+      }
+    </ion-card-content>
+  </ion-card>
+</ion-content> 

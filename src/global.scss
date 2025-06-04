@@ -72,3 +72,84 @@ ion-searchbar {
 ion-button {
   --box-shadow: none !important;
 }
+
+/* Role Form Modal Styles */
+.role-form-modal {
+  --width: 90%;
+  --max-width: 600px;
+  --height: 80%;
+  --border-radius: 10px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 768px) {
+  .role-form-modal {
+    --width: 70%;
+  }
+}
+
+/* Allow the modal to scroll on smaller screens */
+.role-form-modal ion-content {
+  --padding-bottom: 20px;
+}
+
+/* Make sure accordion items are clickable in modal */
+.role-form-modal ion-accordion {
+  margin-bottom: 8px;
+}
+
+.role-form-modal ion-accordion ion-item {
+  --ripple-color: var(--ion-color-primary);
+}
+
+/* Improve checkbox spacing in modal */
+.role-form-modal ion-checkbox {
+  margin-right: 10px;
+}
+
+/* Footer button spacing */
+.role-form-modal ion-footer ion-toolbar {
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --min-height: 56px;
+}
+
+/* Role details alert styles - Ensure HTML is properly rendered */
+.role-details-alert .alert-message {
+  overflow-y: auto;
+  max-height: 60vh;
+  
+  .permission-list {
+    h5 {
+      color: var(--ion-color-primary);
+      margin-bottom: 8px;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    
+    ul {
+      padding-left: 20px;
+      margin-top: 4px;
+      
+      li {
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+/* Role details modal styles */
+.role-details-modal {
+  --width: 90%;
+  --max-width: 600px;
+  --height: 80%;
+  --border-radius: 10px;
+  --box-shadow: 0 28px 48px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 768px) {
+  .role-details-modal {
+    --width: 70%;
+  }
+}

@@ -1,13 +1,180 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>roles</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/users"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <ion-icon name="key-outline" class="ion-margin-end"></ion-icon>
+      Roles & Permissions
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">roles</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content class="ion-padding">
+  <!-- Segment Control for switching between Roles and Permissions views -->
+  <ion-segment [value]="selectedSegment()" (ionChange)="segmentChanged($event)" class="ion-margin-bottom">
+    <ion-segment-button value="roles">
+      <ion-label>Roles</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="permissions">
+      <ion-label>Permissions</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="matrix">
+      <ion-label>Matrix</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Search Bar -->
+  <ion-searchbar 
+    placeholder="Search..." 
+    [value]="searchTerm()"
+    (ionInput)="searchChanged($event)"
+    class="ion-margin-bottom"
+  ></ion-searchbar>
+
+  <!-- ROLES VIEW WITH NGX-DATATABLE -->
+  @if (selectedSegment() === 'roles') {
+    <div class="roles-container">
+      <ngx-datatable
+        class="material"
+        [rows]="tableRows()"
+        [columns]="tableColumns"
+        [columnMode]="'force'"
+        [headerHeight]="50"
+        [footerHeight]="50"
+        [rowHeight]="'auto'"
+        [limit]="10"
+      >
+        <!-- Name Column Template -->
+        <ngx-datatable-column name="Role" prop="name">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <div class="role-name">
+              <ion-badge [color]="getRoleColor(row.name)" class="role-badge">
+                {{ row.name }}
+              </ion-badge>
+              <span class="role-title">{{ row.name | titlecase }}</span>
+            </div>
+          </ng-template>
+        </ngx-datatable-column>
+
+        <!-- Description Column Template -->
+        <ngx-datatable-column name="Description" prop="description">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <div class="description-cell">{{ row.description }}</div>
+          </ng-template>
+        </ngx-datatable-column>
+
+        <!-- Permissions Count Column Template -->
+        <ngx-datatable-column name="Permissions" prop="permissionCount">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <ion-chip outline color="primary">
+              <ion-label>{{ row.permissions.length }}</ion-label>
+            </ion-chip>
+          </ng-template>
+        </ngx-datatable-column>
+
+        <!-- Actions Column Template -->
+        <ngx-datatable-column name="Actions" prop="actions" [sortable]="false" [width]="120">
+          <ng-template let-row="row" ngx-datatable-cell-template>
+            <div class="action-buttons">
+              <ion-button fill="clear" size="small" (click)="viewRoleDetails(row)">
+                <ion-icon name="eye-outline" color="primary"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" (click)="editRole(row)">
+                <ion-icon name="pencil-outline" color="warning"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" (click)="confirmDeleteRole(row)">
+                <ion-icon name="trash-outline" color="danger"></ion-icon>
+              </ion-button>
+            </div>
+          </ng-template>
+        </ngx-datatable-column>
+      </ngx-datatable>
+      
+      <!-- FAB for adding new role -->
+      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button (click)="createRole()">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </div>
+  }
+
+  <!-- PERMISSIONS VIEW -->
+  @if (selectedSegment() === 'permissions') {
+    <div class="permissions-container">
+      @for (category of permissionsByCategory() | keyvalue; track category.key) {
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon [name]="getCategoryIcon(category.key)" class="ion-margin-end"></ion-icon>
+              {{ category.key }}
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-list>
+              @for (permission of category.value; track permission.name) {
+                <ion-item lines="full">
+                  <ion-label class="ion-text-wrap">
+                    <h3>{{ permission.name }}</h3>
+                    <p>{{ permission.description }}</p>
+                  </ion-label>
+                  <div slot="end" class="roles-with-permission">
+                    @for (role of roles(); track role.name) {
+                      @if (hasPermission(role, permission.name)) {
+                        <ion-chip [color]="getRoleColor(role.name)" size="small">
+                          {{ role.name }}
+                        </ion-chip>
+                      }
+                    }
+                  </div>
+                </ion-item>
+              }
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  }
+
+  <!-- MATRIX VIEW -->
+  @if (selectedSegment() === 'matrix') {
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Role-Permission Matrix</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="table-container">
+          <table class="permission-matrix">
+            <thead>
+              <tr>
+                <th>Permission</th>
+                @for (role of roles(); track role.name) {
+                  <th>{{ role.name | titlecase }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (permission of permissions(); track permission.name) {
+                <tr>
+                  <td class="permission-cell">
+                    <div class="permission-name">{{ permission.name }}</div>
+                    <div class="permission-desc">{{ permission.description }}</div>
+                  </td>
+                  @for (role of roles(); track role.name) {
+                    <td class="status-cell" [class.has-permission]="hasPermission(role, permission.name)">
+                      <ion-icon 
+                        [name]="hasPermission(role, permission.name) ? 'checkmark-outline' : 'close-outline'" 
+                        [color]="hasPermission(role, permission.name) ? 'success' : 'danger'"
+                      ></ion-icon>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  }
 </ion-content>
